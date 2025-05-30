@@ -1,4 +1,7 @@
-# NPM-PACKAGE-TEMPLATE
+# [PoC] image-shield
+
+![](.docs/figure.png)
+
 
 ## NOTE
 
