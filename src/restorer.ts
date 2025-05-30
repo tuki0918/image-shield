@@ -12,8 +12,8 @@ export class ImageRestorer {
   }
 
   async restoreImages(
-    manifest: ManifestData,
     fragmentImagePaths: string[],
+    manifest: ManifestData,
   ): Promise<Buffer[]> {
     // 1. Calculate the number of blocks for each image
     const imageBlockCounts = manifest.images.map(

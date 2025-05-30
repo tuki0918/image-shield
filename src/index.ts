@@ -42,14 +42,14 @@ export class ImageShield {
   }
 
   static async restore(options: RestoreOptions): Promise<void> {
-    const { manifestPath, imagePaths, outputDir, secretKey } = options;
+    const { imagePaths, manifestPath, outputDir, secretKey } = options;
 
     // Read manifest
     const manifestData = await fs.readFile(manifestPath, "utf-8");
     const manifest: ManifestData = JSON.parse(manifestData);
 
     const restorer = new ImageRestorer(secretKey);
-    const restoredImages = await restorer.restoreImages(manifest, imagePaths);
+    const restoredImages = await restorer.restoreImages(imagePaths, manifest);
 
     // Create output directory
     await fs.mkdir(outputDir, { recursive: true });
