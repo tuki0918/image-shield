@@ -23,6 +23,23 @@ describe("CryptoUtils", () => {
     expect(decrypted.equals(buffer)).toBe(true);
   });
 
+  test("encryptBlocks/decryptBlocks", () => {
+    const buffers = [
+      Buffer.from("Block1"),
+      Buffer.from("Block2"),
+      Buffer.from("Block3"),
+    ];
+    const encrypted = CryptoUtils.encryptBlocks(buffers, key);
+    expect(Array.isArray(encrypted)).toBe(true);
+    expect(encrypted.length).toBe(buffers.length);
+    const decrypted = CryptoUtils.decryptBlocks(encrypted, key);
+    expect(Array.isArray(decrypted)).toBe(true);
+    expect(decrypted.length).toBe(buffers.length);
+    for (let i = 0; i < buffers.length; i++) {
+      expect(decrypted[i].equals(buffers[i])).toBe(true);
+    }
+  });
+
   test("keyTo32 returns 32 bytes", () => {
     const result = CryptoUtils.keyTo32(key);
     expect(result).toBeInstanceOf(Buffer);
