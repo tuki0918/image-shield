@@ -53,6 +53,8 @@ export interface ManifestData {
   config: {
     /** Pixel block size */
     blockSize: number;
+    /** Prefix */
+    prefix: string;
     /** Random seed */
     seed: number;
   };

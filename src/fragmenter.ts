@@ -113,9 +113,12 @@ export class ImageFragmenter {
       config: {
         blockSize: this.config.blockSize,
         seed: this.config.seed,
+        prefix: this.config.prefix || "fragment",
       },
       images: imageInfos,
-      fragmentedFiles: imagePaths.map((_, i) => `fragment_${i}.png`),
+      fragmentedFiles: imagePaths.map(
+        (_, i) => `${this.config.prefix}_${i}.png`,
+      ),
     };
 
     return {
