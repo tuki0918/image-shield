@@ -1,13 +1,13 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { ImageFragmenter } from "@/fragmenter";
-import { ImageRestorer } from "@/restorer";
+import { ImageFragmenter } from "./fragmenter";
+import { ImageRestorer } from "./restorer";
 import type {
   EncryptOptions,
   FragmentationConfig,
   ManifestData,
   RestoreOptions,
-} from "@/types";
+} from "./types";
 
 export {
   ImageFragmenter,

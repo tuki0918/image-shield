@@ -1,12 +1,12 @@
+import sharp from "sharp";
 import type {
   FragmentationConfig,
   FragmentationResult,
   ImageInfo,
   ManifestData,
-} from "@/types";
-import { CryptoUtils } from "@/utils/crypto";
-import { SeededRandom } from "@/utils/random";
-import sharp from "sharp";
+} from "./types";
+import { CryptoUtils } from "./utils/crypto";
+import { SeededRandom } from "./utils/random";
 
 export class ImageFragmenter {
   private config: Omit<FragmentationConfig, "seed"> & { seed: number };

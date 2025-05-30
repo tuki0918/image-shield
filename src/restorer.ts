@@ -1,7 +1,7 @@
-import type { ImageInfo, ManifestData } from "@/types";
-import { CryptoUtils } from "@/utils/crypto";
-import { SeededRandom } from "@/utils/random";
 import sharp from "sharp";
+import type { ImageInfo, ManifestData } from "./types";
+import { CryptoUtils } from "./utils/crypto";
+import { SeededRandom } from "./utils/random";
 
 export class ImageRestorer {
   private secretKey: string;
