@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import type { ImageInfo, ManifestData } from "./types";
+import type { ManifestData, ShortImageInfo } from "./types";
 import { extractBlock, placeBlock } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { SeededRandom } from "./utils/random";
@@ -16,9 +16,7 @@ export class ImageRestorer {
     manifest: ManifestData,
   ): Promise<Buffer[]> {
     // 1. Calculate the number of blocks for each image
-    const imageBlockCounts = manifest.images.map(
-      (img) => img.blockCountX * img.blockCountY,
-    );
+    const imageBlockCounts = manifest.images.map((img) => img.x * img.y);
     const totalBlocks = imageBlockCounts.reduce((a, b) => a + b, 0);
 
     // 2. Calculate the number of blocks per fragment image (same logic as fragmenter.ts)
@@ -66,7 +64,7 @@ export class ImageRestorer {
     let blockPtr = 0;
     for (let imgIdx = 0; imgIdx < manifest.images.length; imgIdx++) {
       const imageInfo = manifest.images[imgIdx];
-      const blockCount = imageInfo.blockCountX * imageInfo.blockCountY;
+      const blockCount = imageInfo.x * imageInfo.y;
       const imageBlocks = restoredBlocks.slice(blockPtr, blockPtr + blockCount);
       blockPtr += blockCount;
       const restoredImage = await this.reconstructImage(
@@ -113,25 +111,23 @@ export class ImageRestorer {
 
   private async reconstructImage(
     blocks: Buffer[],
-    imageInfo: ImageInfo,
+    imageInfo: ShortImageInfo,
     blockSize: number,
   ): Promise<Buffer> {
-    const { width, height, blockCountX, blockCountY } = imageInfo;
+    const { w, h, x, y } = imageInfo;
     const channels = 4;
-    const imageBuffer = Buffer.alloc(width * height * channels);
+    const imageBuffer = Buffer.alloc(w * h * channels);
 
     let blockIndex = 0;
-    for (let by = 0; by < blockCountY; by++) {
-      for (let bx = 0; bx < blockCountX; bx++) {
+    for (let by = 0; by < y; by++) {
+      for (let bx = 0; bx < x; bx++) {
         if (blockIndex < blocks.length) {
-          const blockWidth =
-            bx === blockCountX - 1 ? width - bx * blockSize : blockSize;
-          const blockHeight =
-            by === blockCountY - 1 ? height - by * blockSize : blockSize;
+          const blockWidth = bx === x - 1 ? w - bx * blockSize : blockSize;
+          const blockHeight = by === y - 1 ? h - by * blockSize : blockSize;
           placeBlock(
             imageBuffer,
             blocks[blockIndex],
-            width,
+            w,
             bx * blockSize,
             by * blockSize,
             blockSize,
@@ -145,8 +141,8 @@ export class ImageRestorer {
 
     return await sharp(imageBuffer, {
       raw: {
-        width: width,
-        height: height,
+        width: w,
+        height: h,
         channels: channels,
       },
     })

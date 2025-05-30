@@ -121,7 +121,13 @@ export class ImageFragmenter {
         seed: this.config.seed,
         prefix,
       },
-      images: imageInfos,
+      images: imageInfos.map((info) => ({
+        w: info.width,
+        h: info.height,
+        c: info.channels,
+        x: info.blockCountX,
+        y: info.blockCountY,
+      })),
     };
 
     return {

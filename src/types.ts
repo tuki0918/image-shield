@@ -42,6 +42,19 @@ export interface ImageInfo {
   blockCountY: number;
 }
 
+export interface ShortImageInfo {
+  /** Width */
+  w: number;
+  /** Height */
+  h: number;
+  /** Number of channels */
+  c: number;
+  /** Number of blocks X */
+  x: number;
+  /** Number of blocks Y */
+  y: number;
+}
+
 export interface ManifestData {
   /** UUID */
   id: string;
@@ -59,7 +72,7 @@ export interface ManifestData {
     seed: number;
   };
   /** Image information */
-  images: ImageInfo[];
+  images: ShortImageInfo[];
 }
 
 export interface FragmentationResult {
