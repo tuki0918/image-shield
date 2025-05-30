@@ -1,4 +1,4 @@
-import { sum } from "../src";
+import { sum } from "@/index";
 
 describe("sum", () => {
   it("adds 1 + 2 to equal 3", () => {

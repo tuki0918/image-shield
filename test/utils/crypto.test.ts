@@ -1,4 +1,4 @@
-import { CryptoUtils } from "../../src/utils/crypto";
+import { CryptoUtils } from "@/utils/crypto";
 
 describe("CryptoUtils", () => {
   const key = "test-key-1234";

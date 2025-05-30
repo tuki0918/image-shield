@@ -1,4 +1,4 @@
-import { SeededRandom } from "../../src/utils/random";
+import { SeededRandom } from "@/utils/random";
 
 describe("SeededRandom", () => {
   test("next() returns deterministic sequence", () => {
