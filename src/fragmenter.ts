@@ -120,7 +120,6 @@ export class ImageFragmenter {
         prefix,
       },
       images: imageInfos,
-      fragmentedFiles: imagePaths.map((_, i) => `${prefix}_${i}.png`),
     };
 
     return {

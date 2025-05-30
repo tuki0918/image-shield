@@ -8,10 +8,10 @@ export interface EncryptOptions {
 }
 
 export interface RestoreOptions {
+  /** Image paths (e.g., ["fragment1.png", "fragment2.png"]) */
+  imagePaths: string[];
   /** Manifest path (e.g., "./output/fragments/manifest.json") */
   manifestPath: string;
-  /** Fragment directory (e.g., "./output/fragments") */
-  fragmentDir: string;
   /** Output directory (e.g., "./output/restored") */
   outputDir: string;
   /** Secret key */
@@ -60,8 +60,6 @@ export interface ManifestData {
   };
   /** Image information */
   images: ImageInfo[];
-  /** Fragmented file names */
-  fragmentedFiles: string[];
 }
 
 export interface FragmentationResult {
