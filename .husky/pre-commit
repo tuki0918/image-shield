@@ -1,0 +1,4 @@
+npm run check
+npm run test:ci
+npm run build:check
+npm run build:typecheck
