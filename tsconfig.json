@@ -6,10 +6,6 @@
     "target": "ESNext",
     "moduleResolution": "bundler",
     "rootDir": "./",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    },
     "types": ["vitest/globals"]
   },
   "include": ["src", "test"],
