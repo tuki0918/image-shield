@@ -35,3 +35,30 @@ export class SeededRandom {
     return Number.parseInt(hash.slice(0, 8), 16) % 100000000;
   }
 }
+
+/**
+ * Generate a shuffled index array for a given length and seed
+ */
+export function generateShuffleIndices(length: number, seed: number): number[] {
+  const indices = Array.from({ length }, (_, i) => i);
+  const random = new SeededRandom(seed);
+  return random.shuffle(indices);
+}
+
+/**
+ * Apply a shuffle order to an array
+ */
+export function applyShuffleByIndices<T>(array: T[], indices: number[]): T[] {
+  return indices.map((i) => array[i]);
+}
+
+/**
+ * Unshuffle an array using the shuffle indices (restore original order)
+ */
+export function unshuffleByIndices<T>(array: T[], indices: number[]): T[] {
+  const result: T[] = new Array(array.length);
+  for (let i = 0; i < indices.length; i++) {
+    result[indices[i]] = array[i];
+  }
+  return result;
+}
