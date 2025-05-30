@@ -30,8 +30,6 @@ export interface FragmentationConfig {
 }
 
 export interface ImageInfo {
-  /** File name */
-  filename: string;
   /** Width */
   width: number;
   /** Height */

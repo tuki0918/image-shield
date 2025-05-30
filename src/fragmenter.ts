@@ -42,7 +42,6 @@ export class ImageFragmenter {
       const blockCountY = Math.ceil(metadata.height / this.config.blockSize);
 
       const imageInfo: ImageInfo = {
-        filename: imagePath.split("/").pop() || `image_${i}`,
         width: metadata.width,
         height: metadata.height,
         channels: metadata.channels || 3,
