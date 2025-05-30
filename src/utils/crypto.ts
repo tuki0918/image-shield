@@ -71,4 +71,14 @@ export class CryptoUtils {
   static generateSeed(): number {
     return Math.floor(Math.random() * 1000000);
   }
+
+  // Encrypt multiple blocks
+  static encryptBlocks(blocks: Buffer[], key: string): string[] {
+    return blocks.map((block) => CryptoUtils.encryptBlock(block, key));
+  }
+
+  // Decrypt multiple blocks
+  static decryptBlocks(blocks: string[], key: string): Buffer[] {
+    return blocks.map((block) => CryptoUtils.decryptBlock(block, key));
+  }
 }

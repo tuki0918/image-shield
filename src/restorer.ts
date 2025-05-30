@@ -50,13 +50,17 @@ export class ImageRestorer {
     const shuffledIndices = random.shuffle(indices);
 
     // 5. Unshuffle (restore original order)
+    const encryptedBlocks = CryptoUtils.encryptBlocks(
+      allBlocks,
+      this.secretKey,
+    );
+    const decryptedBlocks = CryptoUtils.decryptBlocks(
+      encryptedBlocks,
+      this.secretKey,
+    );
     const restoredBlocks: Buffer[] = new Array(totalBlocks);
     for (let i = 0; i < totalBlocks; i++) {
-      const encrypted = CryptoUtils.encryptBlock(allBlocks[i], this.secretKey);
-      restoredBlocks[shuffledIndices[i]] = CryptoUtils.decryptBlock(
-        encrypted,
-        this.secretKey,
-      );
+      restoredBlocks[shuffledIndices[i]] = decryptedBlocks[i];
     }
 
     // 6. Assign blocks to each image and restore

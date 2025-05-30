@@ -98,8 +98,9 @@ export class ImageFragmenter {
       const imageBlocks = shuffledBlocks.slice(startIndex, endIndex);
 
       // Encrypt each block
-      const encryptedBlocks = imageBlocks.map((b) =>
-        CryptoUtils.encryptBlock(b.data, this.secretKey),
+      const encryptedBlocks = CryptoUtils.encryptBlocks(
+        imageBlocks.map((b) => b.data),
+        this.secretKey,
       );
       // Create fragment image
       const fragmentImage = await this.createFragmentImage(
