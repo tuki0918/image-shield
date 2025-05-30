@@ -1,3 +1,23 @@
+export interface EncryptOptions {
+  /** Image paths (e.g., ["image1.png", "image2.png"]) */
+  imagePaths: string[];
+  /** Fragmentation config */
+  config: FragmentationConfig;
+  /** Output directory (e.g., "./output/fragments") */
+  outputDir: string;
+}
+
+export interface RestoreOptions {
+  /** Manifest path (e.g., "./output/fragments/manifest.json") */
+  manifestPath: string;
+  /** Fragment directory (e.g., "./output/fragments") */
+  fragmentDir: string;
+  /** Output directory (e.g., "./output/restored") */
+  outputDir: string;
+  /** Secret key */
+  secretKey: string;
+}
+
 export interface FragmentationConfig {
   /** Pixel block size (e.g., 10x10 to 10) */
   blockSize: number;
