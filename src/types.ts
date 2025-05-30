@@ -43,6 +43,8 @@ export interface ImageInfo {
 }
 
 export interface ManifestData {
+  /** UUID */
+  id: string;
   /** Version */
   version: string;
   /** Timestamp */

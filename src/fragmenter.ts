@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import sharp from "sharp";
 import { VERSION } from "./constraints";
 import type {
@@ -108,18 +109,18 @@ export class ImageFragmenter {
     }
 
     // Create manifest
+    const prefix = this.config.prefix || "fragment";
     const manifest: ManifestData = {
+      id: crypto.randomUUID(),
       version: VERSION,
       timestamp: new Date().toISOString(),
       config: {
         blockSize: this.config.blockSize,
         seed: this.config.seed,
-        prefix: this.config.prefix || "fragment",
+        prefix,
       },
       images: imageInfos,
-      fragmentedFiles: imagePaths.map(
-        (_, i) => `${this.config.prefix}_${i}.png`,
-      ),
+      fragmentedFiles: imagePaths.map((_, i) => `${prefix}_${i}.png`),
     };
 
     return {
