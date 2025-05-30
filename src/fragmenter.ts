@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { VERSION } from "./constraints";
 import type {
   FragmentationConfig,
   FragmentationResult,
@@ -108,7 +109,7 @@ export class ImageFragmenter {
 
     // Create manifest
     const manifest: ManifestData = {
-      version: "1.0.0",
+      version: VERSION,
       timestamp: new Date().toISOString(),
       config: {
         blockSize: this.config.blockSize,
