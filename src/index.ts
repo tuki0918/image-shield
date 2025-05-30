@@ -19,9 +19,9 @@ export {
 // biome-ignore lint/complexity/noStaticOnlyClass:
 export class ImageShield {
   static async encrypt(options: EncryptOptions): Promise<void> {
-    const { imagePaths, config, outputDir } = options;
+    const { imagePaths, config, outputDir, secretKey } = options;
 
-    const fragmenter = new ImageFragmenter(config);
+    const fragmenter = new ImageFragmenter(config, secretKey);
     const result = await fragmenter.fragmentImages(imagePaths);
 
     // Create output directory

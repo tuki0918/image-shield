@@ -13,12 +13,14 @@ import { SeededRandom } from "./utils/random";
 
 export class ImageFragmenter {
   private config: Omit<FragmentationConfig, "seed"> & { seed: number };
+  private secretKey: string;
 
-  constructor(config: FragmentationConfig) {
+  constructor(config: FragmentationConfig, secretKey: string) {
     this.config = {
       ...config,
       seed: config.seed || CryptoUtils.generateSeed(),
     };
+    this.secretKey = secretKey;
   }
 
   async fragmentImages(imagePaths: string[]): Promise<FragmentationResult> {
@@ -77,7 +79,7 @@ export class ImageFragmenter {
 
     // Shuffle blocks
     const mixedSeed = SeededRandom.createSeedFromKeyAndSeed(
-      this.config.secretKey,
+      this.secretKey,
       this.config.seed,
     );
     const random = new SeededRandom(mixedSeed);
@@ -97,7 +99,7 @@ export class ImageFragmenter {
 
       // Encrypt each block
       const encryptedBlocks = imageBlocks.map((b) =>
-        CryptoUtils.encryptBlock(b.data, this.config.secretKey),
+        CryptoUtils.encryptBlock(b.data, this.secretKey),
       );
       // Create fragment image
       const fragmentImage = await this.createFragmentImage(
@@ -155,7 +157,7 @@ export class ImageFragmenter {
           : blockSize;
       const blockData = CryptoUtils.decryptBlock(
         encryptedBlocks[i],
-        this.config.secretKey,
+        this.secretKey,
       );
       placeBlock(
         fragmentBuffer,

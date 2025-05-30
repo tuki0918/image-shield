@@ -5,6 +5,8 @@ export interface EncryptOptions {
   config: FragmentationConfig;
   /** Output directory (e.g., "./output/fragments") */
   outputDir: string;
+  /** Secret key */
+  secretKey: string;
 }
 
 export interface RestoreOptions {
@@ -21,8 +23,6 @@ export interface RestoreOptions {
 export interface FragmentationConfig {
   /** Pixel block size (e.g., 10x10 to 10) */
   blockSize: number;
-  /** Encryption key */
-  secretKey: string;
   /** Prefix for fragment files (optional, default: "fragment") */
   prefix?: string;
   /** Random seed (auto-generated if not specified) */
