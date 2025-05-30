@@ -1,7 +1,7 @@
 {
-  "name": "npm-package-template",
-  "version": "0.0.1",
-  "description": "",
+  "name": "image-shield",
+  "version": "0.1.0",
+  "description": "Image fragmentation and restoration.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
