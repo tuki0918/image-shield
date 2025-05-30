@@ -23,6 +23,8 @@ export interface FragmentationConfig {
   blockSize: number;
   /** Encryption key */
   secretKey: string;
+  /** Prefix for fragment files (optional, default: "fragment") */
+  prefix?: string;
   /** Random seed (auto-generated if not specified) */
   seed?: number;
 }

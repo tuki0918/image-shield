@@ -20,6 +20,7 @@ export {
 export class ImageShield {
   static async encrypt(options: EncryptOptions): Promise<void> {
     const { imagePaths, config, outputDir } = options;
+    const { prefix = "fragment" } = config;
 
     const fragmenter = new ImageFragmenter(config);
     const result = await fragmenter.fragmentImages(imagePaths);
@@ -33,7 +34,7 @@ export class ImageShield {
 
     // Save fragment images
     for (let i = 0; i < result.fragmentedImages.length; i++) {
-      const fragmentPath = path.join(outputDir, `fragment_${i}.png`);
+      const fragmentPath = path.join(outputDir, `${prefix}_${i}.png`);
       await fs.writeFile(fragmentPath, result.fragmentedImages[i]);
     }
   }
