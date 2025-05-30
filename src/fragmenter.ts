@@ -6,6 +6,7 @@ import type {
   ImageInfo,
   ManifestData,
 } from "./types";
+import { extractBlock, placeBlock } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { SeededRandom } from "./utils/random";
 
@@ -56,7 +57,7 @@ export class ImageFragmenter {
       // Split into blocks
       for (let by = 0; by < blockCountY; by++) {
         for (let bx = 0; bx < blockCountX; bx++) {
-          const blockData = this.extractBlock(
+          const blockData = extractBlock(
             imageBuffer,
             metadata.width,
             metadata.height,
@@ -128,55 +129,6 @@ export class ImageFragmenter {
     };
   }
 
-  private extractBlock(
-    imageBuffer: Buffer,
-    imageWidth: number,
-    imageHeight: number,
-    startX: number,
-    startY: number,
-    blockSize: number,
-  ): Buffer {
-    const channels = 4; // RGBA
-    const blockData: number[] = [];
-
-    for (let y = 0; y < blockSize; y++) {
-      for (let x = 0; x < blockSize; x++) {
-        const srcX = Math.min(startX + x, imageWidth - 1);
-        const srcY = Math.min(startY + y, imageHeight - 1);
-        const pixelIndex = (srcY * imageWidth + srcX) * channels;
-
-        for (let c = 0; c < channels; c++) {
-          blockData.push(imageBuffer[pixelIndex + c] || 0);
-        }
-      }
-    }
-
-    return Buffer.from(blockData);
-  }
-
-  private placeBlock(
-    targetBuffer: Buffer,
-    blockData: Buffer,
-    targetWidth: number,
-    destX: number,
-    destY: number,
-    blockSize: number,
-  ): void {
-    const channels = 4;
-
-    for (let y = 0; y < blockSize; y++) {
-      for (let x = 0; x < blockSize; x++) {
-        const srcIndex = (y * blockSize + x) * channels;
-        const destIndex = ((destY + y) * targetWidth + (destX + x)) * channels;
-
-        for (let c = 0; c < channels; c++) {
-          targetBuffer[destIndex + c] = blockData[srcIndex + c];
-        }
-      }
-    }
-  }
-
-  // encryptedBlocks: string[]
   private async createFragmentImage(
     encryptedBlocks: string[],
     blockCount: number,
@@ -197,7 +149,7 @@ export class ImageFragmenter {
         encryptedBlocks[i],
         this.config.secretKey,
       );
-      this.placeBlock(
+      placeBlock(
         fragmentBuffer,
         blockData,
         imageWidth,

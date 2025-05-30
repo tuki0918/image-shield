@@ -1,5 +1,6 @@
 import sharp from "sharp";
 import type { ImageInfo, ManifestData } from "./types";
+import { extractBlock, placeBlock } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { SeededRandom } from "./utils/random";
 
@@ -96,9 +97,10 @@ export class ImageRestorer {
     const blocks: Buffer[] = [];
     for (let row = 0; row < blocksPerCol; row++) {
       for (let col = 0; col < blocksPerRow; col++) {
-        const blockData = this.extractBlockFromFragment(
+        const blockData = extractBlock(
           fragmentBuffer,
           metadata.width,
+          undefined,
           col * blockSize,
           row * blockSize,
           blockSize,
@@ -107,30 +109,6 @@ export class ImageRestorer {
       }
     }
     return blocks;
-  }
-
-  private extractBlockFromFragment(
-    fragmentBuffer: Buffer,
-    fragmentWidth: number,
-    startX: number,
-    startY: number,
-    blockSize: number,
-  ): Buffer {
-    const channels = 4;
-    const blockData: number[] = [];
-
-    for (let y = 0; y < blockSize; y++) {
-      for (let x = 0; x < blockSize; x++) {
-        const pixelIndex =
-          ((startY + y) * fragmentWidth + (startX + x)) * channels;
-
-        for (let c = 0; c < channels; c++) {
-          blockData.push(fragmentBuffer[pixelIndex + c] || 0);
-        }
-      }
-    }
-
-    return Buffer.from(blockData);
   }
 
   private async reconstructImage(
@@ -146,7 +124,7 @@ export class ImageRestorer {
     for (let by = 0; by < blockCountY; by++) {
       for (let bx = 0; bx < blockCountX; bx++) {
         if (blockIndex < blocks.length) {
-          this.placeBlockInImage(
+          placeBlock(
             imageBuffer,
             blocks[blockIndex],
             width,
@@ -168,29 +146,5 @@ export class ImageRestorer {
     })
       .png()
       .toBuffer();
-  }
-
-  private placeBlockInImage(
-    imageBuffer: Buffer,
-    blockData: Buffer,
-    imageWidth: number,
-    destX: number,
-    destY: number,
-    blockSize: number,
-  ): void {
-    const channels = 4;
-
-    for (let y = 0; y < blockSize; y++) {
-      for (let x = 0; x < blockSize; x++) {
-        const srcIndex = (y * blockSize + x) * channels;
-        const destIndex = ((destY + y) * imageWidth + (destX + x)) * channels;
-
-        if (destIndex + channels <= imageBuffer.length) {
-          for (let c = 0; c < channels; c++) {
-            imageBuffer[destIndex + c] = blockData[srcIndex + c];
-          }
-        }
-      }
-    }
   }
 }
