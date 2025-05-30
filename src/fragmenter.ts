@@ -145,6 +145,15 @@ export class ImageFragmenter {
       const col = i % blocksPerRow;
       const destX = col * blockSize;
       const destY = row * blockSize;
+      // If the block is at the edge, calculate the actual width/height
+      const blockWidth =
+        col === blocksPerRow - 1 && encryptedBlocks.length % blocksPerRow !== 0
+          ? imageWidth - destX
+          : blockSize;
+      const blockHeight =
+        row === Math.ceil(blockCount / blocksPerRow) - 1
+          ? imageHeight - destY
+          : blockSize;
       const blockData = CryptoUtils.decryptBlock(
         encryptedBlocks[i],
         this.config.secretKey,
@@ -156,6 +165,8 @@ export class ImageFragmenter {
         destX,
         destY,
         blockSize,
+        blockWidth,
+        blockHeight,
       );
     }
     return await sharp(fragmentBuffer, {

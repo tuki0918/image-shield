@@ -124,6 +124,10 @@ export class ImageRestorer {
     for (let by = 0; by < blockCountY; by++) {
       for (let bx = 0; bx < blockCountX; bx++) {
         if (blockIndex < blocks.length) {
+          const blockWidth =
+            bx === blockCountX - 1 ? width - bx * blockSize : blockSize;
+          const blockHeight =
+            by === blockCountY - 1 ? height - by * blockSize : blockSize;
           placeBlock(
             imageBuffer,
             blocks[blockIndex],
@@ -131,6 +135,8 @@ export class ImageRestorer {
             bx * blockSize,
             by * blockSize,
             blockSize,
+            blockWidth,
+            blockHeight,
           );
           blockIndex++;
         }
@@ -144,7 +150,10 @@ export class ImageRestorer {
         channels: channels,
       },
     })
-      .png()
+      .png({
+        compressionLevel: 9,
+        quality: 100,
+      })
       .toBuffer();
   }
 }
