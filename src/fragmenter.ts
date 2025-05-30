@@ -8,6 +8,7 @@ import type {
   ManifestData,
 } from "./types";
 import { extractBlock, placeBlock } from "./utils/block";
+import { bufferToPng } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { SeededRandom } from "./utils/random";
 
@@ -177,17 +178,6 @@ export class ImageFragmenter {
         blockHeight,
       );
     }
-    return await sharp(fragmentBuffer, {
-      raw: {
-        width: imageWidth,
-        height: imageHeight,
-        channels: channels,
-      },
-    })
-      .png({
-        compressionLevel: 9,
-        quality: 100,
-      })
-      .toBuffer();
+    return await bufferToPng(fragmentBuffer, imageWidth, imageHeight, channels);
   }
 }

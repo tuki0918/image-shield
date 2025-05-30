@@ -1,3 +1,5 @@
+import sharp from "sharp";
+
 /**
  * Extract a block from a buffer (specify image width/height/start position/block size)
  * Fixed to RGBA channels
@@ -79,4 +81,32 @@ export function placeBlock(
       }
     }
   }
+}
+
+/**
+ * Convert a raw image buffer to PNG Buffer using sharp
+ * @param buffer Raw image buffer
+ * @param width Image width
+ * @param height Image height
+ * @param channels Number of channels (default: 4)
+ * @returns PNG Buffer (Promise)
+ */
+export async function bufferToPng(
+  buffer: Buffer,
+  width: number,
+  height: number,
+  channels = 4,
+): Promise<Buffer> {
+  return await sharp(buffer, {
+    raw: {
+      width,
+      height,
+      channels: channels as 1 | 2 | 3 | 4,
+    },
+  })
+    .png({
+      compressionLevel: 9,
+      quality: 100,
+    })
+    .toBuffer();
 }

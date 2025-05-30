@@ -1,6 +1,6 @@
 import sharp from "sharp";
 import type { ManifestData, ShortImageInfo } from "./types";
-import { extractBlock, placeBlock } from "./utils/block";
+import { bufferToPng, extractBlock, placeBlock } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { SeededRandom } from "./utils/random";
 
@@ -143,17 +143,6 @@ export class ImageRestorer {
       }
     }
 
-    return await sharp(imageBuffer, {
-      raw: {
-        width: w,
-        height: h,
-        channels: channels,
-      },
-    })
-      .png({
-        compressionLevel: 9,
-        quality: 100,
-      })
-      .toBuffer();
+    return await bufferToPng(imageBuffer, w, h, channels);
   }
 }
