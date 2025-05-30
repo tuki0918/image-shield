@@ -1,4 +1,9 @@
 import { SeededRandom } from "../../src/utils/random";
+import {
+  applyShuffleByIndices,
+  generateShuffleIndices,
+  unshuffleByIndices,
+} from "../../src/utils/random";
 
 describe("SeededRandom", () => {
   test("next() returns deterministic sequence", () => {
@@ -23,5 +28,32 @@ describe("SeededRandom", () => {
     const s2 = SeededRandom.createSeedFromKeyAndSeed("key", 123);
     expect(s1).toBe(s2);
     expect(typeof s1).toBe("number");
+  });
+});
+
+describe("shuffle/unshuffle helpers", () => {
+  test("generateShuffleIndices produces deterministic indices", () => {
+    const idx1 = generateShuffleIndices(10, 12345);
+    const idx2 = generateShuffleIndices(10, 12345);
+    expect(idx1).toEqual(idx2);
+    expect(idx1.length).toBe(10);
+    // The indices are a permutation of 0-9
+    expect([...idx1].sort((a, b) => a - b)).toEqual([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+    ]);
+  });
+
+  test("applyShuffleByIndices applies shuffle order", () => {
+    const arr = ["a", "b", "c", "d"];
+    const indices = [2, 0, 3, 1];
+    const shuffled = applyShuffleByIndices(arr, indices);
+    expect(shuffled).toEqual(["c", "a", "d", "b"]);
+  });
+
+  test("unshuffleByIndices restores original order", () => {
+    const arr = ["c", "a", "d", "b"];
+    const indices = [2, 0, 3, 1];
+    const restored = unshuffleByIndices(arr, indices);
+    expect(restored).toEqual(["a", "b", "c", "d"]); // Restore the original order
   });
 });
