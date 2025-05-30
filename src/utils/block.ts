@@ -1,5 +1,3 @@
-import sharp from "sharp";
-
 /**
  * Extract a block from a buffer (specify image width/height/start position/block size)
  * Fixed to RGBA channels
