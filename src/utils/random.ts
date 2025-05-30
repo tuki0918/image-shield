@@ -7,6 +7,10 @@ export class SeededRandom {
     this.seed = seed;
   }
 
+  // This method uses a Linear Congruential Generator (LCG) to produce pseudo-random numbers.
+  // The numbers 9301 (multiplier), 49297 (increment), and 233280 (modulus) are classic parameters
+  // often used in simple LCG implementations, such as in old BASIC languages. They provide a reasonable
+  // period and distribution for non-cryptographic purposes, but are not suitable for cryptographic use.
   next(): number {
     this.seed = (this.seed * 9301 + 49297) % 233280;
     return this.seed / 233280;
