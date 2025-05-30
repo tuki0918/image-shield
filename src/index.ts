@@ -41,7 +41,7 @@ export class ImageShield {
     }
   }
 
-  static async restore(options: RestoreOptions): Promise<void> {
+  static async decrypt(options: RestoreOptions): Promise<void> {
     const { imagePaths, manifestPath, outputDir, secretKey } = options;
 
     // Read manifest
