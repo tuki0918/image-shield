@@ -9,6 +9,7 @@ import type {
 } from "./types";
 import { extractBlock, placeBlock } from "./utils/block";
 import { bufferToPng } from "./utils/block";
+import { splitImageToBlocks } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { getImageBlockInfo } from "./utils/image";
 import { SeededRandom } from "./utils/random";
@@ -46,24 +47,19 @@ export class ImageFragmenter {
       // Convert image to RGBA
       const imageBuffer = await image.ensureAlpha().raw().toBuffer();
 
-      // Split into blocks
-      for (let by = 0; by < imageInfo.blockCountY; by++) {
-        for (let bx = 0; bx < imageInfo.blockCountX; bx++) {
-          const blockData = extractBlock(
-            imageBuffer,
-            metadata.width,
-            metadata.height,
-            bx * this.config.blockSize,
-            by * this.config.blockSize,
-            this.config.blockSize,
-          );
-
-          allBlocks.push({
-            data: blockData,
-            sourceIndex: i,
-            blockIndex: by * imageInfo.blockCountX + bx,
-          });
-        }
+      // Split into blocks (use splitImageToBlocks)
+      const blocks = splitImageToBlocks(
+        imageBuffer,
+        imageInfo.width,
+        imageInfo.height,
+        this.config.blockSize,
+      );
+      for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
+        allBlocks.push({
+          data: blocks[blockIndex],
+          sourceIndex: i,
+          blockIndex,
+        });
       }
     }
 

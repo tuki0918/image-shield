@@ -1,6 +1,7 @@
 import sharp from "sharp";
 import type { ManifestData, ShortImageInfo } from "./types";
 import { bufferToPng, extractBlock, placeBlock } from "./utils/block";
+import { splitImageToBlocks } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { getImageBlockInfo } from "./utils/image";
 import { SeededRandom } from "./utils/random";
@@ -88,21 +89,13 @@ export class ImageRestorer {
     const blockSize = manifest.config.blockSize;
     const fragmentBuffer = await image.ensureAlpha().raw().toBuffer();
     const info = getImageBlockInfo(metadata, blockSize);
-    const blocks: Buffer[] = [];
-    for (let row = 0; row < info.blockCountY; row++) {
-      for (let col = 0; col < info.blockCountX; col++) {
-        const blockData = extractBlock(
-          fragmentBuffer,
-          info.width,
-          undefined,
-          col * blockSize,
-          row * blockSize,
-          blockSize,
-        );
-        blocks.push(blockData);
-      }
-    }
-    return blocks;
+    // Use splitImageToBlocks for block extraction
+    return splitImageToBlocks(
+      fragmentBuffer,
+      info.width,
+      info.height,
+      blockSize,
+    );
   }
 
   private async reconstructImage(
