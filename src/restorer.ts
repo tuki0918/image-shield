@@ -1,14 +1,10 @@
-import sharp from "sharp";
 import type { ManifestData, ShortImageInfo } from "./types";
-import { bufferToPng, extractBlock, placeBlock } from "./utils/block";
-import { splitImageToBlocks } from "./utils/block";
-import { imageFileToBlocks } from "./utils/block";
-import { calcBlocksPerFragment } from "./utils/block";
-import { blocksToPngImage } from "./utils/block";
+import {
+  blocksToPngImage,
+  calcBlocksPerFragment,
+  imageFileToBlocks,
+} from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
-import { getImageBlockInfo } from "./utils/image";
-import { SeededRandom } from "./utils/random";
-import { generateShuffleIndices, unshuffleByIndices } from "./utils/random";
 import { unshuffleArrayWithKey } from "./utils/random";
 
 export class ImageRestorer {

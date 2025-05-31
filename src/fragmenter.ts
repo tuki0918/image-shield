@@ -1,5 +1,4 @@
 import crypto from "node:crypto";
-import sharp from "sharp";
 import { VERSION } from "./constraints";
 import type {
   FragmentationConfig,
@@ -7,16 +6,9 @@ import type {
   ImageInfo,
   ManifestData,
 } from "./types";
-import { extractBlock, placeBlock } from "./utils/block";
-import { bufferToPng } from "./utils/block";
-import { splitImageToBlocks } from "./utils/block";
-import { imageFileToBlocks } from "./utils/block";
-import { calcBlocksPerFragment } from "./utils/block";
+import { calcBlocksPerFragment, imageFileToBlocks } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
-import { getImageBlockInfo } from "./utils/image";
 import { assembleImageFromBlocks } from "./utils/imageAssembler";
-import { SeededRandom } from "./utils/random";
-import { applyShuffleByIndices, generateShuffleIndices } from "./utils/random";
 import { shuffleArrayWithKey } from "./utils/random";
 
 export class ImageFragmenter {
