@@ -1,4 +1,5 @@
 import { extractBlock, placeBlock } from "../../src/utils/block";
+import { blocksToImageBuffer, splitImageToBlocks } from "../../src/utils/block";
 
 describe("extractBlock", () => {
   const imageWidth = 4;
@@ -68,5 +69,60 @@ describe("placeBlock", () => {
     const expected = Buffer.from(blank);
     expected.set(oneBlock, (3 * targetWidth + 3) * 4);
     expect(buf).toEqual(expected);
+  });
+});
+
+describe("splitImageToBlocks & blocksToImageBuffer", () => {
+  const imageWidth = 4;
+  const imageHeight = 4;
+  const blockSize = 2;
+  // RGBA 4x4 pixels = 4*4*4 = 64 bytes
+  const buffer = Buffer.from([
+    // 1st row
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+    // 2nd row
+    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
+    // 3rd row
+    33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
+    // 4th row
+    49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64,
+  ]);
+
+  test("split and reconstruct 4x4 image with 2x2 blocks", () => {
+    const blocks = splitImageToBlocks(
+      buffer,
+      imageWidth,
+      imageHeight,
+      blockSize,
+    );
+    // 2x2 blocks = 4 blocks
+    expect(blocks.length).toBe(4);
+    // Check the contents of each block (top-left, top-right, bottom-left, bottom-right)
+    expect(blocks[0]).toEqual(
+      Buffer.from([1, 2, 3, 4, 5, 6, 7, 8, 17, 18, 19, 20, 21, 22, 23, 24]),
+    );
+    expect(blocks[1]).toEqual(
+      Buffer.from([
+        9, 10, 11, 12, 13, 14, 15, 16, 25, 26, 27, 28, 29, 30, 31, 32,
+      ]),
+    );
+    expect(blocks[2]).toEqual(
+      Buffer.from([
+        33, 34, 35, 36, 37, 38, 39, 40, 49, 50, 51, 52, 53, 54, 55, 56,
+      ]),
+    );
+    expect(blocks[3]).toEqual(
+      Buffer.from([
+        41, 42, 43, 44, 45, 46, 47, 48, 57, 58, 59, 60, 61, 62, 63, 64,
+      ]),
+    );
+    // Reconstruct
+    const reconstructed = blocksToImageBuffer(
+      blocks,
+      imageWidth,
+      imageHeight,
+      blockSize,
+    );
+    expect(reconstructed).toEqual(buffer);
   });
 });
