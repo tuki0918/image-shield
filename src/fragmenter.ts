@@ -10,6 +10,7 @@ import type {
 import { extractBlock, placeBlock } from "./utils/block";
 import { bufferToPng } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
+import { getImageBlockInfo } from "./utils/image";
 import { SeededRandom } from "./utils/random";
 import { applyShuffleByIndices, generateShuffleIndices } from "./utils/random";
 
@@ -39,28 +40,15 @@ export class ImageFragmenter {
       const image = sharp(imagePath);
       const metadata = await image.metadata();
 
-      if (!metadata.width || !metadata.height) {
-        throw new Error(`Invalid image metadata: ${imagePath}`);
-      }
-
-      const blockCountX = Math.ceil(metadata.width / this.config.blockSize);
-      const blockCountY = Math.ceil(metadata.height / this.config.blockSize);
-
-      const imageInfo: ImageInfo = {
-        width: metadata.width,
-        height: metadata.height,
-        channels: metadata.channels || 3,
-        blockCountX,
-        blockCountY,
-      };
+      const imageInfo = getImageBlockInfo(metadata, this.config.blockSize);
       imageInfos.push(imageInfo);
 
       // Convert image to RGBA
       const imageBuffer = await image.ensureAlpha().raw().toBuffer();
 
       // Split into blocks
-      for (let by = 0; by < blockCountY; by++) {
-        for (let bx = 0; bx < blockCountX; bx++) {
+      for (let by = 0; by < imageInfo.blockCountY; by++) {
+        for (let bx = 0; bx < imageInfo.blockCountX; bx++) {
           const blockData = extractBlock(
             imageBuffer,
             metadata.width,
@@ -73,7 +61,7 @@ export class ImageFragmenter {
           allBlocks.push({
             data: blockData,
             sourceIndex: i,
-            blockIndex: by * blockCountX + bx,
+            blockIndex: by * imageInfo.blockCountX + bx,
           });
         }
       }

@@ -2,6 +2,7 @@ import sharp from "sharp";
 import type { ManifestData, ShortImageInfo } from "./types";
 import { bufferToPng, extractBlock, placeBlock } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
+import { getImageBlockInfo } from "./utils/image";
 import { SeededRandom } from "./utils/random";
 import { generateShuffleIndices, unshuffleByIndices } from "./utils/random";
 
@@ -84,20 +85,15 @@ export class ImageRestorer {
   ): Promise<Buffer[]> {
     const image = sharp(fragmentPath);
     const metadata = await image.metadata();
-    if (!metadata.width || !metadata.height) {
-      throw new Error(`Invalid fragment image: ${fragmentPath}`);
-    }
     const blockSize = manifest.config.blockSize;
-    const channels = 4;
     const fragmentBuffer = await image.ensureAlpha().raw().toBuffer();
-    const blocksPerRow = Math.ceil(metadata.width / blockSize);
-    const blocksPerCol = Math.ceil(metadata.height / blockSize);
+    const info = getImageBlockInfo(metadata, blockSize);
     const blocks: Buffer[] = [];
-    for (let row = 0; row < blocksPerCol; row++) {
-      for (let col = 0; col < blocksPerRow; col++) {
+    for (let row = 0; row < info.blockCountY; row++) {
+      for (let col = 0; col < info.blockCountX; col++) {
         const blockData = extractBlock(
           fragmentBuffer,
-          metadata.width,
+          info.width,
           undefined,
           col * blockSize,
           row * blockSize,
