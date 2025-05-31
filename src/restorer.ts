@@ -4,9 +4,9 @@ import { bufferToPng, extractBlock, placeBlock } from "./utils/block";
 import { splitImageToBlocks } from "./utils/block";
 import { imageFileToBlocks } from "./utils/block";
 import { calcBlocksPerFragment } from "./utils/block";
+import { blocksToPngImage } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { getImageBlockInfo } from "./utils/image";
-import { assembleImageFromBlocks } from "./utils/imageAssembler";
 import { SeededRandom } from "./utils/random";
 import { generateShuffleIndices, unshuffleByIndices } from "./utils/random";
 import { unshuffleArrayWithKey } from "./utils/random";
@@ -97,6 +97,7 @@ export class ImageRestorer {
     blockSize: number,
   ): Promise<Buffer> {
     const { w, h, c } = imageInfo;
-    return await assembleImageFromBlocks(blocks, w, h, blockSize, c);
+    // Use utility to reconstruct PNG image from blocks
+    return await blocksToPngImage(blocks, w, h, blockSize, c);
   }
 }
