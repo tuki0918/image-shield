@@ -3,6 +3,7 @@ import type { ManifestData, ShortImageInfo } from "./types";
 import { bufferToPng, extractBlock, placeBlock } from "./utils/block";
 import { splitImageToBlocks } from "./utils/block";
 import { imageFileToBlocks } from "./utils/block";
+import { calcBlocksPerFragment } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { getImageBlockInfo } from "./utils/image";
 import { assembleImageFromBlocks } from "./utils/imageAssembler";
@@ -25,14 +26,10 @@ export class ImageRestorer {
     const totalBlocks = imageBlockCounts.reduce((a, b) => a + b, 0);
 
     // 2. Calculate the number of blocks per fragment image (same logic as fragmenter.ts)
-    const fragmentBlocksCount: number[] = [];
-    const blocksPerImage = Math.ceil(totalBlocks / fragmentImagePaths.length);
-    let remainingBlocks = totalBlocks;
-    for (let i = 0; i < fragmentImagePaths.length; i++) {
-      const count = Math.min(blocksPerImage, remainingBlocks);
-      fragmentBlocksCount.push(count);
-      remainingBlocks -= count;
-    }
+    const fragmentBlocksCount = calcBlocksPerFragment(
+      totalBlocks,
+      fragmentImagePaths.length,
+    );
 
     // 3. Extract all blocks from fragment images (extract the correct number from each fragment image)
     const allBlocks: Buffer[] = [];

@@ -11,6 +11,7 @@ import { extractBlock, placeBlock } from "./utils/block";
 import { bufferToPng } from "./utils/block";
 import { splitImageToBlocks } from "./utils/block";
 import { imageFileToBlocks } from "./utils/block";
+import { calcBlocksPerFragment } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { getImageBlockInfo } from "./utils/image";
 import { assembleImageFromBlocks } from "./utils/imageAssembler";
@@ -73,16 +74,16 @@ export class ImageFragmenter {
 
     // Distribute shuffled blocks into output images
     const fragmentedImages: Buffer[] = [];
-    const blocksPerImage = Math.ceil(shuffledBlocks.length / imagePaths.length);
-
+    // Use utility to calculate block distribution
+    const fragmentBlocksCount = calcBlocksPerFragment(
+      shuffledBlocks.length,
+      imagePaths.length,
+    );
+    let blockPtr = 0;
     for (let i = 0; i < imagePaths.length; i++) {
-      const startIndex = i * blocksPerImage;
-      const endIndex = Math.min(
-        (i + 1) * blocksPerImage,
-        shuffledBlocks.length,
-      );
-      const imageBlocks = shuffledBlocks.slice(startIndex, endIndex);
-
+      const count = fragmentBlocksCount[i];
+      const imageBlocks = shuffledBlocks.slice(blockPtr, blockPtr + count);
+      blockPtr += count;
       // Encrypt each block
       const encryptedBlocks = CryptoUtils.encryptBlocks(
         imageBlocks.map((b) => b.data),
