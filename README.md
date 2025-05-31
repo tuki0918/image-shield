@@ -1,5 +1,7 @@
 # [PoC] image-shield
 
+This npm package provides functionality for image fragmentation and restoration.
+
 ![](.docs/figure.png)
 
 
