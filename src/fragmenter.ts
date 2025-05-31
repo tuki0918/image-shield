@@ -17,6 +17,7 @@ import { getImageBlockInfo } from "./utils/image";
 import { assembleImageFromBlocks } from "./utils/imageAssembler";
 import { SeededRandom } from "./utils/random";
 import { applyShuffleByIndices, generateShuffleIndices } from "./utils/random";
+import { shuffleArrayWithKey } from "./utils/random";
 
 export class ImageFragmenter {
   private config: Omit<FragmentationConfig, "seed"> & { seed: number };
@@ -65,12 +66,11 @@ export class ImageFragmenter {
     }
 
     // Shuffle blocks (common logic)
-    const mixedSeed = SeededRandom.createSeedFromKeyAndSeed(
+    const shuffledBlocks = shuffleArrayWithKey(
+      allBlocks,
       this.secretKey,
       this.config.seed,
     );
-    const shuffleIndices = generateShuffleIndices(allBlocks.length, mixedSeed);
-    const shuffledBlocks = applyShuffleByIndices(allBlocks, shuffleIndices);
 
     // Distribute shuffled blocks into output images
     const fragmentedImages: Buffer[] = [];

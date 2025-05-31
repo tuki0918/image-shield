@@ -62,3 +62,37 @@ export function unshuffleByIndices<T>(array: T[], indices: number[]): T[] {
   }
   return result;
 }
+
+/**
+ * Shuffle an array using a secret key and seed
+ * @param array Array to shuffle
+ * @param secretKey Secret key for seed mixing
+ * @param seed Seed value
+ * @returns Shuffled array
+ */
+export function shuffleArrayWithKey<T>(
+  array: T[],
+  secretKey: string,
+  seed: number,
+): T[] {
+  const mixedSeed = SeededRandom.createSeedFromKeyAndSeed(secretKey, seed);
+  const indices = generateShuffleIndices(array.length, mixedSeed);
+  return applyShuffleByIndices(array, indices);
+}
+
+/**
+ * Unshuffle an array using a secret key and seed
+ * @param array Shuffled array
+ * @param secretKey Secret key for seed mixing
+ * @param seed Seed value
+ * @returns Unshuffled (restored) array
+ */
+export function unshuffleArrayWithKey<T>(
+  array: T[],
+  secretKey: string,
+  seed: number,
+): T[] {
+  const mixedSeed = SeededRandom.createSeedFromKeyAndSeed(secretKey, seed);
+  const indices = generateShuffleIndices(array.length, mixedSeed);
+  return unshuffleByIndices(array, indices);
+}

@@ -9,6 +9,7 @@ import { getImageBlockInfo } from "./utils/image";
 import { assembleImageFromBlocks } from "./utils/imageAssembler";
 import { SeededRandom } from "./utils/random";
 import { generateShuffleIndices, unshuffleByIndices } from "./utils/random";
+import { unshuffleArrayWithKey } from "./utils/random";
 
 export class ImageRestorer {
   private secretKey: string;
@@ -43,13 +44,6 @@ export class ImageRestorer {
     }
 
     // 4. Reproduce the shuffle order (common logic)
-    const mixedSeed = SeededRandom.createSeedFromKeyAndSeed(
-      this.secretKey,
-      manifest.config.seed,
-    );
-    const shuffleIndices = generateShuffleIndices(totalBlocks, mixedSeed);
-
-    // 5. Unshuffle (restore original order)
     const encryptedBlocks = CryptoUtils.encryptBlocks(
       allBlocks,
       this.secretKey,
@@ -58,7 +52,12 @@ export class ImageRestorer {
       encryptedBlocks,
       this.secretKey,
     );
-    const restoredBlocks = unshuffleByIndices(decryptedBlocks, shuffleIndices);
+    // Unshuffle using the new utility function
+    const restoredBlocks = unshuffleArrayWithKey(
+      decryptedBlocks,
+      this.secretKey,
+      manifest.config.seed,
+    );
 
     // 6. Assign blocks to each image and restore
     const restoredImages: Buffer[] = [];

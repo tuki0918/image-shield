@@ -2,6 +2,8 @@ import { SeededRandom } from "./random";
 import {
   applyShuffleByIndices,
   generateShuffleIndices,
+  shuffleArrayWithKey,
+  unshuffleArrayWithKey,
   unshuffleByIndices,
 } from "./random";
 
@@ -55,5 +57,37 @@ describe("shuffle/unshuffle helpers", () => {
     const indices = [2, 0, 3, 1];
     const restored = unshuffleByIndices(arr, indices);
     expect(restored).toEqual(["a", "b", "c", "d"]); // Restore the original order
+  });
+});
+
+describe("shuffleArrayWithKey & unshuffleArrayWithKey", () => {
+  const arr = ["a", "b", "c", "d", "e"];
+  const key = "secret";
+  const seed = 42;
+
+  test("shuffleArrayWithKey is deterministic for same key/seed", () => {
+    const shuffled1 = shuffleArrayWithKey(arr, key, seed);
+    const shuffled2 = shuffleArrayWithKey(arr, key, seed);
+    expect(shuffled1).toEqual(shuffled2);
+    expect(shuffled1).not.toEqual(arr); // Usually shuffled
+  });
+
+  test("unshuffleArrayWithKey restores original order", () => {
+    const shuffled = shuffleArrayWithKey(arr, key, seed);
+    const restored = unshuffleArrayWithKey(shuffled, key, seed);
+    expect(restored).toEqual(arr);
+  });
+
+  test("different key or seed gives different shuffle", () => {
+    const shuffled1 = shuffleArrayWithKey(arr, key, seed);
+    const shuffled2 = shuffleArrayWithKey(arr, `${key}x`, seed);
+    const shuffled3 = shuffleArrayWithKey(arr, key, seed + 1);
+    expect(shuffled1).not.toEqual(shuffled2);
+    expect(shuffled1).not.toEqual(shuffled3);
+  });
+
+  test("empty array returns empty array", () => {
+    expect(shuffleArrayWithKey([], key, seed)).toEqual([]);
+    expect(unshuffleArrayWithKey([], key, seed)).toEqual([]);
   });
 });
