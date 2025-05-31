@@ -61,3 +61,41 @@ await ImageShield.decrypt({
 | output 1 | output 2 | output 3 |
 |:-------:|:---------------:|:---------------:|
 | ![](.docs/output_m0.png) | ![](.docs/output_m1.png) | ![](.docs/output_m2.png) |
+
+manifest.json: 
+
+```json
+{
+  "id": "614c69a2-b3c4-490b-a1d7-cb070aee1cfb",
+  "version": "0.2.0",
+  "timestamp": "2025-05-31T19:00:34.907Z",
+  "config": {
+    "blockSize": 32,
+    "seed": 376768,
+    "prefix": "img"
+  },
+  "images": [
+    {
+      "w": 500,
+      "h": 500,
+      "c": 4,
+      "x": 16,
+      "y": 16
+    },
+    {
+      "w": 400,
+      "h": 600,
+      "c": 4,
+      "x": 13,
+      "y": 19
+    },
+    {
+      "w": 600,
+      "h": 400,
+      "c": 4,
+      "x": 19,
+      "y": 13
+    }
+  ]
+}
+```
