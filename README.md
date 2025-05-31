@@ -3,13 +3,37 @@
 ![](.docs/figure.png)
 
 
-## NOTE
+## Usage
 
-1. Run `npm ci`
-2. Update `package.json`
-    - Required updates: `name`, `license`, `author`, `repository`
-3. Update `LICENSE`
-    - Required updates: `author`
+`encrypt`
+
+```
+await ImageShield.encrypt({
+  imagePaths: ["./input_0.png", "./input_1.png", "./input_2.png"],
+  config: {
+    blockSize: 32, // Smaller for security, larger for performance
+    prefix: "img",
+  },
+  outputDir: "./output/fragments",
+  secretKey: "secret",
+});
+```
+
+`decrypt`
+
+```
+await ImageShield.decrypt({
+  imagePaths: [
+    "./output/fragments/img_0.png",
+    "./output/fragments/img_1.png",
+    "./output/fragments/img_2.png",
+  ],
+  manifestPath: "./output/fragments/manifest.json",
+  outputDir: "./output/restored",
+  secretKey: "secret",
+});
+```
+
 
 ## COMMAND
 
