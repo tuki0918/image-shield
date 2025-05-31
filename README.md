@@ -106,7 +106,15 @@ manifest.json:
 
 ## Decrypt
 
-### Error Output: Secret Key Mismatch
+### Output: Success
+
+blockSize: `10`
+
+| input | output |
+|:-------:|:---------------:|
+| ![](.docs/de_ok_m0.png) | ![](.docs/de_ok_restored_m0.png) |
+
+### Error Output: Incorrect Secret Key
 
 blockSize: `10`
 
