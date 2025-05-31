@@ -10,6 +10,7 @@ import type {
 import { extractBlock, placeBlock } from "./utils/block";
 import { bufferToPng } from "./utils/block";
 import { splitImageToBlocks } from "./utils/block";
+import { imageFileToBlocks } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { getImageBlockInfo } from "./utils/image";
 import { assembleImageFromBlocks } from "./utils/imageAssembler";
@@ -39,22 +40,20 @@ export class ImageFragmenter {
     // Load each image and split into blocks
     for (let i = 0; i < imagePaths.length; i++) {
       const imagePath = imagePaths[i];
-      const image = sharp(imagePath);
-      const metadata = await image.metadata();
-
-      const imageInfo = getImageBlockInfo(metadata, this.config.blockSize);
-      imageInfos.push(imageInfo);
-
-      // Convert image to RGBA
-      const imageBuffer = await image.ensureAlpha().raw().toBuffer();
-
-      // Split into blocks (use splitImageToBlocks)
-      const blocks = splitImageToBlocks(
-        imageBuffer,
-        imageInfo.width,
-        imageInfo.height,
+      // Use utility to load image and split into blocks
+      // This returns blocks, width, height, channels
+      const { blocks, width, height, channels } = await imageFileToBlocks(
+        imagePath,
         this.config.blockSize,
       );
+      const imageInfo = {
+        width,
+        height,
+        channels,
+        blockCountX: Math.ceil(width / this.config.blockSize),
+        blockCountY: Math.ceil(height / this.config.blockSize),
+      };
+      imageInfos.push(imageInfo);
       for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
         allBlocks.push({
           data: blocks[blockIndex],

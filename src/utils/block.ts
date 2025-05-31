@@ -186,3 +186,55 @@ export function blocksToImageBuffer(
   }
   return imageBuffer;
 }
+
+/**
+ * Load an image from file, convert to RGBA, and split into blocks
+ * @param imagePath Path to the image file
+ * @param blockSize Block size
+ * @returns Promise resolving to an array of block buffers
+ */
+export async function imageFileToBlocks(
+  imagePath: string,
+  blockSize: number,
+): Promise<{
+  blocks: Buffer[];
+  width: number;
+  height: number;
+  channels: number;
+}> {
+  const image = sharp(imagePath);
+  const metadata = await image.metadata();
+  // Check for missing width/height in metadata for broken image
+  if (
+    typeof metadata.width !== "number" ||
+    typeof metadata.height !== "number"
+  ) {
+    throw new Error("Invalid image metadata: width or height is missing");
+  }
+  const width = metadata.width;
+  const height = metadata.height;
+  const channels = 4; // Always use RGBA
+  const imageBuffer = await image.ensureAlpha().raw().toBuffer();
+  const blocks = splitImageToBlocks(imageBuffer, width, height, blockSize);
+  return { blocks, width, height, channels };
+}
+
+/**
+ * Reconstruct a PNG image from blocks, width, height, blockSize, and channels
+ * @param blocks Array of block buffers
+ * @param width Image width
+ * @param height Image height
+ * @param blockSize Block size
+ * @param channels Number of channels (default: 4)
+ * @returns Promise resolving to PNG buffer
+ */
+export async function blocksToPngImage(
+  blocks: Buffer[],
+  width: number,
+  height: number,
+  blockSize: number,
+  channels = 4,
+): Promise<Buffer> {
+  const imageBuffer = blocksToImageBuffer(blocks, width, height, blockSize);
+  return await bufferToPng(imageBuffer, width, height, channels);
+}

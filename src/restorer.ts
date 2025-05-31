@@ -2,6 +2,7 @@ import sharp from "sharp";
 import type { ManifestData, ShortImageInfo } from "./types";
 import { bufferToPng, extractBlock, placeBlock } from "./utils/block";
 import { splitImageToBlocks } from "./utils/block";
+import { imageFileToBlocks } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { getImageBlockInfo } from "./utils/image";
 import { assembleImageFromBlocks } from "./utils/imageAssembler";
@@ -85,18 +86,13 @@ export class ImageRestorer {
     fragmentPath: string,
     manifest: ManifestData,
   ): Promise<Buffer[]> {
-    const image = sharp(fragmentPath);
-    const metadata = await image.metadata();
-    const blockSize = manifest.config.blockSize;
-    const fragmentBuffer = await image.ensureAlpha().raw().toBuffer();
-    const info = getImageBlockInfo(metadata, blockSize);
-    // Use splitImageToBlocks for block extraction
-    return splitImageToBlocks(
-      fragmentBuffer,
-      info.width,
-      info.height,
-      blockSize,
+    // Use utility to load image and split into blocks
+    // This returns blocks, width, height, channels
+    const { blocks } = await imageFileToBlocks(
+      fragmentPath,
+      manifest.config.blockSize,
     );
+    return blocks;
   }
 
   private async reconstructImage(

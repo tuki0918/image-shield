@@ -1,5 +1,14 @@
-import { extractBlock, placeBlock } from "./block";
-import { blocksToImageBuffer, splitImageToBlocks } from "./block";
+import fs from "node:fs";
+import path from "node:path";
+import sharp from "sharp";
+import {
+  blocksToImageBuffer,
+  blocksToPngImage,
+  extractBlock,
+  imageFileToBlocks,
+  placeBlock,
+  splitImageToBlocks,
+} from "./block";
 
 describe("extractBlock", () => {
   const imageWidth = 4;
@@ -124,5 +133,72 @@ describe("splitImageToBlocks & blocksToImageBuffer", () => {
       blockSize,
     );
     expect(reconstructed).toEqual(buffer);
+  });
+});
+
+describe("imageFileToBlocks & blocksToPngImage (integration)", () => {
+  const tmpDir = path.join(__dirname, "tmp");
+  const tmpPng = path.join(tmpDir, "test.png");
+  const width = 4;
+  const height = 4;
+  const blockSize = 2;
+  const channels = 4;
+  // RGBA 4x4 pixels = 4*4*4 = 64 bytes
+  const buffer = Buffer.from([
+    // 1st row
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+    // 2nd row
+    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
+    // 3rd row
+    33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
+    // 4th row
+    49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64,
+  ]);
+
+  beforeAll(async () => {
+    // Create tmp directory and PNG file
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+    await sharp(buffer, { raw: { width, height, channels } })
+      .png()
+      .toFile(tmpPng);
+  });
+
+  afterAll(() => {
+    // Clean up tmp files
+    if (fs.existsSync(tmpPng)) fs.unlinkSync(tmpPng);
+    if (fs.existsSync(tmpDir)) fs.rmdirSync(tmpDir);
+  });
+
+  test("imageFileToBlocks splits PNG into correct blocks", async () => {
+    const {
+      blocks,
+      width: w,
+      height: h,
+      channels: c,
+    } = await imageFileToBlocks(tmpPng, blockSize);
+    expect(w).toBe(width);
+    expect(h).toBe(height);
+    expect(c).toBe(channels);
+    expect(blocks.length).toBe(4); // 2x2 blocks
+    // Check block contents (top-left block)
+    expect(blocks[0]).toEqual(
+      Buffer.from([1, 2, 3, 4, 5, 6, 7, 8, 17, 18, 19, 20, 21, 22, 23, 24]),
+    );
+  });
+
+  test("blocksToPngImage reconstructs PNG from blocks", async () => {
+    const { blocks } = await imageFileToBlocks(tmpPng, blockSize);
+    const pngBuffer = await blocksToPngImage(
+      blocks,
+      width,
+      height,
+      blockSize,
+      channels,
+    );
+    // Decode PNG and check raw buffer
+    const { data } = await sharp(pngBuffer)
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    expect(data).toEqual(buffer);
   });
 });
