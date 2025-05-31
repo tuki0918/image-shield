@@ -56,7 +56,11 @@ export default class ImageShield {
 
     // Save restored images
     for (let i = 0; i < restoredImages.length; i++) {
-      const outputPath = path.join(outputDir, `restored_${i}.png`);
+      const inputName = path.basename(
+        imagePaths[i],
+        path.extname(imagePaths[i]),
+      );
+      const outputPath = path.join(outputDir, `${inputName}_restored.png`);
       await fs.writeFile(outputPath, restoredImages[i]);
     }
   }
