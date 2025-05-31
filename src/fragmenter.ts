@@ -12,6 +12,7 @@ import { bufferToPng } from "./utils/block";
 import { splitImageToBlocks } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { getImageBlockInfo } from "./utils/image";
+import { assembleImageFromBlocks } from "./utils/imageAssembler";
 import { SeededRandom } from "./utils/random";
 import { applyShuffleByIndices, generateShuffleIndices } from "./utils/random";
 
@@ -111,7 +112,8 @@ export class ImageFragmenter {
       images: imageInfos.map((info) => ({
         w: info.width,
         h: info.height,
-        c: info.channels,
+        // c: info.channels,
+        c: 4, // Always use 4 channels (RGBA) for PNG
         x: info.blockCountX,
         y: info.blockCountY,
       })),
@@ -132,37 +134,17 @@ export class ImageFragmenter {
     const blocksPerRow = Math.ceil(Math.sqrt(blockCount));
     const imageWidth = blocksPerRow * blockSize;
     const imageHeight = Math.ceil(blockCount / blocksPerRow) * blockSize;
-    const fragmentBuffer = Buffer.alloc(imageWidth * imageHeight * channels);
-    // Decrypt and place blocks
-    for (let i = 0; i < encryptedBlocks.length; i++) {
-      const row = Math.floor(i / blocksPerRow);
-      const col = i % blocksPerRow;
-      const destX = col * blockSize;
-      const destY = row * blockSize;
-      // If the block is at the edge, calculate the actual width/height
-      const blockWidth =
-        col === blocksPerRow - 1 && encryptedBlocks.length % blocksPerRow !== 0
-          ? imageWidth - destX
-          : blockSize;
-      const blockHeight =
-        row === Math.ceil(blockCount / blocksPerRow) - 1
-          ? imageHeight - destY
-          : blockSize;
-      const blockData = CryptoUtils.decryptBlock(
-        encryptedBlocks[i],
-        this.secretKey,
-      );
-      placeBlock(
-        fragmentBuffer,
-        blockData,
-        imageWidth,
-        destX,
-        destY,
-        blockSize,
-        blockWidth,
-        blockHeight,
-      );
-    }
-    return await bufferToPng(fragmentBuffer, imageWidth, imageHeight, channels);
+    // Decrypt all blocks
+    const blocks: Buffer[] = encryptedBlocks.map((b) =>
+      CryptoUtils.decryptBlock(b, this.secretKey),
+    );
+    // Use common assembler
+    return await assembleImageFromBlocks(
+      blocks,
+      imageWidth,
+      imageHeight,
+      blockSize,
+      channels,
+    );
   }
 }

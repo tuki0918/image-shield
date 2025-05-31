@@ -4,6 +4,7 @@ import { bufferToPng, extractBlock, placeBlock } from "./utils/block";
 import { splitImageToBlocks } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { getImageBlockInfo } from "./utils/image";
+import { assembleImageFromBlocks } from "./utils/imageAssembler";
 import { SeededRandom } from "./utils/random";
 import { generateShuffleIndices, unshuffleByIndices } from "./utils/random";
 
@@ -103,31 +104,7 @@ export class ImageRestorer {
     imageInfo: ShortImageInfo,
     blockSize: number,
   ): Promise<Buffer> {
-    const { w, h, x, y } = imageInfo;
-    const channels = 4;
-    const imageBuffer = Buffer.alloc(w * h * channels);
-
-    let blockIndex = 0;
-    for (let by = 0; by < y; by++) {
-      for (let bx = 0; bx < x; bx++) {
-        if (blockIndex < blocks.length) {
-          const blockWidth = bx === x - 1 ? w - bx * blockSize : blockSize;
-          const blockHeight = by === y - 1 ? h - by * blockSize : blockSize;
-          placeBlock(
-            imageBuffer,
-            blocks[blockIndex],
-            w,
-            bx * blockSize,
-            by * blockSize,
-            blockSize,
-            blockWidth,
-            blockHeight,
-          );
-          blockIndex++;
-        }
-      }
-    }
-
-    return await bufferToPng(imageBuffer, w, h, channels);
+    const { w, h, c } = imageInfo;
+    return await assembleImageFromBlocks(blocks, w, h, blockSize, c);
   }
 }
