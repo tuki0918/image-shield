@@ -32,18 +32,18 @@ export class ImageFragmenter {
   }
 
   async fragmentImages(imagePaths: string[]): Promise<FragmentationResult> {
-    const imageInfos: ImageInfo[] = [];
+    // 1. Prepare image info and collect all blocks
+    const imageBlockInfos: ImageInfo[] = [];
     const allBlocks: Array<{
       data: Buffer;
       sourceIndex: number;
       blockIndex: number;
     }> = [];
 
-    // Load each image and split into blocks
+    // 2. Load each image and split into blocks
     for (let i = 0; i < imagePaths.length; i++) {
       const imagePath = imagePaths[i];
       // Use utility to load image and split into blocks
-      // This returns blocks, width, height, channels
       const { blocks, width, height, channels } = await imageFileToBlocks(
         imagePath,
         this.config.blockSize,
@@ -55,7 +55,7 @@ export class ImageFragmenter {
         blockCountX: Math.ceil(width / this.config.blockSize),
         blockCountY: Math.ceil(height / this.config.blockSize),
       };
-      imageInfos.push(imageInfo);
+      imageBlockInfos.push(imageInfo);
       for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
         allBlocks.push({
           data: blocks[blockIndex],
@@ -65,20 +65,21 @@ export class ImageFragmenter {
       }
     }
 
-    // Shuffle blocks (common logic)
+    // 3. Shuffle all blocks
     const shuffledBlocks = shuffleArrayWithKey(
       allBlocks,
       this.secretKey,
       this.config.seed,
     );
 
-    // Distribute shuffled blocks into output images
-    const fragmentedImages: Buffer[] = [];
-    // Use utility to calculate block distribution
+    // 4. Calculate the number of blocks per fragment image
     const fragmentBlocksCount = calcBlocksPerFragment(
       shuffledBlocks.length,
       imagePaths.length,
     );
+
+    // 5. Distribute shuffled blocks into fragment images
+    const fragmentedImages: Buffer[] = [];
     let blockPtr = 0;
     for (let i = 0; i < imagePaths.length; i++) {
       const count = fragmentBlocksCount[i];
@@ -98,7 +99,7 @@ export class ImageFragmenter {
       fragmentedImages.push(fragmentImage);
     }
 
-    // Create manifest
+    // 6. Create manifest
     const prefix = this.config.prefix || "fragment";
     const manifest: ManifestData = {
       id: crypto.randomUUID(),
@@ -109,10 +110,9 @@ export class ImageFragmenter {
         seed: this.config.seed,
         prefix,
       },
-      images: imageInfos.map((info) => ({
+      images: imageBlockInfos.map((info) => ({
         w: info.width,
         h: info.height,
-        // c: info.channels,
         c: 4, // Always use 4 channels (RGBA) for PNG
         x: info.blockCountX,
         y: info.blockCountY,
