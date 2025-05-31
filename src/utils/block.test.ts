@@ -1,5 +1,5 @@
-import { extractBlock, placeBlock } from "../../src/utils/block";
-import { blocksToImageBuffer, splitImageToBlocks } from "../../src/utils/block";
+import { extractBlock, placeBlock } from "./block";
+import { blocksToImageBuffer, splitImageToBlocks } from "./block";
 
 describe("extractBlock", () => {
   const imageWidth = 4;

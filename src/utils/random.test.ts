@@ -1,9 +1,9 @@
-import { SeededRandom } from "../../src/utils/random";
+import { SeededRandom } from "./random";
 import {
   applyShuffleByIndices,
   generateShuffleIndices,
   unshuffleByIndices,
-} from "../../src/utils/random";
+} from "./random";
 
 describe("SeededRandom", () => {
   test("next() returns deterministic sequence", () => {
@@ -20,7 +20,7 @@ describe("SeededRandom", () => {
     const rand2 = new SeededRandom(42);
     const shuffled2 = rand2.shuffle(arr);
     expect(shuffled1).toEqual(shuffled2);
-    expect(shuffled1).not.toEqual(arr); // ごく稀に順序が変わらない可能性あり
+    expect(shuffled1).not.toEqual(arr); // Rarely, the order may not change
   });
 
   test("createSeedFromKeyAndSeed returns consistent number", () => {

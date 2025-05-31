@@ -1,5 +1,5 @@
 import type sharp from "sharp";
-import { getImageBlockInfo } from "../../src/utils/image";
+import { getImageBlockInfo } from "./image";
 
 describe("getImageBlockInfo", () => {
   test("calculates block info from metadata", () => {
