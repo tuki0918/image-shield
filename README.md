@@ -12,7 +12,7 @@ npm i image-shield
 ## Usage
 
 ```
-import { ImageShield } from "image-shield";
+import ImageShield from "image-shield";
 ```
 
 `encrypt`
