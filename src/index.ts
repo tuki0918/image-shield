@@ -17,7 +17,7 @@ export {
 };
 
 // biome-ignore lint/complexity/noStaticOnlyClass:
-export class ImageShield {
+export default class ImageShield {
   static async encrypt(options: EncryptOptions): Promise<void> {
     const { imagePaths, config, outputDir, secretKey } = options;
 
