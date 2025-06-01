@@ -32,13 +32,15 @@ export default class ImageShield {
     await fs.writeFile(manifestPath, JSON.stringify(result.manifest, null, 2));
 
     // Save fragment images
-    for (let i = 0; i < result.fragmentedImages.length; i++) {
-      const fragmentPath = path.join(
-        outputDir,
-        `${result.manifest.config.prefix}_${i}.png`,
-      );
-      await fs.writeFile(fragmentPath, result.fragmentedImages[i]);
-    }
+    await Promise.all(
+      result.fragmentedImages.map((img, i) => {
+        const fragmentPath = path.join(
+          outputDir,
+          `${result.manifest.config.prefix}_${i}.png`,
+        );
+        return fs.writeFile(fragmentPath, img);
+      }),
+    );
   }
 
   static async decrypt(options: DecryptOptions): Promise<void> {
@@ -55,13 +57,15 @@ export default class ImageShield {
     await fs.mkdir(outputDir, { recursive: true });
 
     // Save restored images
-    for (let i = 0; i < restoredImages.length; i++) {
-      const inputName = path.basename(
-        imagePaths[i],
-        path.extname(imagePaths[i]),
-      );
-      const outputPath = path.join(outputDir, `${inputName}_restored.png`);
-      await fs.writeFile(outputPath, restoredImages[i]);
-    }
+    await Promise.all(
+      restoredImages.map((img, i) => {
+        const inputName = path.basename(
+          imagePaths[i],
+          path.extname(imagePaths[i]),
+        );
+        const outputPath = path.join(outputDir, `${inputName}_restored.png`);
+        return fs.writeFile(outputPath, img);
+      }),
+    );
   }
 }
