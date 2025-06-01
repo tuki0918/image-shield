@@ -1,5 +1,4 @@
-import { placeBlock } from "./block";
-import { bufferToPng } from "./block";
+import { bufferToPng, placeBlock } from "./block";
 
 /**
  * Common function to generate an image buffer from an array of blocks and convert it to PNG
