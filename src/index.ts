@@ -8,6 +8,7 @@ import type {
   FragmentationConfig,
   ManifestData,
 } from "./types";
+import { verifySecretKey } from "./utils/helpers";
 
 export {
   ImageFragmenter,
@@ -22,26 +23,27 @@ export default class ImageShield {
     validateEncryptOptions(options);
     try {
       const { imagePaths, config, outputDir, secretKey } = options;
-      const fragmenter = new ImageFragmenter(config, secretKey);
+      const fragmenter = new ImageFragmenter(
+        config,
+        verifySecretKey(secretKey),
+      );
       const result = await fragmenter.fragmentImages(imagePaths);
+      const { manifest, fragmentedImages } = result;
 
       // Create output directory
       await fs.mkdir(outputDir, { recursive: true });
 
       // Save manifest file
       const manifestPath = path.join(outputDir, "manifest.json");
-      await fs.writeFile(
-        manifestPath,
-        JSON.stringify(result.manifest, null, 2),
-      );
+      await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
 
       // Save fragment images
       await Promise.all(
-        result.fragmentedImages.map((img, i) => {
-          const ext = secretKey ? ".png.enc" : ".png";
+        fragmentedImages.map((img, i) => {
+          const ext = manifest.secure ? ".png.enc" : ".png";
           const fragmentPath = path.join(
             outputDir,
-            `${result.manifest.config.prefix}_${i}${ext}`,
+            `${manifest.config.prefix}_${i}${ext}`,
           );
           return fs.writeFile(fragmentPath, img);
         }),
@@ -61,7 +63,7 @@ export default class ImageShield {
       const manifest: ManifestData = JSON.parse(manifestData);
       const { prefix } = manifest.config;
 
-      const restorer = new ImageRestorer(secretKey);
+      const restorer = new ImageRestorer(verifySecretKey(secretKey));
       const restoredImages = await restorer.restoreImages(imagePaths, manifest);
 
       // Create output directory
@@ -82,17 +84,15 @@ export default class ImageShield {
 }
 
 function validateCommonOptions(
-  options: { imagePaths: string[]; outputDir: string; secretKey: string },
+  options: { imagePaths: string[]; outputDir: string; secretKey?: string },
   context: string,
 ) {
   if (!options) throw new Error(`[${context}] Options object is required.`);
-  const { imagePaths, outputDir, secretKey } = options;
+  const { imagePaths, outputDir } = options;
   if (!imagePaths || !Array.isArray(imagePaths) || imagePaths.length === 0)
     throw new Error(`[${context}] imagePaths must be a non-empty array.`);
   if (!outputDir || typeof outputDir !== "string")
     throw new Error(`[${context}] outputDir is required and must be a string.`);
-  if (!secretKey || typeof secretKey !== "string")
-    throw new Error(`[${context}] secretKey is required and must be a string.`);
 }
 
 function validateEncryptOptions(options: EncryptOptions) {

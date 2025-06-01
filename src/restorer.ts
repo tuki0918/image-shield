@@ -9,9 +9,9 @@ import { CryptoUtils } from "./utils/crypto";
 import { unshuffleArrayWithKey } from "./utils/random";
 
 export class ImageRestorer {
-  private secretKey: string;
+  private secretKey?: string;
 
-  constructor(secretKey: string) {
+  constructor(secretKey?: string) {
     this.secretKey = secretKey;
   }
 
@@ -71,9 +71,10 @@ export class ImageRestorer {
   ): Promise<Buffer[]> {
     // Read the buffer of the fragment image
     const buf = await readFileBuffer(fragmentPath);
-    const imageBufferRaw = this.secretKey
-      ? CryptoUtils.decryptBuffer(buf, this.secretKey)
-      : buf;
+    const imageBufferRaw =
+      manifest.secure && this.secretKey
+        ? CryptoUtils.decryptBuffer(buf, this.secretKey)
+        : buf;
     // Use imageFileToBlocks for both buffer and path
     const { blocks } = await imageFileToBlocks(
       imageBufferRaw,

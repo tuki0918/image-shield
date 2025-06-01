@@ -5,8 +5,8 @@ export interface EncryptOptions {
   config: FragmentationConfig;
   /** Output directory (e.g., "./output/fragments") */
   outputDir: string;
-  /** Secret key */
-  secretKey: string;
+  /** Secret key (optional) */
+  secretKey?: string;
 }
 
 export interface DecryptOptions {
@@ -16,8 +16,8 @@ export interface DecryptOptions {
   manifestPath: string;
   /** Output directory (e.g., "./output/restored") */
   outputDir: string;
-  /** Secret key */
-  secretKey: string;
+  /** Secret key (optional) */
+  secretKey?: string;
 }
 
 export interface FragmentationConfig {
@@ -66,6 +66,8 @@ export interface ManifestData {
   config: Required<FragmentationConfig>;
   /** Image information */
   images: ShortImageInfo[];
+  /** Secure (true if encrypted) */
+  secure: boolean;
 }
 
 export interface FragmentationResult {

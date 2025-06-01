@@ -13,9 +13,9 @@ import { shuffleArrayWithKey } from "./utils/random";
 
 export class ImageFragmenter {
   private config: Required<FragmentationConfig>;
-  private secretKey: string;
+  private secretKey?: string;
 
-  constructor(config: FragmentationConfig, secretKey: string) {
+  constructor(config: FragmentationConfig, secretKey?: string) {
     this.config = {
       ...config,
       prefix: config.prefix ?? "fragment",
@@ -99,6 +99,7 @@ export class ImageFragmenter {
         x: info.blockCountX,
         y: info.blockCountY,
       })),
+      secure: !!this.secretKey,
     };
 
     return {
