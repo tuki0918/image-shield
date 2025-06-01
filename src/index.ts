@@ -3,10 +3,10 @@ import path from "node:path";
 import { ImageFragmenter } from "./fragmenter";
 import { ImageRestorer } from "./restorer";
 import type {
+  DecryptOptions,
   EncryptOptions,
   FragmentationConfig,
   ManifestData,
-  RestoreOptions,
 } from "./types";
 
 export {
@@ -41,7 +41,7 @@ export default class ImageShield {
     }
   }
 
-  static async decrypt(options: RestoreOptions): Promise<void> {
+  static async decrypt(options: DecryptOptions): Promise<void> {
     const { imagePaths, manifestPath, outputDir, secretKey } = options;
 
     // Read manifest

@@ -9,7 +9,7 @@ export interface EncryptOptions {
   secretKey: string;
 }
 
-export interface RestoreOptions {
+export interface DecryptOptions {
   /** Image paths (e.g., ["fragment1.png", "fragment2.png"]) */
   imagePaths: string[];
   /** Manifest path (e.g., "./output/fragments/manifest.json") */
