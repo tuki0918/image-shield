@@ -63,14 +63,7 @@ export interface ManifestData {
   /** Timestamp */
   timestamp: string;
   /** Config */
-  config: {
-    /** Pixel block size */
-    blockSize: number;
-    /** Prefix */
-    prefix: string;
-    /** Random seed */
-    seed: number;
-  };
+  config: Required<FragmentationConfig>;
   /** Image information */
   images: ShortImageInfo[];
 }
