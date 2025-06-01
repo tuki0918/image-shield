@@ -31,6 +31,17 @@ await ImageShield.encrypt({
 });
 ```
 
+Result:
+
+```sh
+output
+└── fragments
+    ├── img_0.png
+    ├── img_1.png
+    ├── img_2.png
+    └── manifest.json
+```
+
 `decrypt`
 
 ```ts
@@ -44,6 +55,16 @@ await ImageShield.decrypt({
   outputDir: "./output/restored",
   secretKey: "secret",
 });
+```
+
+Result:
+
+```sh
+output
+└── restored
+    ├── img_0_restored.png
+    ├── img_1_restored.png
+    └── img_2_restored.png
 ```
 
 ## Encrypt
