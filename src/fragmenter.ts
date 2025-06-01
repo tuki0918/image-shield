@@ -122,9 +122,9 @@ export class ImageFragmenter {
     const blocksPerRow = Math.ceil(Math.sqrt(blockCount));
     const imageWidth = blocksPerRow * blockSize;
     const imageHeight = Math.ceil(blockCount / blocksPerRow) * blockSize;
-    // Decrypt all blocks
+    // 暗号化済みBase64文字列をBuffer化（復号しない）
     const blocks: Buffer[] = encryptedBlocks.map((b) =>
-      CryptoUtils.decryptBlock(b, this.secretKey),
+      Buffer.from(b, "base64"),
     );
     // Use common assembler
     return await assembleImageFromBlocks(

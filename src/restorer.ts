@@ -29,24 +29,23 @@ export class ImageRestorer {
     );
 
     // 3. Extract all blocks from fragment images (extract the correct number from each fragment image)
-    const allBlocks: Buffer[] = [];
+    const encryptedBlocks: string[] = [];
     for (let i = 0; i < fragmentImagePaths.length; i++) {
       const fragmentPath = fragmentImagePaths[i];
       const blocks = await this.extractBlocksFromFragment(
         fragmentPath,
         manifest,
       );
-      allBlocks.push(...blocks.slice(0, fragmentBlocksCount[i]));
+      // Buffer→Base64文字列に変換
+      const base64Blocks = blocks
+        .slice(0, fragmentBlocksCount[i])
+        .map((b) => b.toString("base64"));
+      encryptedBlocks.push(...base64Blocks);
     }
 
-    // 4. Reproduce the shuffle order (common logic)
-    const encryptedBlocks = CryptoUtils.encryptBlocks(
-      allBlocks,
-      this.secretKey,
-    );
-    const decryptedBlocks = CryptoUtils.decryptBlocks(
-      encryptedBlocks,
-      this.secretKey,
+    // 4. 復号
+    const decryptedBlocks = encryptedBlocks.map((b) =>
+      CryptoUtils.decryptBlock(b, this.secretKey),
     );
     // Unshuffle using the new utility function
     const restoredBlocks = unshuffleArrayWithKey(
