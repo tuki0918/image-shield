@@ -40,17 +40,8 @@ export class ImageRestorer {
     }
 
     // 4. Reproduce the shuffle order (common logic)
-    const encryptedBlocks = CryptoUtils.encryptBlocks(
-      allBlocks,
-      this.secretKey,
-    );
-    const decryptedBlocks = CryptoUtils.decryptBlocks(
-      encryptedBlocks,
-      this.secretKey,
-    );
-    // Unshuffle using the new utility function
     const restoredBlocks = unshuffleArrayWithKey(
-      decryptedBlocks,
+      allBlocks,
       this.secretKey,
       manifest.config.seed,
     );
