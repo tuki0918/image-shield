@@ -12,12 +12,13 @@ import { assembleImageFromBlocks } from "./utils/imageAssembler";
 import { shuffleArrayWithKey } from "./utils/random";
 
 export class ImageFragmenter {
-  private config: Omit<FragmentationConfig, "seed"> & { seed: number };
+  private config: Required<FragmentationConfig>;
   private secretKey: string;
 
   constructor(config: FragmentationConfig, secretKey: string) {
     this.config = {
       ...config,
+      prefix: config.prefix ?? "fragment",
       seed: config.seed || CryptoUtils.generateSeed(),
     };
     this.secretKey = secretKey;
@@ -92,20 +93,15 @@ export class ImageFragmenter {
     }
 
     // 6. Create manifest
-    const prefix = this.config.prefix || "fragment";
     const manifest: ManifestData = {
       id: crypto.randomUUID(),
       version: VERSION,
       timestamp: new Date().toISOString(),
-      config: {
-        blockSize: this.config.blockSize,
-        seed: this.config.seed,
-        prefix,
-      },
+      config: this.config,
       images: imageBlockInfos.map((info) => ({
         w: info.width,
         h: info.height,
-        c: 4, // Always use 4 channels (RGBA) for PNG
+        c: 4, // Always use 4 channels (RGBA) for generated PNG
         x: info.blockCountX,
         y: info.blockCountY,
       })),
