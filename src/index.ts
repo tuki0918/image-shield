@@ -83,27 +83,29 @@ export default class ImageShield {
   }
 }
 
-function validateEncryptOptions(options: EncryptOptions) {
-  if (!options) throw new Error("[encrypt] Options object is required.");
-  const { imagePaths, config, outputDir, secretKey } = options;
+function validateCommonOptions(
+  options: { imagePaths: unknown; outputDir: unknown; secretKey: unknown },
+  context: string,
+) {
+  if (!options) throw new Error(`[${context}] Options object is required.`);
+  const { imagePaths, outputDir, secretKey } = options;
   if (!imagePaths || !Array.isArray(imagePaths) || imagePaths.length === 0)
-    throw new Error("[encrypt] imagePaths must be a non-empty array.");
-  if (!config) throw new Error("[encrypt] config is required.");
+    throw new Error(`[${context}] imagePaths must be a non-empty array.`);
   if (!outputDir || typeof outputDir !== "string")
-    throw new Error("[encrypt] outputDir is required and must be a string.");
+    throw new Error(`[${context}] outputDir is required and must be a string.`);
   if (!secretKey || typeof secretKey !== "string")
-    throw new Error("[encrypt] secretKey is required and must be a string.");
+    throw new Error(`[${context}] secretKey is required and must be a string.`);
+}
+
+function validateEncryptOptions(options: EncryptOptions) {
+  validateCommonOptions(options, "encrypt");
+  const { config } = options;
+  if (!config) throw new Error("[encrypt] config is required.");
 }
 
 function validateDecryptOptions(options: DecryptOptions) {
-  if (!options) throw new Error("[decrypt] Options object is required.");
-  const { imagePaths, manifestPath, outputDir, secretKey } = options;
-  if (!imagePaths || !Array.isArray(imagePaths) || imagePaths.length === 0)
-    throw new Error("[decrypt] imagePaths must be a non-empty array.");
+  validateCommonOptions(options, "decrypt");
+  const { manifestPath } = options;
   if (!manifestPath || typeof manifestPath !== "string")
     throw new Error("[decrypt] manifestPath is required and must be a string.");
-  if (!outputDir || typeof outputDir !== "string")
-    throw new Error("[decrypt] outputDir is required and must be a string.");
-  if (!secretKey || typeof secretKey !== "string")
-    throw new Error("[decrypt] secretKey is required and must be a string.");
 }
