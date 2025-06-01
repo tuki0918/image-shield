@@ -84,7 +84,7 @@ export default class ImageShield {
 }
 
 function validateCommonOptions(
-  options: { imagePaths: unknown; outputDir: unknown; secretKey: unknown },
+  options: { imagePaths: string[]; outputDir: string; secretKey: string },
   context: string,
 ) {
   if (!options) throw new Error(`[${context}] Options object is required.`);
