@@ -42,7 +42,6 @@ export class ImageRestorer {
     // 4. Reproduce the shuffle order (common logic)
     const restoredBlocks = unshuffleArrayWithKey(
       allBlocks,
-      this.secretKey,
       manifest.config.seed,
     );
 

@@ -59,11 +59,7 @@ export class ImageFragmenter {
     }
 
     // 3. Shuffle all blocks
-    const shuffledBlocks = shuffleArrayWithKey(
-      allBlocks,
-      this.secretKey,
-      this.config.seed,
-    );
+    const shuffledBlocks = shuffleArrayWithKey(allBlocks, this.config.seed);
 
     // 4. Calculate the number of blocks per fragment image
     const fragmentBlocksCount = calcBlocksPerFragment(
