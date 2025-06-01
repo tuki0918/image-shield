@@ -31,7 +31,8 @@ await ImageShield.encrypt({
 });
 ```
 
-Result:
+<details>
+<summary>Result:</summary>
 
 ```sh
 output
@@ -41,6 +42,8 @@ output
     ├── img_2.png
     └── manifest.json
 ```
+
+</details>
 
 `decrypt`
 
@@ -57,7 +60,8 @@ await ImageShield.decrypt({
 });
 ```
 
-Result:
+<details>
+<summary>Result:</summary>
 
 ```sh
 output
@@ -66,6 +70,8 @@ output
     ├── img_1_restored.png
     └── img_2_restored.png
 ```
+
+</details>
 
 ## Encrypt
 
@@ -87,7 +93,8 @@ blockSize: `32`
 |:-------:|:---------------:|:---------------:|
 | ![](.docs/output_m0.png) | ![](.docs/output_m1.png) | ![](.docs/output_m2.png) |
 
-manifest.json:
+<details>
+<summary>manifest.json:</summary>
 
 ```json
 {
@@ -124,6 +131,8 @@ manifest.json:
   ]
 }
 ```
+
+</details>
 
 ## Decrypt
 
