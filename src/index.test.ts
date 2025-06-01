@@ -49,7 +49,8 @@ describe("ImageShield (integration)", () => {
     manifestPath = path.join(tmpDir, "manifest.json");
     fragmentPaths = [];
     for (let i = 0; i < originalImages.length; i++) {
-      fragmentPaths.push(path.join(tmpDir, `${prefix}_${i}.png`));
+      const ext = secretKey ? ".png.enc" : ".png";
+      fragmentPaths.push(path.join(tmpDir, `${prefix}_${i}${ext}`));
     }
     // Restore images using ImageShield.decrypt
     await ImageShield.decrypt({
@@ -61,11 +62,7 @@ describe("ImageShield (integration)", () => {
     // Find restored images (use the same logic as index.ts, based on fragmentPaths)
     restoredPaths = [];
     for (let i = 0; i < fragmentPaths.length; i++) {
-      const inputName = path.basename(
-        fragmentPaths[i],
-        path.extname(fragmentPaths[i]),
-      );
-      restoredPaths.push(path.join(tmpDir, `${inputName}_restored.png`));
+      restoredPaths.push(path.join(tmpDir, `${prefix}_${i}.png`));
     }
   });
 
@@ -89,10 +86,18 @@ describe("ImageShield (integration)", () => {
     // Check that fragment images exist and are valid PNGs
     for (const fragmentPath of fragmentPaths) {
       expect(fs.existsSync(fragmentPath)).toBe(true);
-      const meta = await sharp(fragmentPath).metadata();
-      expect(meta.format).toBe("png");
-      expect(meta.width).toBe(width);
-      expect(meta.height).toBe(height);
+      if (secretKey) {
+        // If encrypted, it is correct that it cannot be opened as PNG
+        await expect(async () => {
+          await sharp(fragmentPath).metadata();
+        }).rejects.toThrow();
+      } else {
+        // If not encrypted, it should be openable as PNG
+        const meta = await sharp(fragmentPath).metadata();
+        expect(meta.format).toBe("png");
+        expect(meta.width).toBe(width);
+        expect(meta.height).toBe(height);
+      }
     }
 
     // Check that restored images exist before comparing content

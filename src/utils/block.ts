@@ -1,3 +1,4 @@
+import { promises as fs } from "node:fs";
 import sharp from "sharp";
 
 /**
@@ -188,13 +189,13 @@ export function blocksToImageBuffer(
 }
 
 /**
- * Load an image from file, convert to RGBA, and split into blocks
- * @param imagePath Path to the image file
+ * Load an image from file or buffer, convert to RGBA, and split into blocks
+ * @param input Path to the image file or Buffer
  * @param blockSize Block size
  * @returns Promise resolving to an array of block buffers
  */
 export async function imageFileToBlocks(
-  imagePath: string,
+  input: string | Buffer,
   blockSize: number,
 ): Promise<{
   blocks: Buffer[];
@@ -202,7 +203,7 @@ export async function imageFileToBlocks(
   height: number;
   channels: number;
 }> {
-  const image = sharp(imagePath);
+  const image = sharp(input);
   const metadata = await image.metadata();
   // Check for missing width/height in metadata for broken image
   if (
@@ -258,4 +259,13 @@ export function calcBlocksPerFragment(
     remainingBlocks -= count;
   }
   return fragmentBlocksCount;
+}
+
+/**
+ * Read a file and return its Buffer
+ * @param path Path to the file
+ * @returns Buffer
+ */
+export async function readFileBuffer(path: string): Promise<Buffer> {
+  return await fs.readFile(path);
 }

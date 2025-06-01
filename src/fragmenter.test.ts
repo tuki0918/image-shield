@@ -70,10 +70,18 @@ describe("ImageFragmenter", () => {
 
   test("fragment images are valid PNGs", async () => {
     for (const buf of fragmentBuffers) {
-      const meta = await sharp(buf).metadata();
-      expect(meta.format).toBe("png");
-      expect(meta.width).toBeGreaterThan(0);
-      expect(meta.height).toBeGreaterThan(0);
+      if (secretKey) {
+        // If encrypted, it is correct that it cannot be opened as PNG
+        await expect(async () => {
+          await sharp(buf).metadata();
+        }).rejects.toThrow();
+      } else {
+        // If not encrypted, it should be openable as PNG
+        const meta = await sharp(buf).metadata();
+        expect(meta.format).toBe("png");
+        expect(meta.width).toBeGreaterThan(0);
+        expect(meta.height).toBeGreaterThan(0);
+      }
     }
   });
 });

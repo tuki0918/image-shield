@@ -38,9 +38,10 @@ export default class ImageShield {
       // Save fragment images
       await Promise.all(
         result.fragmentedImages.map((img, i) => {
+          const ext = secretKey ? ".png.enc" : ".png";
           const fragmentPath = path.join(
             outputDir,
-            `${result.manifest.config.prefix}_${i}.png`,
+            `${result.manifest.config.prefix}_${i}${ext}`,
           );
           return fs.writeFile(fragmentPath, img);
         }),
@@ -58,6 +59,7 @@ export default class ImageShield {
       // Read manifest
       const manifestData = await fs.readFile(manifestPath, "utf-8");
       const manifest: ManifestData = JSON.parse(manifestData);
+      const { prefix } = manifest.config;
 
       const restorer = new ImageRestorer(secretKey);
       const restoredImages = await restorer.restoreImages(imagePaths, manifest);
@@ -68,11 +70,7 @@ export default class ImageShield {
       // Save restored images
       await Promise.all(
         restoredImages.map((img, i) => {
-          const inputName = path.basename(
-            imagePaths[i],
-            path.extname(imagePaths[i]),
-          );
-          const outputPath = path.join(outputDir, `${inputName}_restored.png`);
+          const outputPath = path.join(outputDir, `${prefix}_${i}.png`);
           return fs.writeFile(outputPath, img);
         }),
       );

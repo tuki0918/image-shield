@@ -80,7 +80,10 @@ export class ImageFragmenter {
         count,
         this.config.blockSize,
       );
-      fragmentedImages.push(fragmentImage);
+      const outputFragment = this.secretKey
+        ? CryptoUtils.encryptBuffer(fragmentImage, this.secretKey)
+        : fragmentImage;
+      fragmentedImages.push(outputFragment);
     }
 
     // 6. Create manifest
