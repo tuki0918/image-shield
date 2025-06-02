@@ -21,6 +21,10 @@ npm i image-shield
 
 ## Usage
 
+```
+import ImageShield from "image-shield";
+```
+
 ### Shuffle only
 
 If you do not set the `secretKey`, only shuffling will be applied to the image blocks.
