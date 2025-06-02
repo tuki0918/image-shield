@@ -21,65 +21,54 @@ export {
 export default class ImageShield {
   static async encrypt(options: EncryptOptions): Promise<void> {
     validateEncryptOptions(options);
-    try {
-      const { imagePaths, config, outputDir, secretKey } = options;
-      const fragmenter = new ImageFragmenter(
-        config,
-        verifySecretKey(secretKey),
-      );
-      const result = await fragmenter.fragmentImages(imagePaths);
-      const { manifest, fragmentedImages } = result;
 
-      // Create output directory
-      await fs.mkdir(outputDir, { recursive: true });
+    const { imagePaths, config, outputDir, secretKey } = options;
+    const fragmenter = new ImageFragmenter(config, verifySecretKey(secretKey));
+    const result = await fragmenter.fragmentImages(imagePaths);
+    const { manifest, fragmentedImages } = result;
 
-      // Save manifest file
-      const manifestPath = path.join(outputDir, "manifest.json");
-      await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+    // Create output directory
+    await fs.mkdir(outputDir, { recursive: true });
 
-      // Save fragment images
-      await Promise.all(
-        fragmentedImages.map((img, i) => {
-          const ext = manifest.secure ? ".png.enc" : ".png";
-          const fragmentPath = path.join(
-            outputDir,
-            `${manifest.config.prefix}_${i}${ext}`,
-          );
-          return fs.writeFile(fragmentPath, img);
-        }),
-      );
-    } catch (error) {
-      console.error("[encrypt] An error occurred:", error);
-      throw error;
-    }
+    // Save manifest file
+    const manifestPath = path.join(outputDir, "manifest.json");
+    await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+
+    // Save fragment images
+    await Promise.all(
+      fragmentedImages.map((img, i) => {
+        const ext = manifest.secure ? ".png.enc" : ".png";
+        const fragmentPath = path.join(
+          outputDir,
+          `${manifest.config.prefix}_${i}${ext}`,
+        );
+        return fs.writeFile(fragmentPath, img);
+      }),
+    );
   }
 
   static async decrypt(options: DecryptOptions): Promise<void> {
     validateDecryptOptions(options);
-    try {
-      const { imagePaths, manifestPath, outputDir, secretKey } = options;
-      // Read manifest
-      const manifestData = await fs.readFile(manifestPath, "utf-8");
-      const manifest: ManifestData = JSON.parse(manifestData);
-      const { prefix } = manifest.config;
 
-      const restorer = new ImageRestorer(verifySecretKey(secretKey));
-      const restoredImages = await restorer.restoreImages(imagePaths, manifest);
+    const { imagePaths, manifestPath, outputDir, secretKey } = options;
+    // Read manifest
+    const manifestData = await fs.readFile(manifestPath, "utf-8");
+    const manifest: ManifestData = JSON.parse(manifestData);
+    const { prefix } = manifest.config;
 
-      // Create output directory
-      await fs.mkdir(outputDir, { recursive: true });
+    const restorer = new ImageRestorer(verifySecretKey(secretKey));
+    const restoredImages = await restorer.restoreImages(imagePaths, manifest);
 
-      // Save restored images
-      await Promise.all(
-        restoredImages.map((img, i) => {
-          const outputPath = path.join(outputDir, `${prefix}_${i}.png`);
-          return fs.writeFile(outputPath, img);
-        }),
-      );
-    } catch (error) {
-      console.error("[decrypt] An error occurred:", error);
-      throw error;
-    }
+    // Create output directory
+    await fs.mkdir(outputDir, { recursive: true });
+
+    // Save restored images
+    await Promise.all(
+      restoredImages.map((img, i) => {
+        const outputPath = path.join(outputDir, `${prefix}_${i}.png`);
+        return fs.writeFile(outputPath, img);
+      }),
+    );
   }
 }
 

@@ -71,10 +71,16 @@ export class ImageRestorer {
   ): Promise<Buffer[]> {
     // Read the buffer of the fragment image
     const buf = await readFileBuffer(fragmentPath);
-    const imageBufferRaw =
-      manifest.secure && this.secretKey
-        ? CryptoUtils.decryptBuffer(buf, this.secretKey)
-        : buf;
+    let imageBufferRaw: Buffer = buf;
+    if (manifest.secure && this.secretKey) {
+      try {
+        imageBufferRaw = CryptoUtils.decryptBuffer(buf, this.secretKey);
+      } catch (e) {
+        throw new Error(
+          "The secret key is invalid or does not match the encrypted data.",
+        );
+      }
+    }
     // Use imageFileToBlocks for both buffer and path
     const { blocks } = await imageFileToBlocks(
       imageBufferRaw,
