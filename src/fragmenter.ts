@@ -13,9 +13,9 @@ import { shuffleArrayWithKey } from "./utils/random";
 
 export class ImageFragmenter {
   private config: Required<FragmentationConfig>;
-  private secretKey: string;
+  private secretKey?: string;
 
-  constructor(config: FragmentationConfig, secretKey: string) {
+  constructor(config: FragmentationConfig, secretKey?: string) {
     this.config = {
       ...config,
       prefix: config.prefix ?? "fragment",
@@ -59,11 +59,7 @@ export class ImageFragmenter {
     }
 
     // 3. Shuffle all blocks
-    const shuffledBlocks = shuffleArrayWithKey(
-      allBlocks,
-      this.secretKey,
-      this.config.seed,
-    );
+    const shuffledBlocks = shuffleArrayWithKey(allBlocks, this.config.seed);
 
     // 4. Calculate the number of blocks per fragment image
     const fragmentBlocksCount = calcBlocksPerFragment(
@@ -78,18 +74,16 @@ export class ImageFragmenter {
       const count = fragmentBlocksCount[i];
       const imageBlocks = shuffledBlocks.slice(blockPtr, blockPtr + count);
       blockPtr += count;
-      // Encrypt each block
-      const encryptedBlocks = CryptoUtils.encryptBlocks(
-        imageBlocks.map((b) => b.data),
-        this.secretKey,
-      );
       // Create fragment image
       const fragmentImage = await this.createFragmentImage(
-        encryptedBlocks,
-        imageBlocks.length,
+        imageBlocks.map((b) => b.data),
+        count,
         this.config.blockSize,
       );
-      fragmentedImages.push(fragmentImage);
+      const outputFragment = this.secretKey
+        ? CryptoUtils.encryptBuffer(fragmentImage, this.secretKey)
+        : fragmentImage;
+      fragmentedImages.push(outputFragment);
     }
 
     // 6. Create manifest
@@ -105,6 +99,7 @@ export class ImageFragmenter {
         x: info.blockCountX,
         y: info.blockCountY,
       })),
+      secure: !!this.secretKey,
     };
 
     return {
@@ -114,7 +109,7 @@ export class ImageFragmenter {
   }
 
   private async createFragmentImage(
-    encryptedBlocks: string[],
+    blocks: Buffer[],
     blockCount: number,
     blockSize: number,
   ): Promise<Buffer> {
@@ -122,10 +117,6 @@ export class ImageFragmenter {
     const blocksPerRow = Math.ceil(Math.sqrt(blockCount));
     const imageWidth = blocksPerRow * blockSize;
     const imageHeight = Math.ceil(blockCount / blocksPerRow) * blockSize;
-    // Decrypt all blocks
-    const blocks: Buffer[] = encryptedBlocks.map((b) =>
-      CryptoUtils.decryptBlock(b, this.secretKey),
-    );
     // Use common assembler
     return await assembleImageFromBlocks(
       blocks,

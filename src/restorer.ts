@@ -3,14 +3,15 @@ import {
   blocksToPngImage,
   calcBlocksPerFragment,
   imageFileToBlocks,
+  readFileBuffer,
 } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { unshuffleArrayWithKey } from "./utils/random";
 
 export class ImageRestorer {
-  private secretKey: string;
+  private secretKey?: string;
 
-  constructor(secretKey: string) {
+  constructor(secretKey?: string) {
     this.secretKey = secretKey;
   }
 
@@ -40,18 +41,8 @@ export class ImageRestorer {
     }
 
     // 4. Reproduce the shuffle order (common logic)
-    const encryptedBlocks = CryptoUtils.encryptBlocks(
-      allBlocks,
-      this.secretKey,
-    );
-    const decryptedBlocks = CryptoUtils.decryptBlocks(
-      encryptedBlocks,
-      this.secretKey,
-    );
-    // Unshuffle using the new utility function
     const restoredBlocks = unshuffleArrayWithKey(
-      decryptedBlocks,
-      this.secretKey,
+      allBlocks,
       manifest.config.seed,
     );
 
@@ -78,10 +69,21 @@ export class ImageRestorer {
     fragmentPath: string,
     manifest: ManifestData,
   ): Promise<Buffer[]> {
-    // Use utility to load image and split into blocks
-    // This returns blocks, width, height, channels
+    // Read the buffer of the fragment image
+    const buf = await readFileBuffer(fragmentPath);
+    let imageBufferRaw: Buffer = buf;
+    if (manifest.secure && this.secretKey) {
+      try {
+        imageBufferRaw = CryptoUtils.decryptBuffer(buf, this.secretKey);
+      } catch (e) {
+        throw new Error(
+          "The secret key is invalid or does not match the encrypted data.",
+        );
+      }
+    }
+    // Use imageFileToBlocks for both buffer and path
     const { blocks } = await imageFileToBlocks(
-      fragmentPath,
+      imageBufferRaw,
       manifest.config.blockSize,
     );
     return blocks;

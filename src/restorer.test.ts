@@ -47,7 +47,8 @@ describe("ImageRestorer", () => {
     manifestPath = path.join(tmpDir, "manifest.json");
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     fragmentPaths = fragmentedImages.map((buf, i) => {
-      const p = path.join(tmpDir, `${prefix}_${i}.png`);
+      const ext = secretKey ? ".png.enc" : ".png";
+      const p = path.join(tmpDir, `${prefix}_${i}${ext}`);
       fs.writeFileSync(p, buf);
       return p;
     });
