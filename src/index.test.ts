@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import sharp from "sharp";
 import ImageShield from "./index";
+import { generateFragmentFileName } from "./utils/helpers";
 
 describe("ImageShield (integration)", () => {
   // Use OS temp directory for test files
@@ -49,8 +50,13 @@ describe("ImageShield (integration)", () => {
     manifestPath = path.join(tmpDir, "manifest.json");
     fragmentPaths = [];
     for (let i = 0; i < originalImages.length; i++) {
-      const ext = secretKey ? ".png.enc" : ".png";
-      fragmentPaths.push(path.join(tmpDir, `${prefix}_${i}${ext}`));
+      const ext = secretKey ? "png.enc" : "png";
+      fragmentPaths.push(
+        path.join(
+          tmpDir,
+          generateFragmentFileName(prefix, i, originalImages.length, ext),
+        ),
+      );
     }
     // Restore images using ImageShield.decrypt
     await ImageShield.decrypt({
@@ -62,7 +68,12 @@ describe("ImageShield (integration)", () => {
     // Find restored images (use the same logic as index.ts, based on fragmentPaths)
     restoredPaths = [];
     for (let i = 0; i < fragmentPaths.length; i++) {
-      restoredPaths.push(path.join(tmpDir, `${prefix}_${i}.png`));
+      restoredPaths.push(
+        path.join(
+          tmpDir,
+          generateFragmentFileName(prefix, i, fragmentPaths.length, "png"),
+        ),
+      );
     }
   });
 

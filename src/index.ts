@@ -8,7 +8,7 @@ import type {
   FragmentationConfig,
   ManifestData,
 } from "./types";
-import { verifySecretKey } from "./utils/helpers";
+import { generateFragmentFileName, verifySecretKey } from "./utils/helpers";
 
 export {
   ImageFragmenter,
@@ -37,10 +37,15 @@ export default class ImageShield {
     // Save fragment images
     await Promise.all(
       fragmentedImages.map((img, i) => {
-        const ext = manifest.secure ? ".png.enc" : ".png";
+        const ext = manifest.secure ? "png.enc" : "png";
         const fragmentPath = path.join(
           outputDir,
-          `${manifest.config.prefix}_${i}${ext}`,
+          generateFragmentFileName(
+            manifest.config.prefix,
+            i,
+            imagePaths.length,
+            ext,
+          ),
         );
         return fs.writeFile(fragmentPath, img);
       }),
@@ -65,7 +70,10 @@ export default class ImageShield {
     // Save restored images
     await Promise.all(
       restoredImages.map((img, i) => {
-        const outputPath = path.join(outputDir, `${prefix}_${i}.png`);
+        const outputPath = path.join(
+          outputDir,
+          generateFragmentFileName(prefix, i, restoredImages.length, "png"),
+        );
         return fs.writeFile(outputPath, img);
       }),
     );

@@ -34,9 +34,9 @@ If you do not set the `secretKey`, only shuffling will be applied to the image b
 ```ts
 await ImageShield.encrypt({
   imagePaths: [
-    "./input_0.png",
     "./input_1.png",
-    "./input_2.png"
+    "./input_2.png",
+    "./input_3.png"
   ],
   config: {
     blockSize: 32,
@@ -53,9 +53,9 @@ await ImageShield.encrypt({
 ```
 output
 └── fragmented
-    ├── img_0.png
     ├── img_1.png
     ├── img_2.png
+    ├── img_3.png
     └── manifest.json
 ```
 </details>
@@ -65,9 +65,9 @@ output
 ```ts
 await ImageShield.decrypt({
   imagePaths: [
-    "./output/fragmented/img_0.png",
     "./output/fragmented/img_1.png",
     "./output/fragmented/img_2.png",
+    "./output/fragmented/img_3.png",
   ],
   manifestPath: "./output/fragmented/manifest.json",
   outputDir: "./output/restored",
@@ -81,9 +81,9 @@ await ImageShield.decrypt({
 ```
 output
 └── restored
-    ├── img_0.png
     ├── img_1.png
-    └── img_2.png
+    ├── img_2.png
+    └── img_3.png
 ```
 </details>
 
@@ -98,9 +98,9 @@ If you set the `secretKey`, the image blocks will be shuffled and then encrypted
 ```ts
 await ImageShield.encrypt({
   imagePaths: [
-    "./input_0.png",
     "./input_1.png",
-    "./input_2.png"
+    "./input_2.png",
+    "./input_3.png"
   ],
   config: {
     blockSize: 32,
@@ -117,9 +117,9 @@ await ImageShield.encrypt({
 ```
 output
 └── fragmented
-    ├── img_0.png.enc
     ├── img_1.png.enc
     ├── img_2.png.enc
+    ├── img_3.png.enc
     └── manifest.json
 ```
 </details>
@@ -129,9 +129,9 @@ output
 ```ts
 await ImageShield.decrypt({
   imagePaths: [
-    "./output/fragmented/img_0.png.enc",
     "./output/fragmented/img_1.png.enc",
-    "./output/fragmented/img_2.png.enc"
+    "./output/fragmented/img_2.png.enc",
+    "./output/fragmented/img_3.png.enc"
   ],
   manifestPath: "./output/fragmented/manifest.json",
   outputDir: "./output/restored",
@@ -145,9 +145,9 @@ await ImageShield.decrypt({
 ```
 output
 └── restored
-    ├── img_0.png
     ├── img_1.png
-    └── img_2.png
+    ├── img_2.png
+    └── img_3.png
 ```
 </details>
 
