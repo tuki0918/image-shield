@@ -4,6 +4,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { ImageFragmenter } from "./fragmenter";
 import type { FragmentationResult } from "./types";
+import { generateFragmentFileName } from "./utils/helpers";
 
 describe("ImageFragmenter", () => {
   // Use OS temp directory for test files
@@ -82,6 +83,21 @@ describe("ImageFragmenter", () => {
         expect(meta.width).toBeGreaterThan(0);
         expect(meta.height).toBeGreaterThan(0);
       }
+    }
+  });
+
+  test("fragment file naming uses prefix and zero padding", () => {
+    for (let i = 0; i < fragmentBuffers.length; i++) {
+      const ext = secretKey ? "png.enc" : "png";
+      const expectedName = generateFragmentFileName(
+        prefix,
+        i,
+        fragmentBuffers.length,
+        ext,
+      );
+      expect(expectedName).toMatch(
+        new RegExp(`^${prefix}_${i + 1}\\.${ext.replace(".", "\\.")}$`),
+      );
     }
   });
 });
