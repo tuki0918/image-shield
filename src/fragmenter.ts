@@ -7,7 +7,7 @@ import type {
   ManifestData,
 } from "./types";
 import { calcBlocksPerFragment, imageFileToBlocks } from "./utils/block";
-import { CryptoUtils } from "./utils/crypto";
+import { CryptoUtils, uuidToIV } from "./utils/crypto";
 import { assembleImageFromBlocks } from "./utils/imageAssembler";
 import { shuffleArrayWithKey } from "./utils/random";
 
@@ -67,26 +67,7 @@ export class ImageFragmenter {
       imagePaths.length,
     );
 
-    // 5. Distribute shuffled blocks into fragment images
-    const fragmentedImages: Buffer[] = [];
-    let blockPtr = 0;
-    for (let i = 0; i < imagePaths.length; i++) {
-      const count = fragmentBlocksCount[i];
-      const imageBlocks = shuffledBlocks.slice(blockPtr, blockPtr + count);
-      blockPtr += count;
-      // Create fragment image
-      const fragmentImage = await this.createFragmentImage(
-        imageBlocks.map((b) => b.data),
-        count,
-        this.config.blockSize,
-      );
-      const outputFragment = this.secretKey
-        ? CryptoUtils.encryptBuffer(fragmentImage, this.secretKey)
-        : fragmentImage;
-      fragmentedImages.push(outputFragment);
-    }
-
-    // 6. Create manifest
+    // 5. Create manifest
     const manifest: ManifestData = {
       id: crypto.randomUUID(),
       version: VERSION,
@@ -101,6 +82,29 @@ export class ImageFragmenter {
       })),
       secure: !!this.secretKey,
     };
+
+    // 6. Distribute shuffled blocks into fragment images
+    const fragmentedImages: Buffer[] = [];
+    let blockPtr = 0;
+    for (let i = 0; i < imagePaths.length; i++) {
+      const count = fragmentBlocksCount[i];
+      const imageBlocks = shuffledBlocks.slice(blockPtr, blockPtr + count);
+      blockPtr += count;
+      // Create fragment image
+      const fragmentImage = await this.createFragmentImage(
+        imageBlocks.map((b) => b.data),
+        count,
+        this.config.blockSize,
+      );
+      const outputFragment = this.secretKey
+        ? CryptoUtils.encryptBuffer(
+            fragmentImage,
+            this.secretKey,
+            uuidToIV(manifest.id),
+          )
+        : fragmentImage;
+      fragmentedImages.push(outputFragment);
+    }
 
     return {
       manifest,

@@ -44,22 +44,22 @@ export class CryptoUtils {
     return Buffer.from(base64, "base64");
   }
 
-  static encryptBuffer(buffer: Buffer, key: string): Buffer {
-    const iv = Buffer.alloc(16, 0);
+  static encryptBuffer(buffer: Buffer, key: string, iv?: Buffer): Buffer {
+    const ivBuf = iv ?? Buffer.alloc(16, 0);
     const cipher = crypto.createCipheriv(
       "aes-256-cbc",
       CryptoUtils.keyTo32(key),
-      iv,
+      ivBuf,
     );
     return Buffer.concat([cipher.update(buffer), cipher.final()]);
   }
 
-  static decryptBuffer(buffer: Buffer, key: string): Buffer {
-    const iv = Buffer.alloc(16, 0);
+  static decryptBuffer(buffer: Buffer, key: string, iv?: Buffer): Buffer {
+    const ivBuf = iv ?? Buffer.alloc(16, 0);
     const decipher = crypto.createDecipheriv(
       "aes-256-cbc",
       CryptoUtils.keyTo32(key),
-      iv,
+      ivBuf,
     );
     return Buffer.concat([decipher.update(buffer), decipher.final()]);
   }
@@ -81,4 +81,11 @@ export class CryptoUtils {
   static decryptBlocks(blocks: string[], key: string): Buffer[] {
     return blocks.map((block) => CryptoUtils.decryptBlock(block, key));
   }
+}
+
+// クラス外で定義
+export function uuidToIV(uuid: string): Buffer {
+  const hex = uuid.replace(/-/g, "");
+  if (hex.length !== 32) throw new Error("Invalid UUID format");
+  return Buffer.from(hex, "hex");
 }
