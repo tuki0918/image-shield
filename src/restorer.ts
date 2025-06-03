@@ -5,7 +5,7 @@ import {
   imageFileToBlocks,
   readFileBuffer,
 } from "./utils/block";
-import { CryptoUtils } from "./utils/crypto";
+import { CryptoUtils, uuidToIV } from "./utils/crypto";
 import { unshuffleArrayWithKey } from "./utils/random";
 
 export class ImageRestorer {
@@ -74,7 +74,11 @@ export class ImageRestorer {
     let imageBufferRaw: Buffer = buf;
     if (manifest.secure && this.secretKey) {
       try {
-        imageBufferRaw = CryptoUtils.decryptBuffer(buf, this.secretKey);
+        imageBufferRaw = CryptoUtils.decryptBuffer(
+          buf,
+          this.secretKey,
+          uuidToIV(manifest.id),
+        );
       } catch (e) {
         throw new Error(
           "The secret key is invalid or does not match the encrypted data.",

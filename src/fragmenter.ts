@@ -7,7 +7,7 @@ import type {
   ManifestData,
 } from "./types";
 import { calcBlocksPerFragment, imageFileToBlocks } from "./utils/block";
-import { CryptoUtils } from "./utils/crypto";
+import { CryptoUtils, uuidToIV } from "./utils/crypto";
 import { assembleImageFromBlocks } from "./utils/imageAssembler";
 import { shuffleArrayWithKey } from "./utils/random";
 
@@ -67,7 +67,26 @@ export class ImageFragmenter {
       imagePaths.length,
     );
 
-    // 5. Distribute shuffled blocks into fragment images
+    // 5. Create manifest
+    const secure = !!this.secretKey;
+    const algorithm = secure ? "aes-256-cbc" : undefined;
+    const manifest: ManifestData = {
+      id: crypto.randomUUID(),
+      version: VERSION,
+      timestamp: new Date().toISOString(),
+      config: this.config,
+      images: imageBlockInfos.map((info) => ({
+        w: info.width,
+        h: info.height,
+        c: 4, // Always use 4 channels (RGBA) for generated PNG
+        x: info.blockCountX,
+        y: info.blockCountY,
+      })),
+      algorithm,
+      secure,
+    };
+
+    // 6. Distribute shuffled blocks into fragment images
     const fragmentedImages: Buffer[] = [];
     let blockPtr = 0;
     for (let i = 0; i < imagePaths.length; i++) {
@@ -81,26 +100,14 @@ export class ImageFragmenter {
         this.config.blockSize,
       );
       const outputFragment = this.secretKey
-        ? CryptoUtils.encryptBuffer(fragmentImage, this.secretKey)
+        ? CryptoUtils.encryptBuffer(
+            fragmentImage,
+            this.secretKey,
+            uuidToIV(manifest.id),
+          )
         : fragmentImage;
       fragmentedImages.push(outputFragment);
     }
-
-    // 6. Create manifest
-    const manifest: ManifestData = {
-      id: crypto.randomUUID(),
-      version: VERSION,
-      timestamp: new Date().toISOString(),
-      config: this.config,
-      images: imageBlockInfos.map((info) => ({
-        w: info.width,
-        h: info.height,
-        c: 4, // Always use 4 channels (RGBA) for generated PNG
-        x: info.blockCountX,
-        y: info.blockCountY,
-      })),
-      secure: !!this.secretKey,
-    };
 
     return {
       manifest,
