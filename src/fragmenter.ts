@@ -68,6 +68,8 @@ export class ImageFragmenter {
     );
 
     // 5. Create manifest
+    const secure = !!this.secretKey;
+    const algorithm = secure ? "aes-256-cbc" : undefined;
     const manifest: ManifestData = {
       id: crypto.randomUUID(),
       version: VERSION,
@@ -80,7 +82,8 @@ export class ImageFragmenter {
         x: info.blockCountX,
         y: info.blockCountY,
       })),
-      secure: !!this.secretKey,
+      algorithm,
+      secure,
     };
 
     // 6. Distribute shuffled blocks into fragment images

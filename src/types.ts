@@ -66,6 +66,8 @@ export interface ManifestData {
   config: Required<FragmentationConfig>;
   /** Image information */
   images: ShortImageInfo[];
+  /** Algorithm (only set if secure is true) */
+  algorithm?: "aes-256-cbc";
   /** Secure (true if encrypted) */
   secure: boolean;
 }

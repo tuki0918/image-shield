@@ -100,4 +100,31 @@ describe("ImageFragmenter", () => {
       );
     }
   });
+
+  test("manifest contains correct algorithm and secure fields", () => {
+    expect(manifest).toBeDefined();
+    // algorithm field should be defined
+    expect(manifest?.algorithm).toBeDefined();
+    if (secretKey) {
+      expect(manifest?.algorithm).toBe("aes-256-cbc");
+      expect(manifest?.secure).toBe(true);
+    } else {
+      expect(manifest?.algorithm).toBeUndefined();
+      expect(manifest?.secure).toBe(false);
+    }
+  });
+
+  test("manifest config and images fields are valid", () => {
+    expect(manifest?.config).toBeDefined();
+    expect(typeof manifest?.config.blockSize).toBe("number");
+    expect(typeof manifest?.config.prefix).toBe("string");
+    expect(Array.isArray(manifest?.images)).toBe(true);
+    for (const img of manifest?.images || []) {
+      expect(typeof img.w).toBe("number");
+      expect(typeof img.h).toBe("number");
+      expect(typeof img.x).toBe("number");
+      expect(typeof img.y).toBe("number");
+      expect(typeof img.c).toBe("number");
+    }
+  });
 });
