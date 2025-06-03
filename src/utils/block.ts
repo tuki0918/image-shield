@@ -203,21 +203,26 @@ export async function imageFileToBlocks(
   height: number;
   channels: number;
 }> {
-  const image = sharp(input);
-  const metadata = await image.metadata();
-  // Check for missing width/height in metadata for broken image
-  if (
-    typeof metadata.width !== "number" ||
-    typeof metadata.height !== "number"
-  ) {
-    throw new Error("Invalid image metadata: width or height is missing");
+  try {
+    const image = sharp(input);
+    // Error if manifest is incorrect
+    const metadata = await image.metadata();
+    // Check for missing width/height in metadata for broken image
+    if (
+      typeof metadata.width !== "number" ||
+      typeof metadata.height !== "number"
+    ) {
+      throw new Error("Invalid image metadata: width or height is missing");
+    }
+    const width = metadata.width;
+    const height = metadata.height;
+    const channels = 4; // Always use RGBA
+    const imageBuffer = await image.ensureAlpha().raw().toBuffer();
+    const blocks = splitImageToBlocks(imageBuffer, width, height, blockSize);
+    return { blocks, width, height, channels };
+  } catch (e) {
+    throw new Error("The manifest file may not match the image data.");
   }
-  const width = metadata.width;
-  const height = metadata.height;
-  const channels = 4; // Always use RGBA
-  const imageBuffer = await image.ensureAlpha().raw().toBuffer();
-  const blocks = splitImageToBlocks(imageBuffer, width, height, blockSize);
-  return { blocks, width, height, channels };
 }
 
 /**
