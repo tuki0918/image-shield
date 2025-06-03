@@ -2,22 +2,20 @@ import crypto from "node:crypto";
 
 // biome-ignore lint/complexity/noStaticOnlyClass:
 export class CryptoUtils {
-  static encryptBuffer(buffer: Buffer, key: string, iv?: Buffer): Buffer {
-    const ivBuf = iv ?? Buffer.alloc(16, 0);
+  static encryptBuffer(buffer: Buffer, key: string, iv: Buffer): Buffer {
     const cipher = crypto.createCipheriv(
       "aes-256-cbc",
       CryptoUtils.keyTo32(key),
-      ivBuf,
+      iv,
     );
     return Buffer.concat([cipher.update(buffer), cipher.final()]);
   }
 
-  static decryptBuffer(buffer: Buffer, key: string, iv?: Buffer): Buffer {
-    const ivBuf = iv ?? Buffer.alloc(16, 0);
+  static decryptBuffer(buffer: Buffer, key: string, iv: Buffer): Buffer {
     const decipher = crypto.createDecipheriv(
       "aes-256-cbc",
       CryptoUtils.keyTo32(key),
-      ivBuf,
+      iv,
     );
     return Buffer.concat([decipher.update(buffer), decipher.final()]);
   }

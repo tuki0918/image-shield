@@ -6,12 +6,6 @@ describe("CryptoUtils", () => {
   const buffer = Buffer.from("BufferData123");
 
   test("encryptBuffer/decryptBuffer", () => {
-    const encrypted = CryptoUtils.encryptBuffer(buffer, key);
-    const decrypted = CryptoUtils.decryptBuffer(encrypted, key);
-    expect(decrypted.equals(buffer)).toBe(true);
-  });
-
-  test("encryptBuffer/decryptBuffer with IV", () => {
     const iv = Buffer.from("1234567890abcdef1234567890abcdef", "hex");
     const encrypted = CryptoUtils.encryptBuffer(buffer, key, iv);
     const decrypted = CryptoUtils.decryptBuffer(encrypted, key, iv);
