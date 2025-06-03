@@ -179,13 +179,13 @@ manifest.json:
 
 ```json
 {
-  "id": "614c69a2-b3c4-490b-a1d7-cb070aee1cfb",
-  "version": "0.4.0",
-  "timestamp": "2025-05-31T19:00:34.907Z",
+  "id": "b8d686d0-7eb1-4504-83ee-a3f0a5026752",
+  "version": "0.5.0",
+  "timestamp": "2025-06-03T16:09:57.417Z",
   "config": {
     "blockSize": 32,
-    "seed": 376768,
-    "prefix": "img"
+    "prefix": "img",
+    "seed": 115247
   },
   "images": [
     {
@@ -210,6 +210,7 @@ manifest.json:
       "y": 13
     }
   ],
+  "algorithm": "aes-256-cbc",
   "secure": true
 }
 ```
