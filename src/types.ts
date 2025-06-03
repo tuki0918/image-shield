@@ -55,6 +55,8 @@ export interface ShortImageInfo {
   y: number;
 }
 
+export type EncryptionAlgorithm = "aes-256-cbc";
+
 export interface ManifestData {
   /** UUID */
   id: string;
@@ -67,7 +69,7 @@ export interface ManifestData {
   /** Image information */
   images: ShortImageInfo[];
   /** Algorithm (only set if secure is true) */
-  algorithm?: "aes-256-cbc";
+  algorithm?: EncryptionAlgorithm;
   /** Secure (true if encrypted) */
   secure: boolean;
 }
