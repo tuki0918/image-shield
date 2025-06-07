@@ -16,7 +16,7 @@ export class ImageRestorer {
   }
 
   async restoreImages(
-    fragmentImagePaths: string[],
+    fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
     // 1. Calculate the number of blocks for each image
@@ -26,15 +26,15 @@ export class ImageRestorer {
     // 2. Calculate the number of blocks per fragment image (same logic as fragmenter.ts)
     const fragmentBlocksCount = calcBlocksPerFragment(
       totalBlocks,
-      fragmentImagePaths.length,
+      fragmentImages.length,
     );
 
     // 3. Extract all blocks from fragment images (extract the correct number from each fragment image)
     const allBlocks: Buffer[] = [];
-    for (let i = 0; i < fragmentImagePaths.length; i++) {
-      const fragmentPath = fragmentImagePaths[i];
+    for (let i = 0; i < fragmentImages.length; i++) {
+      const fragmentImage = fragmentImages[i];
       const blocks = await this.extractBlocksFromFragment(
-        fragmentPath,
+        fragmentImage,
         manifest,
       );
       allBlocks.push(...blocks.slice(0, fragmentBlocksCount[i]));
@@ -66,11 +66,13 @@ export class ImageRestorer {
 
   // Extract an array of blocks (Buffer) from a fragment image
   private async extractBlocksFromFragment(
-    fragmentPath: string,
+    fragmentImage: string | Buffer,
     manifest: ManifestData,
   ): Promise<Buffer[]> {
     // Read the buffer of the fragment image
-    const buf = await readFileBuffer(fragmentPath);
+    const buf = Buffer.isBuffer(fragmentImage)
+      ? fragmentImage
+      : await readFileBuffer(fragmentImage);
     let imageBufferRaw: Buffer = buf;
     if (manifest.secure && this.secretKey) {
       try {
