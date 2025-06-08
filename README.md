@@ -36,7 +36,7 @@ await ImageShield.encrypt({
   imagePaths: [
     "./input_1.png",
     "./input_2.png",
-    "./input_3.png"
+    "./input_3.png",
   ],
   config: {
     blockSize: 32,
@@ -100,7 +100,7 @@ await ImageShield.encrypt({
   imagePaths: [
     "./input_1.png",
     "./input_2.png",
-    "./input_3.png"
+    "./input_3.png",
   ],
   config: {
     blockSize: 32,
@@ -131,7 +131,7 @@ await ImageShield.decrypt({
   imagePaths: [
     "./output/fragmented/img_1.png.enc",
     "./output/fragmented/img_2.png.enc",
-    "./output/fragmented/img_3.png.enc"
+    "./output/fragmented/img_3.png.enc",
   ],
   manifestPath: "./output/fragmented/manifest.json",
   outputDir: "./output/restored",
