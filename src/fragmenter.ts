@@ -6,9 +6,12 @@ import type {
   ImageInfo,
   ManifestData,
 } from "./types";
-import { calcBlocksPerFragment, imageFileToBlocks } from "./utils/block";
+import {
+  blocksToPngImage,
+  calcBlocksPerFragment,
+  imageFileToBlocks,
+} from "./utils/block";
 import { CryptoUtils, uuidToIV } from "./utils/crypto";
-import { assembleImageFromBlocks } from "./utils/imageAssembler";
 import { shuffleArrayWithKey } from "./utils/random";
 
 export class ImageFragmenter {
@@ -125,7 +128,7 @@ export class ImageFragmenter {
     const imageWidth = blocksPerRow * blockSize;
     const imageHeight = Math.ceil(blockCount / blocksPerRow) * blockSize;
     // Use common assembler
-    return await assembleImageFromBlocks(
+    return await blocksToPngImage(
       blocks,
       imageWidth,
       imageHeight,
