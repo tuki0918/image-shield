@@ -30,15 +30,14 @@ export class ImageRestorer {
     );
 
     // 3. Extract all blocks from fragment images (extract the correct number from each fragment image)
-    const allBlocks: Buffer[] = [];
-    for (let i = 0; i < fragmentImages.length; i++) {
-      const fragmentImage = fragmentImages[i];
-      const blocks = await this.extractBlocksFromFragment(
-        fragmentImage,
-        manifest,
-      );
-      allBlocks.push(...blocks.slice(0, fragmentBlocksCount[i]));
-    }
+    const blocksArrays = await Promise.all(
+      fragmentImages.map((fragmentImage) =>
+        this.extractBlocksFromFragment(fragmentImage, manifest),
+      ),
+    );
+    const allBlocks = blocksArrays.flatMap((blocks, i) =>
+      blocks.slice(0, fragmentBlocksCount[i]),
+    );
 
     // 4. Reproduce the shuffle order (common logic)
     const restoredBlocks = unshuffleArrayWithKey(
