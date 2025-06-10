@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { MANIFEST_FILE_NAME } from "./constraints";
 import { ImageFragmenter } from "./fragmenter";
 import { ImageRestorer } from "./restorer";
 import type {
@@ -31,7 +32,7 @@ export default class ImageShield {
     await fs.mkdir(outputDir, { recursive: true });
 
     // Save manifest file
-    const manifestPath = path.join(outputDir, "manifest.json");
+    const manifestPath = path.join(outputDir, MANIFEST_FILE_NAME);
     await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
 
     // Save fragment images
