@@ -177,10 +177,14 @@ describe("imageFileToBlocks & blocksToPngImage (integration)", () => {
       width: w,
       height: h,
       channels: c,
+      blockCountX: x,
+      blockCountY: y,
     } = await imageFileToBlocks(tmpPng, blockSize);
     expect(w).toBe(width);
     expect(h).toBe(height);
     expect(c).toBe(channels);
+    expect(x).toBe(2);
+    expect(y).toBe(2);
     expect(blocks.length).toBe(4); // 2x2 blocks
     // Check block contents (top-left block)
     expect(blocks[0]).toEqual(
@@ -267,10 +271,14 @@ describe("integration: fragmentImages and restoreImages", () => {
       width: w,
       height: h,
       channels: c,
+      blockCountX: x,
+      blockCountY: y,
     } = await imageFileToBlocks(path.join(tmpDir, "test.png"), blockSize);
     expect(w).toBe(width);
     expect(h).toBe(height);
     expect(c).toBe(channels);
+    expect(x).toBe(2);
+    expect(y).toBe(2);
     expect(blocks.length).toBe(4); // 2x2 blocks
     // Check block contents (top-left block)
     expect(blocks[0]).toEqual(

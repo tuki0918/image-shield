@@ -96,21 +96,17 @@ export class ImageFragmenter {
     const allBlocks: Buffer[] = [];
     for (let i = 0; i < imagePaths.length; i++) {
       const imagePath = imagePaths[i];
-      const { blocks, width, height, channels } = await imageFileToBlocks(
-        imagePath,
-        this.config.blockSize,
-      );
+      const { blocks, width, height, channels, blockCountX, blockCountY } =
+        await imageFileToBlocks(imagePath, this.config.blockSize);
       const imageInfo: ImageInfo = {
         width,
         height,
         channels,
-        blockCountX: Math.ceil(width / this.config.blockSize),
-        blockCountY: Math.ceil(height / this.config.blockSize),
+        blockCountX,
+        blockCountY,
       };
       imageInfos.push(imageInfo);
-      for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-        allBlocks.push(blocks[blockIndex]);
-      }
+      allBlocks.push(...blocks);
     }
     const manifest = this.createManifest(imageInfos);
     return { manifest, allBlocks };

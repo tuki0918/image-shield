@@ -202,6 +202,8 @@ export async function imageFileToBlocks(
   width: number;
   height: number;
   channels: number;
+  blockCountX: number;
+  blockCountY: number;
 }> {
   try {
     const image = sharp(input);
@@ -219,7 +221,9 @@ export async function imageFileToBlocks(
     const channels = 4; // Always use RGBA
     const imageBuffer = await image.ensureAlpha().raw().toBuffer();
     const blocks = splitImageToBlocks(imageBuffer, width, height, blockSize);
-    return { blocks, width, height, channels };
+    const blockCountX = Math.ceil(width / blockSize);
+    const blockCountY = Math.ceil(height / blockSize);
+    return { blocks, width, height, channels, blockCountX, blockCountY };
   } catch (e) {
     throw new Error("The manifest file may not match the image data.");
   }
