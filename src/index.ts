@@ -1,5 +1,3 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import { MANIFEST_FILE_NAME } from "./constraints";
 import { ImageFragmenter } from "./fragmenter";
 import { ImageRestorer } from "./restorer";
@@ -30,10 +28,7 @@ export default class ImageShield {
     const { manifest, fragmentedImages } =
       await fragmenter.fragmentImages(imagePaths);
 
-    // Create output directory
     await createDir(outputDir, true);
-
-    // Save manifest file
     await writeFile(
       outputDir,
       MANIFEST_FILE_NAME,
@@ -44,7 +39,6 @@ export default class ImageShield {
     const ext = manifest.secure ? "png.enc" : "png";
     const count = imagePaths.length;
 
-    // Save fragment images
     await Promise.all(
       fragmentedImages.map((img, i) => {
         const filename = generateFragmentFileName(prefix, i, count, ext);
@@ -57,20 +51,18 @@ export default class ImageShield {
     validateDecryptOptions(options);
 
     const { imagePaths, manifestPath, outputDir, secretKey } = options;
-    // Read manifest
+
     const manifest = await readJsonFile<ManifestData>(manifestPath);
 
     const restorer = new ImageRestorer(verifySecretKey(secretKey));
     const restoredImages = await restorer.restoreImages(imagePaths, manifest);
 
-    // Create output directory
     await createDir(outputDir, true);
 
     const prefix = manifest.config.prefix;
     const ext = "png";
     const count = imagePaths.length;
 
-    // Save restored images
     await Promise.all(
       restoredImages.map((img, i) => {
         const filename = generateFragmentFileName(prefix, i, count, ext);
