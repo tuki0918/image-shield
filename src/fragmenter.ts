@@ -5,6 +5,7 @@ import type {
   FragmentationResult,
   ImageInfo,
   ManifestData,
+  ShortImageInfo,
 } from "./types";
 import {
   blocksToPngImage,
@@ -33,27 +34,30 @@ export class ImageFragmenter {
 
     const shuffledBlocks = shuffleArrayWithKey(allBlocks, manifest.config.seed);
 
-    const fragmentedImages: Buffer[] = [];
-    let blockPtr = 0;
-    for (let i = 0; i < manifest.images.length; i++) {
-      const count = fragmentBlocksCount[i];
-      const imageBlocks = shuffledBlocks.slice(blockPtr, blockPtr + count);
-      blockPtr += count;
-      // Create fragment image
-      const fragmentImage = await this.createFragmentImage(
-        imageBlocks,
-        count,
-        manifest.config.blockSize,
-      );
-      const outputFragment = this.secretKey
-        ? CryptoUtils.encryptBuffer(
-            fragmentImage,
-            this.secretKey,
-            uuidToIV(manifest.id),
-          )
-        : fragmentImage;
-      fragmentedImages.push(outputFragment);
-    }
+    const fragmentedImages: Buffer[] = await Promise.all(
+      manifest.images.map(async (imageInfo, i) => {
+        // Calculate slice range using cumulative sum
+        const start = fragmentBlocksCount
+          .slice(0, i)
+          .reduce((a, b) => a + b, 0);
+        const end = start + fragmentBlocksCount[i];
+        const imageBlocks = shuffledBlocks.slice(start, end);
+        const fragmentImage = await this.createFragmentImage(
+          imageBlocks,
+          fragmentBlocksCount[i],
+          manifest.config.blockSize,
+          imageInfo,
+        );
+        // Encrypt if secretKey is set
+        return this.secretKey
+          ? CryptoUtils.encryptBuffer(
+              fragmentImage,
+              this.secretKey,
+              uuidToIV(manifest.id),
+            )
+          : fragmentImage;
+      }),
+    );
 
     return {
       manifest,
@@ -114,19 +118,19 @@ export class ImageFragmenter {
     blocks: Buffer[],
     blockCount: number,
     blockSize: number,
+    imageInfo: ShortImageInfo,
   ): Promise<Buffer> {
-    const channels = 4;
+    const { c } = imageInfo;
+    // Calculate fragmented image size
     const blocksPerRow = Math.ceil(Math.sqrt(blockCount));
     const imageWidth = blocksPerRow * blockSize;
     const imageHeight = Math.ceil(blockCount / blocksPerRow) * blockSize;
-
-    // Use common assembler
     return await blocksToPngImage(
       blocks,
       imageWidth,
       imageHeight,
       blockSize,
-      channels,
+      c,
     );
   }
 }

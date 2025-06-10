@@ -26,20 +26,22 @@ export class ImageRestorer {
       manifest.config.seed,
     );
 
-    const restoredImages: Buffer[] = [];
-    let blockPtr = 0;
-    for (let i = 0; i < manifest.images.length; i++) {
-      const imageInfo = manifest.images[i];
-      const blockCount = imageInfo.x * imageInfo.y;
-      const imageBlocks = restoredBlocks.slice(blockPtr, blockPtr + blockCount);
-      blockPtr += blockCount;
-      const restoredImage = await this.reconstructImage(
-        imageBlocks,
-        imageInfo,
-        manifest.config.blockSize,
-      );
-      restoredImages.push(restoredImage);
-    }
+    const restoredImages: Buffer[] = await Promise.all(
+      manifest.images.map(async (imageInfo, i) => {
+        // Calculate slice range using cumulative sum
+        const blockCount = imageInfo.x * imageInfo.y;
+        const start = manifest.images
+          .slice(0, i)
+          .reduce((sum, img) => sum + img.x * img.y, 0);
+        const end = start + blockCount;
+        const imageBlocks = restoredBlocks.slice(start, end);
+        return await this.reconstructImage(
+          imageBlocks,
+          manifest.config.blockSize,
+          imageInfo,
+        );
+      }),
+    );
     return restoredImages;
   }
 
@@ -95,8 +97,8 @@ export class ImageRestorer {
 
   private async reconstructImage(
     blocks: Buffer[],
-    imageInfo: ShortImageInfo,
     blockSize: number,
+    imageInfo: ShortImageInfo,
   ): Promise<Buffer> {
     const { w, h, c } = imageInfo;
     return await blocksToPngImage(blocks, w, h, blockSize, c);
