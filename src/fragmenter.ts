@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import { VERSION } from "./constraints";
 import type {
   FragmentationConfig,
@@ -69,7 +68,7 @@ export class ImageFragmenter {
     const secure = !!this.secretKey;
     const algorithm = secure ? "aes-256-cbc" : undefined;
     return {
-      id: crypto.randomUUID(),
+      id: CryptoUtils.generateUUID(),
       version: VERSION,
       timestamp: new Date().toISOString(),
       config: this.config,

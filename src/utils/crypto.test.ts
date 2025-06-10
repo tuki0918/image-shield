@@ -27,6 +27,18 @@ describe("CryptoUtils", () => {
     expect(iv.toString("hex")).toBe("106e432610504e8a850a9e630f96de06");
   });
 
+  test("generateUUID returns correct UUID", () => {
+    const uuid = CryptoUtils.generateUUID();
+    expect(typeof uuid).toBe("string");
+    expect(uuid.length).toBe(36);
+    // check if the uuid is valid
+    expect(
+      uuid.match(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+      ),
+    ).not.toBeNull();
+  });
+
   test("uuidToIV throws error for invalid UUID", () => {
     const uuid = "106e4326-1050-4e8a-850a-9e630f96de06-invalid";
     expect(() => uuidToIV(uuid)).toThrow(InvalidUUIDFormatError);
