@@ -30,12 +30,8 @@ export class ImageFragmenter {
 
   async fragmentImages(imagePaths: string[]): Promise<FragmentationResult> {
     // 1. Prepare image info and collect all blocks
-    const imageBlockInfos: ImageInfo[] = [];
-    const allBlocks: Array<{
-      data: Buffer;
-      sourceIndex: number;
-      blockIndex: number;
-    }> = [];
+    const imageInfos: ImageInfo[] = [];
+    const allBlocks: Buffer[] = [];
 
     // 2. Load each image and split into blocks
     for (let i = 0; i < imagePaths.length; i++) {
@@ -45,20 +41,16 @@ export class ImageFragmenter {
         imagePath,
         this.config.blockSize,
       );
-      const imageInfo = {
+      const imageInfo: ImageInfo = {
         width,
         height,
         channels,
         blockCountX: Math.ceil(width / this.config.blockSize),
         blockCountY: Math.ceil(height / this.config.blockSize),
       };
-      imageBlockInfos.push(imageInfo);
+      imageInfos.push(imageInfo);
       for (let blockIndex = 0; blockIndex < blocks.length; blockIndex++) {
-        allBlocks.push({
-          data: blocks[blockIndex],
-          sourceIndex: i,
-          blockIndex,
-        });
+        allBlocks.push(blocks[blockIndex]);
       }
     }
 
@@ -79,7 +71,7 @@ export class ImageFragmenter {
       version: VERSION,
       timestamp: new Date().toISOString(),
       config: this.config,
-      images: imageBlockInfos.map((info) => ({
+      images: imageInfos.map((info) => ({
         w: info.width,
         h: info.height,
         c: 4, // Always use 4 channels (RGBA) for generated PNG
@@ -101,7 +93,7 @@ export class ImageFragmenter {
       const imageInfo = manifest.images[i];
       // Create fragment image
       const fragmentImage = await this.createFragmentImage(
-        imageBlocks.map((b) => b.data),
+        imageBlocks,
         imageInfo,
         this.config.blockSize,
       );

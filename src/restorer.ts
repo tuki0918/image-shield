@@ -87,7 +87,6 @@ export class ImageRestorer {
         );
       }
     }
-    // Use imageFileToBlocks for both buffer and path
     const { blocks } = await imageFileToBlocks(
       imageBufferRaw,
       manifest.config.blockSize,
