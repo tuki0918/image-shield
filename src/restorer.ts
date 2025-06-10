@@ -3,9 +3,9 @@ import {
   blocksToPngImage,
   calcBlocksPerFragment,
   imageFileToBlocks,
-  readFileBuffer,
 } from "./utils/block";
 import { CryptoUtils, uuidToIV } from "./utils/crypto";
+import { readFileBuffer } from "./utils/file";
 import { unshuffleArrayWithKey } from "./utils/random";
 
 export class ImageRestorer {

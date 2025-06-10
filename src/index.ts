@@ -9,6 +9,7 @@ import type {
   FragmentationConfig,
   ManifestData,
 } from "./types";
+import { createDir, readJsonFile, writeFile } from "./utils/file";
 import { generateFragmentFileName, verifySecretKey } from "./utils/helpers";
 
 export {
@@ -24,31 +25,30 @@ export default class ImageShield {
     validateEncryptOptions(options);
 
     const { imagePaths, config, outputDir, secretKey } = options;
+
     const fragmenter = new ImageFragmenter(config, verifySecretKey(secretKey));
-    const result = await fragmenter.fragmentImages(imagePaths);
-    const { manifest, fragmentedImages } = result;
+    const { manifest, fragmentedImages } =
+      await fragmenter.fragmentImages(imagePaths);
 
     // Create output directory
-    await fs.mkdir(outputDir, { recursive: true });
+    await createDir(outputDir, true);
 
     // Save manifest file
-    const manifestPath = path.join(outputDir, MANIFEST_FILE_NAME);
-    await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+    await writeFile(
+      outputDir,
+      MANIFEST_FILE_NAME,
+      JSON.stringify(manifest, null, 2),
+    );
+
+    const prefix = manifest.config.prefix;
+    const ext = manifest.secure ? "png.enc" : "png";
+    const count = imagePaths.length;
 
     // Save fragment images
     await Promise.all(
       fragmentedImages.map((img, i) => {
-        const ext = manifest.secure ? "png.enc" : "png";
-        const fragmentPath = path.join(
-          outputDir,
-          generateFragmentFileName(
-            manifest.config.prefix,
-            i,
-            imagePaths.length,
-            ext,
-          ),
-        );
-        return fs.writeFile(fragmentPath, img);
+        const filename = generateFragmentFileName(prefix, i, count, ext);
+        return writeFile(outputDir, filename, img);
       }),
     );
   }
@@ -58,24 +58,23 @@ export default class ImageShield {
 
     const { imagePaths, manifestPath, outputDir, secretKey } = options;
     // Read manifest
-    const manifestData = await fs.readFile(manifestPath, "utf-8");
-    const manifest: ManifestData = JSON.parse(manifestData);
-    const { prefix } = manifest.config;
+    const manifest = await readJsonFile<ManifestData>(manifestPath);
 
     const restorer = new ImageRestorer(verifySecretKey(secretKey));
     const restoredImages = await restorer.restoreImages(imagePaths, manifest);
 
     // Create output directory
-    await fs.mkdir(outputDir, { recursive: true });
+    await createDir(outputDir, true);
+
+    const prefix = manifest.config.prefix;
+    const ext = "png";
+    const count = imagePaths.length;
 
     // Save restored images
     await Promise.all(
       restoredImages.map((img, i) => {
-        const outputPath = path.join(
-          outputDir,
-          generateFragmentFileName(prefix, i, restoredImages.length, "png"),
-        );
-        return fs.writeFile(outputPath, img);
+        const filename = generateFragmentFileName(prefix, i, count, ext);
+        return writeFile(outputDir, filename, img);
       }),
     );
   }

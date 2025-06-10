@@ -1,4 +1,3 @@
-import { promises as fs } from "node:fs";
 import sharp from "sharp";
 
 /**
@@ -268,13 +267,4 @@ export function calcBlocksPerFragment(
     remainingBlocks -= count;
   }
   return fragmentBlocksCount;
-}
-
-/**
- * Read a file and return its Buffer
- * @param path Path to the file
- * @returns Buffer
- */
-export async function readFileBuffer(path: string): Promise<Buffer> {
-  return await fs.readFile(path);
 }
