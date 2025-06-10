@@ -19,37 +19,17 @@ export class ImageRestorer {
     fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
-    // 1. Calculate the number of blocks for each image
-    const imageBlockCounts = manifest.images.map((img) => img.x * img.y);
-    const totalBlocks = imageBlockCounts.reduce((a, b) => a + b, 0);
+    const { allBlocks } = await this.prepareRestores(fragmentImages, manifest);
 
-    // 2. Calculate the number of blocks per fragment image (same logic as fragmenter.ts)
-    const fragmentBlocksCount = calcBlocksPerFragment(
-      totalBlocks,
-      fragmentImages.length,
-    );
-
-    // 3. Extract all blocks from fragment images (extract the correct number from each fragment image)
-    const blocksArrays = await Promise.all(
-      fragmentImages.map((fragmentImage) =>
-        this.extractBlocksFromFragment(fragmentImage, manifest),
-      ),
-    );
-    const allBlocks = blocksArrays.flatMap((blocks, i) =>
-      blocks.slice(0, fragmentBlocksCount[i]),
-    );
-
-    // 4. Reproduce the shuffle order (common logic)
     const restoredBlocks = unshuffleArrayWithKey(
       allBlocks,
       manifest.config.seed,
     );
 
-    // 6. Assign blocks to each image and restore
     const restoredImages: Buffer[] = [];
     let blockPtr = 0;
-    for (let imgIdx = 0; imgIdx < manifest.images.length; imgIdx++) {
-      const imageInfo = manifest.images[imgIdx];
+    for (let i = 0; i < manifest.images.length; i++) {
+      const imageInfo = manifest.images[i];
       const blockCount = imageInfo.x * imageInfo.y;
       const imageBlocks = restoredBlocks.slice(blockPtr, blockPtr + blockCount);
       blockPtr += blockCount;
@@ -61,6 +41,26 @@ export class ImageRestorer {
       restoredImages.push(restoredImage);
     }
     return restoredImages;
+  }
+
+  private async prepareRestores(
+    fragmentImages: (string | Buffer)[],
+    manifest: ManifestData,
+  ): Promise<{ allBlocks: Buffer[]; fragmentBlocksCount: number[] }> {
+    const totalBlocks = manifest.images.reduce((a, b) => a + b.x * b.y, 0);
+    const fragmentBlocksCount = calcBlocksPerFragment(
+      totalBlocks,
+      fragmentImages.length,
+    );
+    const blocksArrays = await Promise.all(
+      fragmentImages.map((fragmentImage) =>
+        this.extractBlocksFromFragment(fragmentImage, manifest),
+      ),
+    );
+    const allBlocks = blocksArrays.flatMap((blocks, i) =>
+      blocks.slice(0, fragmentBlocksCount[i]),
+    );
+    return { allBlocks, fragmentBlocksCount };
   }
 
   // Extract an array of blocks (Buffer) from a fragment image

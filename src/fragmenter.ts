@@ -28,19 +28,11 @@ export class ImageFragmenter {
   }
 
   async fragmentImages(imagePaths: string[]): Promise<FragmentationResult> {
-    // 1. Prepare manifest and collect all blocks
-    const { manifest, allBlocks } = await this.prepareFragments(imagePaths);
+    const { manifest, allBlocks, fragmentBlocksCount } =
+      await this.prepareFragments(imagePaths);
 
-    // 2. Shuffle all blocks
     const shuffledBlocks = shuffleArrayWithKey(allBlocks, manifest.config.seed);
 
-    // 3. Calculate the number of blocks per fragment image
-    const fragmentBlocksCount = calcBlocksPerFragment(
-      shuffledBlocks.length,
-      imagePaths.length,
-    );
-
-    // 4. Distribute shuffled blocks into fragment images
     const fragmentedImages: Buffer[] = [];
     let blockPtr = 0;
     for (let i = 0; i < manifest.images.length; i++) {
@@ -89,9 +81,11 @@ export class ImageFragmenter {
     };
   }
 
-  private async prepareFragments(
-    imagePaths: string[],
-  ): Promise<{ manifest: ManifestData; allBlocks: Buffer[] }> {
+  private async prepareFragments(imagePaths: string[]): Promise<{
+    manifest: ManifestData;
+    allBlocks: Buffer[];
+    fragmentBlocksCount: number[];
+  }> {
     const imageInfos: ImageInfo[] = [];
     const allBlocks: Buffer[] = [];
     for (let i = 0; i < imagePaths.length; i++) {
@@ -109,7 +103,11 @@ export class ImageFragmenter {
       allBlocks.push(...blocks);
     }
     const manifest = this.createManifest(imageInfos);
-    return { manifest, allBlocks };
+    const fragmentBlocksCount = calcBlocksPerFragment(
+      allBlocks.length,
+      imagePaths.length,
+    );
+    return { manifest, allBlocks, fragmentBlocksCount };
   }
 
   private async createFragmentImage(
