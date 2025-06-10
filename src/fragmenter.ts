@@ -5,7 +5,6 @@ import type {
   FragmentationResult,
   ImageInfo,
   ManifestData,
-  ShortImageInfo,
 } from "./types";
 import {
   blocksToPngImage,
@@ -48,10 +47,10 @@ export class ImageFragmenter {
       const count = fragmentBlocksCount[i];
       const imageBlocks = shuffledBlocks.slice(blockPtr, blockPtr + count);
       blockPtr += count;
-      const imageInfo = manifest.images[i];
+      // Create fragment image
       const fragmentImage = await this.createFragmentImage(
         imageBlocks,
-        imageInfo,
+        count,
         manifest.config.blockSize,
       );
       const outputFragment = this.secretKey
@@ -119,10 +118,21 @@ export class ImageFragmenter {
 
   private async createFragmentImage(
     blocks: Buffer[],
-    imageInfo: ShortImageInfo,
+    blockCount: number,
     blockSize: number,
   ): Promise<Buffer> {
-    const { w, h, c } = imageInfo;
-    return await blocksToPngImage(blocks, w, h, blockSize, c);
+    const channels = 4;
+    const blocksPerRow = Math.ceil(Math.sqrt(blockCount));
+    const imageWidth = blocksPerRow * blockSize;
+    const imageHeight = Math.ceil(blockCount / blocksPerRow) * blockSize;
+
+    // Use common assembler
+    return await blocksToPngImage(
+      blocks,
+      imageWidth,
+      imageHeight,
+      blockSize,
+      channels,
+    );
   }
 }
