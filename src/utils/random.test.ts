@@ -25,13 +25,6 @@ describe("SeededRandom", () => {
     expect(shuffled1).not.toEqual(arr); // Rarely, the order may not change
   });
 
-  test("createSeedFromKeyAndSeed returns consistent number", () => {
-    const s1 = SeededRandom.createSeedFromKeyAndSeed("key", 123);
-    const s2 = SeededRandom.createSeedFromKeyAndSeed("key", 123);
-    expect(s1).toBe(s2);
-    expect(typeof s1).toBe("number");
-  });
-
   test("generateSeed returns number", () => {
     const seed = SeededRandom.generateSeed();
     expect(typeof seed).toBe("number");

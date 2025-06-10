@@ -25,16 +25,6 @@ export class SeededRandom {
     return result;
   }
 
-  static createSeedFromKeyAndSeed(secretKey: string, seed: number): number {
-    // Hash secretKey+seed with SHA256, then convert the lower 8 digits to decimal
-    const hash = crypto
-      .createHash("sha256")
-      .update(secretKey + seed)
-      .digest("hex");
-    // Convert the first 8 digits to a number
-    return Number.parseInt(hash.slice(0, 8), 16) % 100000000;
-  }
-
   static generateSeed(): number {
     return Math.floor(Math.random() * 1000000);
   }
