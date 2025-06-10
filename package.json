@@ -34,6 +34,7 @@
     "vitest": "^3.1.4"
   },
   "dependencies": {
+    "jimp": "^1.6.0",
     "sharp": "^0.34.2"
   }
 }
