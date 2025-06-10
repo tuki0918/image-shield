@@ -31,6 +31,12 @@ describe("SeededRandom", () => {
     expect(s1).toBe(s2);
     expect(typeof s1).toBe("number");
   });
+
+  test("generateSeed returns number", () => {
+    const seed = SeededRandom.generateSeed();
+    expect(typeof seed).toBe("number");
+    expect(Number.isInteger(seed)).toBe(true);
+  });
 });
 
 describe("shuffle/unshuffle helpers", () => {

@@ -34,6 +34,10 @@ export class SeededRandom {
     // Convert the first 8 digits to a number
     return Number.parseInt(hash.slice(0, 8), 16) % 100000000;
   }
+
+  static generateSeed(): number {
+    return Math.floor(Math.random() * 1000000);
+  }
 }
 
 /**

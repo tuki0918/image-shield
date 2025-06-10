@@ -18,12 +18,6 @@ describe("CryptoUtils", () => {
     expect(result.length).toBe(32);
   });
 
-  test("generateSeed returns number", () => {
-    const seed = CryptoUtils.generateSeed();
-    expect(typeof seed).toBe("number");
-    expect(Number.isInteger(seed)).toBe(true);
-  });
-
   test("uuidToIV returns correct Buffer", () => {
     const uuid = "106e4326-1050-4e8a-850a-9e630f96de06";
     const iv = uuidToIV(uuid);

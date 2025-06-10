@@ -23,10 +23,6 @@ export class CryptoUtils {
   static keyTo32(key: string): Buffer {
     return crypto.createHash("sha256").update(key).digest();
   }
-
-  static generateSeed(): number {
-    return Math.floor(Math.random() * 1000000);
-  }
 }
 
 // Convert UUID to IV (16 bytes)

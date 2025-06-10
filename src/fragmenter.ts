@@ -13,7 +13,7 @@ import {
   imageFileToBlocks,
 } from "./utils/block";
 import { CryptoUtils, uuidToIV } from "./utils/crypto";
-import { shuffleArrayWithKey } from "./utils/random";
+import { SeededRandom, shuffleArrayWithKey } from "./utils/random";
 
 export class ImageFragmenter {
   private config: Required<FragmentationConfig>;
@@ -23,7 +23,7 @@ export class ImageFragmenter {
     this.config = {
       ...config,
       prefix: config.prefix ?? "fragment",
-      seed: config.seed || CryptoUtils.generateSeed(),
+      seed: config.seed || SeededRandom.generateSeed(),
     };
     this.secretKey = secretKey;
   }
