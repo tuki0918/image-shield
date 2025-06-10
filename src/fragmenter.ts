@@ -11,7 +11,7 @@ import {
   calcBlocksPerFragment,
   imageFileToBlocks,
 } from "./utils/block";
-import { CryptoUtils, uuidToIV } from "./utils/crypto";
+import { CryptoUtils } from "./utils/crypto";
 import { SeededRandom, shuffleArrayWithKey } from "./utils/random";
 
 export class ImageFragmenter {
@@ -52,7 +52,7 @@ export class ImageFragmenter {
           ? CryptoUtils.encryptBuffer(
               fragmentImage,
               this.secretKey,
-              uuidToIV(manifest.id),
+              CryptoUtils.uuidToIV(manifest.id),
             )
           : fragmentImage;
       }),

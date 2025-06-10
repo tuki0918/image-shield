@@ -34,12 +34,11 @@ export class CryptoUtils {
   static generateUUID(): string {
     return crypto.randomUUID();
   }
-}
 
-// Convert UUID to IV (16 bytes)
-export function uuidToIV(uuid: string): Buffer {
-  const hex = uuid.replace(/-/g, "");
-  if (hex.length !== 32)
-    throw new InvalidUUIDFormatError("Invalid UUID format");
-  return Buffer.from(hex, "hex");
+  static uuidToIV(uuid: string): Buffer {
+    const hex = uuid.replace(/-/g, "");
+    if (hex.length !== 32)
+      throw new InvalidUUIDFormatError("Invalid UUID format");
+    return Buffer.from(hex, "hex");
+  }
 }

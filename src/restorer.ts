@@ -4,7 +4,7 @@ import {
   calcBlocksPerFragment,
   imageFileToBlocks,
 } from "./utils/block";
-import { CryptoUtils, uuidToIV } from "./utils/crypto";
+import { CryptoUtils } from "./utils/crypto";
 import { readFileBuffer } from "./utils/file";
 import { unshuffleArrayWithKey } from "./utils/random";
 
@@ -80,7 +80,7 @@ export class ImageRestorer {
         imageBufferRaw = CryptoUtils.decryptBuffer(
           buf,
           this.secretKey,
-          uuidToIV(manifest.id),
+          CryptoUtils.uuidToIV(manifest.id),
         );
       } catch (e) {
         throw new Error(
