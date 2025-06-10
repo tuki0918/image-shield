@@ -1,4 +1,4 @@
-import { CryptoUtils, uuidToIV } from "./crypto";
+import { CryptoUtils, InvalidUUIDFormatError, uuidToIV } from "./crypto";
 
 describe("CryptoUtils", () => {
   const key = "test-key-1234";
@@ -25,5 +25,10 @@ describe("CryptoUtils", () => {
     expect(iv.length).toBe(16);
     // check if the hex string
     expect(iv.toString("hex")).toBe("106e432610504e8a850a9e630f96de06");
+  });
+
+  test("uuidToIV throws error for invalid UUID", () => {
+    const uuid = "106e4326-1050-4e8a-850a-9e630f96de06-invalid";
+    expect(() => uuidToIV(uuid)).toThrow(InvalidUUIDFormatError);
   });
 });

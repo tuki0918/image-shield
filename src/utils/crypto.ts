@@ -1,5 +1,12 @@
 import crypto from "node:crypto";
 
+export class InvalidUUIDFormatError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidUUIDFormatError";
+  }
+}
+
 // biome-ignore lint/complexity/noStaticOnlyClass:
 export class CryptoUtils {
   static encryptBuffer(buffer: Buffer, key: string, iv: Buffer): Buffer {
@@ -28,6 +35,7 @@ export class CryptoUtils {
 // Convert UUID to IV (16 bytes)
 export function uuidToIV(uuid: string): Buffer {
   const hex = uuid.replace(/-/g, "");
-  if (hex.length !== 32) throw new Error("Invalid UUID format");
+  if (hex.length !== 32)
+    throw new InvalidUUIDFormatError("Invalid UUID format");
   return Buffer.from(hex, "hex");
 }
