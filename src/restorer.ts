@@ -101,7 +101,6 @@ export class ImageRestorer {
     blockSize: number,
   ): Promise<Buffer> {
     const { w, h, c } = imageInfo;
-    // Use utility to reconstruct PNG image from blocks
     return await blocksToPngImage(blocks, w, h, blockSize, c);
   }
 }
