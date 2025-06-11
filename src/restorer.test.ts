@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import sharp from "sharp";
+import { Jimp, JimpMime } from "jimp";
 import { ImageFragmenter } from "./fragmenter";
 import { ImageRestorer } from "./restorer";
 
@@ -34,9 +34,12 @@ describe("ImageRestorer", () => {
     imagePaths = [];
     for (let i = 0; i < originalImages.length; i++) {
       const filePath = path.join(tmpDir, `original_${i}.png`);
-      await sharp(originalImages[i], { raw: { width, height, channels: 4 } })
-        .png()
-        .toFile(filePath);
+      const image = Jimp.fromBitmap({
+        data: originalImages[i],
+        width,
+        height,
+      });
+      await image.write(filePath, JimpMime.png);
       imagePaths.push(filePath);
     }
     // Fragment images
@@ -80,12 +83,11 @@ describe("ImageRestorer", () => {
 
   test("restored images match original images", async () => {
     for (let i = 0; i < originalImages.length; i++) {
-      const orig = await sharp(imagePaths[i]).ensureAlpha().raw().toBuffer();
-      const restored = await sharp(restoredPaths[i])
-        .ensureAlpha()
-        .raw()
-        .toBuffer();
-      expect(restored).toEqual(orig);
+      const orig = await Jimp.read(imagePaths[i]);
+      const restored = await Jimp.read(restoredPaths[i]);
+      expect(restored.getBuffer(JimpMime.png)).toEqual(
+        orig.getBuffer(JimpMime.png),
+      );
     }
   });
 });

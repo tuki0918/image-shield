@@ -1,4 +1,4 @@
-import sharp from "sharp";
+import { Jimp, JimpMime } from "jimp";
 
 /**
  * Extract a block from a buffer (specify image width/height/start position/block size)
@@ -84,31 +84,24 @@ export function placeBlock(
 }
 
 /**
- * Convert a raw image buffer to PNG Buffer using sharp
+ * Convert a raw image buffer to PNG Buffer using Jimp
  * @param buffer Raw image buffer
  * @param width Image width
  * @param height Image height
- * @param channels Number of channels (default: 4)
  * @returns PNG Buffer (Promise)
  */
 export async function bufferToPng(
   buffer: Buffer,
   width: number,
   height: number,
-  channels = 4,
 ): Promise<Buffer> {
-  return await sharp(buffer, {
-    raw: {
-      width,
-      height,
-      channels: channels as 1 | 2 | 3 | 4,
-    },
-  })
-    .png({
-      compressionLevel: 9,
-      quality: 100,
-    })
-    .toBuffer();
+  const image = Jimp.fromBitmap({
+    data: buffer,
+    width,
+    height,
+  });
+
+  return await image.getBuffer(JimpMime.png);
 }
 
 /**
@@ -188,7 +181,7 @@ export function blocksToImageBuffer(
 }
 
 /**
- * Load an image from file or buffer, convert to RGBA, and split into blocks
+ * Load an image from file or buffer, convert to RGBA, and split into blocks (Jimp version)
  * @param input Path to the image file or Buffer
  * @param blockSize Block size
  * @returns Promise resolving to an array of block buffers
@@ -205,20 +198,13 @@ export async function imageFileToBlocks(
   blockCountY: number;
 }> {
   try {
-    const image = sharp(input);
-    // Error if manifest is incorrect
-    const metadata = await image.metadata();
-    // Check for missing width/height in metadata for broken image
-    if (
-      typeof metadata.width !== "number" ||
-      typeof metadata.height !== "number"
-    ) {
-      throw new Error("Invalid image metadata: width or height is missing");
-    }
-    const width = metadata.width;
-    const height = metadata.height;
+    // Load image with Jimp
+    const image = await Jimp.read(input);
+    const width = image.bitmap.width;
+    const height = image.bitmap.height;
     const channels = 4; // Always use RGBA
-    const imageBuffer = await image.ensureAlpha().raw().toBuffer();
+    // Ensure image is RGBA (Jimp always loads as RGBA)
+    const imageBuffer = image.bitmap.data;
     const blocks = splitImageToBlocks(imageBuffer, width, height, blockSize);
     const blockCountX = Math.ceil(width / blockSize);
     const blockCountY = Math.ceil(height / blockSize);
@@ -234,7 +220,6 @@ export async function imageFileToBlocks(
  * @param width Image width
  * @param height Image height
  * @param blockSize Block size
- * @param channels Number of channels (default: 4)
  * @returns Promise resolving to PNG buffer
  */
 export async function blocksToPngImage(
@@ -242,10 +227,9 @@ export async function blocksToPngImage(
   width: number,
   height: number,
   blockSize: number,
-  channels = 4,
 ): Promise<Buffer> {
   const imageBuffer = blocksToImageBuffer(blocks, width, height, blockSize);
-  return await bufferToPng(imageBuffer, width, height, channels);
+  return await bufferToPng(imageBuffer, width, height);
 }
 
 /**

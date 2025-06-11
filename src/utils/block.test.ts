@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import sharp from "sharp";
+import { Jimp } from "jimp";
 import {
   blocksToImageBuffer,
   blocksToPngImage,
@@ -160,9 +160,8 @@ describe("imageFileToBlocks & blocksToPngImage (integration)", () => {
   beforeAll(async () => {
     // Create tmp directory and PNG file
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
-    await sharp(buffer, { raw: { width, height, channels } })
-      .png()
-      .toFile(tmpPng);
+    const image = new Jimp({ data: buffer, width, height });
+    await image.write(tmpPng as `${string}.${string}`);
   });
 
   afterAll(() => {
@@ -194,18 +193,10 @@ describe("imageFileToBlocks & blocksToPngImage (integration)", () => {
 
   test("blocksToPngImage reconstructs PNG from blocks", async () => {
     const { blocks } = await imageFileToBlocks(tmpPng, blockSize);
-    const pngBuffer = await blocksToPngImage(
-      blocks,
-      width,
-      height,
-      blockSize,
-      channels,
-    );
+    const pngBuffer = await blocksToPngImage(blocks, width, height, blockSize);
     // Decode PNG and check raw buffer
-    const { data } = await sharp(pngBuffer)
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-    expect(data).toEqual(buffer);
+    const jimpImage = await Jimp.read(pngBuffer);
+    expect(jimpImage.bitmap.data).toEqual(buffer);
   });
 });
 
@@ -253,9 +244,8 @@ describe("integration: fragmentImages and restoreImages", () => {
   beforeAll(async () => {
     // Create tmp directory and PNG file
     if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
-    await sharp(buffer, { raw: { width, height, channels } })
-      .png()
-      .toFile(path.join(tmpDir, "test.png"));
+    const image = new Jimp({ data: buffer, width, height });
+    await image.write(path.join(tmpDir, "test.png") as `${string}.${string}`);
   });
 
   afterAll(() => {
@@ -291,17 +281,9 @@ describe("integration: fragmentImages and restoreImages", () => {
       path.join(tmpDir, "test.png"),
       blockSize,
     );
-    const pngBuffer = await blocksToPngImage(
-      blocks,
-      width,
-      height,
-      blockSize,
-      channels,
-    );
+    const pngBuffer = await blocksToPngImage(blocks, width, height, blockSize);
     // Decode PNG and check raw buffer
-    const { data } = await sharp(pngBuffer)
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-    expect(data).toEqual(buffer);
+    const jimpImage = await Jimp.read(pngBuffer);
+    expect(jimpImage.bitmap.data).toEqual(buffer);
   });
 });
