@@ -123,9 +123,7 @@ describe("ImageShield (integration)", () => {
     for (let i = 0; i < originalImages.length; i++) {
       const orig = await Jimp.read(imagePaths[i]);
       const restored = await Jimp.read(restoredPaths[i]);
-      expect(restored.getBuffer(JimpMime.png)).toEqual(
-        orig.getBuffer(JimpMime.png),
-      );
+      expect(restored.bitmap.data).toEqual(orig.bitmap.data);
     }
   });
 });
