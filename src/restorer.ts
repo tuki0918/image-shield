@@ -100,7 +100,7 @@ export class ImageRestorer {
     blockSize: number,
     imageInfo: ShortImageInfo,
   ): Promise<Buffer> {
-    const { w, h, c } = imageInfo;
-    return await blocksToPngImage(blocks, w, h, blockSize, c);
+    const { w, h } = imageInfo;
+    return await blocksToPngImage(blocks, w, h, blockSize);
   }
 }

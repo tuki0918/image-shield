@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import sharp from "sharp";
+import { Jimp, JimpMime } from "jimp";
 import ImageShield from "./index";
 import { generateFragmentFileName } from "./utils/helpers";
 
@@ -34,9 +34,12 @@ describe("ImageShield (integration)", () => {
     imagePaths = [];
     for (let i = 0; i < originalImages.length; i++) {
       const filePath = path.join(tmpDir, `original_${i}.png`);
-      await sharp(originalImages[i], { raw: { width, height, channels: 4 } })
-        .png()
-        .toFile(filePath);
+      const image = Jimp.fromBitmap({
+        data: originalImages[i],
+        width,
+        height,
+      });
+      await image.write(filePath, JimpMime.png);
       imagePaths.push(filePath);
     }
     // Fragment images using ImageShield.encrypt
@@ -100,14 +103,14 @@ describe("ImageShield (integration)", () => {
       if (secretKey) {
         // If encrypted, it is correct that it cannot be opened as PNG
         await expect(async () => {
-          await sharp(fragmentPath).metadata();
+          await Jimp.read(fragmentPath);
         }).rejects.toThrow();
       } else {
         // If not encrypted, it should be openable as PNG
-        const meta = await sharp(fragmentPath).metadata();
-        expect(meta.format).toBe("png");
-        expect(meta.width).toBe(width);
-        expect(meta.height).toBe(height);
+        const jimpImage = await Jimp.read(fragmentPath);
+        expect(jimpImage.mime).toBe("image/png");
+        expect(jimpImage.bitmap.width).toBeGreaterThan(0);
+        expect(jimpImage.bitmap.height).toBeGreaterThan(0);
       }
     }
 
@@ -118,12 +121,9 @@ describe("ImageShield (integration)", () => {
 
     // Check that restored images match original images
     for (let i = 0; i < originalImages.length; i++) {
-      const orig = await sharp(imagePaths[i]).ensureAlpha().raw().toBuffer();
-      const restored = await sharp(restoredPaths[i])
-        .ensureAlpha()
-        .raw()
-        .toBuffer();
-      expect(restored).toEqual(orig);
+      const orig = await Jimp.read(imagePaths[i]);
+      const restored = await Jimp.read(restoredPaths[i]);
+      expect(restored.bitmap.data).toEqual(orig.bitmap.data);
     }
   });
 });

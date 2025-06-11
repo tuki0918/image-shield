@@ -4,7 +4,6 @@ import type {
   FragmentationResult,
   ImageInfo,
   ManifestData,
-  ShortImageInfo,
 } from "./types";
 import {
   blocksToPngImage,
@@ -34,7 +33,7 @@ export class ImageFragmenter {
     const shuffledBlocks = shuffleArrayWithKey(allBlocks, manifest.config.seed);
 
     const fragmentedImages: Buffer[] = await Promise.all(
-      manifest.images.map(async (imageInfo, i) => {
+      manifest.images.map(async (_, i) => {
         // Calculate slice range using cumulative sum
         const start = fragmentBlocksCount
           .slice(0, i)
@@ -45,7 +44,6 @@ export class ImageFragmenter {
           imageBlocks,
           fragmentBlocksCount[i],
           manifest.config.blockSize,
-          imageInfo,
         );
         // Encrypt if secretKey is set
         return this.secretKey
@@ -117,19 +115,11 @@ export class ImageFragmenter {
     blocks: Buffer[],
     blockCount: number,
     blockSize: number,
-    imageInfo: ShortImageInfo,
   ): Promise<Buffer> {
-    const { c } = imageInfo;
     // Calculate fragmented image size
     const blocksPerRow = Math.ceil(Math.sqrt(blockCount));
     const imageWidth = blocksPerRow * blockSize;
     const imageHeight = Math.ceil(blockCount / blocksPerRow) * blockSize;
-    return await blocksToPngImage(
-      blocks,
-      imageWidth,
-      imageHeight,
-      blockSize,
-      c,
-    );
+    return await blocksToPngImage(blocks, imageWidth, imageHeight, blockSize);
   }
 }

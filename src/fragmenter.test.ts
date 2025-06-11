@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import sharp from "sharp";
+import { Jimp, JimpMime } from "jimp";
 import { ImageFragmenter } from "./fragmenter";
 import type { FragmentationResult } from "./types";
 import { generateFragmentFileName } from "./utils/helpers";
@@ -34,9 +34,12 @@ describe("ImageFragmenter", () => {
     imagePaths = [];
     for (let i = 0; i < originalImages.length; i++) {
       const filePath = path.join(tmpDir, `original_${i}.png`);
-      await sharp(originalImages[i], { raw: { width, height, channels: 4 } })
-        .png()
-        .toFile(filePath);
+      const image = Jimp.fromBitmap({
+        data: originalImages[i],
+        width,
+        height,
+      });
+      await image.write(filePath, JimpMime.png);
       imagePaths.push(filePath);
     }
     // Fragment images
@@ -74,14 +77,14 @@ describe("ImageFragmenter", () => {
       if (secretKey) {
         // If encrypted, it is correct that it cannot be opened as PNG
         await expect(async () => {
-          await sharp(buf).metadata();
+          await Jimp.read(buf);
         }).rejects.toThrow();
       } else {
         // If not encrypted, it should be openable as PNG
-        const meta = await sharp(buf).metadata();
-        expect(meta.format).toBe("png");
-        expect(meta.width).toBeGreaterThan(0);
-        expect(meta.height).toBeGreaterThan(0);
+        const jimpImage = await Jimp.read(buf);
+        expect(jimpImage.mime).toBe("image/png");
+        expect(jimpImage.bitmap.width).toBeGreaterThan(0);
+        expect(jimpImage.bitmap.height).toBeGreaterThan(0);
       }
     }
   });
