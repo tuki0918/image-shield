@@ -4,24 +4,23 @@ import { Jimp, JimpMime } from "jimp";
  * Extract a block from a buffer (specify image width/height/start position/block size)
  * Fixed to RGBA channels
  *
- * @param buffer Source image buffer
+ * @param buffer Source image buffer (Uint8Array)
  * @param imageWidth Image width
  * @param imageHeight Image height (optional)
  * @param startX Block top-left X
  * @param startY Block top-left Y
  * @param blockSize Block size
- * @returns Block buffer
+ * @returns Block buffer (Uint8Array)
  */
 export function extractBlock(
-  buffer: Buffer,
+  buffer: Uint8Array,
   imageWidth: number,
   imageHeight: number | undefined,
   startX: number,
   startY: number,
   blockSize: number,
-): Buffer {
+): Uint8Array {
   const channels = 4;
-  // If the block is at the edge, calculate the actual width/height
   const blockWidth = imageWidth
     ? Math.min(blockSize, imageWidth - startX)
     : blockSize;
@@ -40,15 +39,15 @@ export function extractBlock(
       }
     }
   }
-  return Buffer.from(blockData);
+  return new Uint8Array(blockData);
 }
 
 /**
  * Place block data at the specified position in the image buffer
  * Fixed to RGBA channels
  *
- * @param targetBuffer Target buffer
- * @param blockData Block data
+ * @param targetBuffer Target buffer (Uint8Array)
+ * @param blockData Block data (Uint8Array)
  * @param targetWidth Target image width
  * @param destX Destination X
  * @param destY Destination Y
@@ -57,8 +56,8 @@ export function extractBlock(
  * @param blockHeight Block height (optional)
  */
 export function placeBlock(
-  targetBuffer: Buffer,
-  blockData: Buffer,
+  targetBuffer: Uint8Array,
+  blockData: Uint8Array,
   targetWidth: number,
   destX: number,
   destY: number,
@@ -67,7 +66,6 @@ export function placeBlock(
   blockHeight?: number,
 ): void {
   const channels = 4;
-  // blockWidth/blockHeight is used if specified, otherwise blockSize is used
   const w = blockWidth ?? blockSize;
   const h = blockHeight ?? blockSize;
   for (let y = 0; y < h; y++) {
@@ -85,40 +83,39 @@ export function placeBlock(
 
 /**
  * Convert a raw image buffer to PNG Buffer using Jimp
- * @param buffer Raw image buffer
+ * @param buffer Raw image buffer (Uint8Array)
  * @param width Image width
  * @param height Image height
- * @returns PNG Buffer (Promise)
+ * @returns PNG Buffer (Promise<Uint8Array>)
  */
 export async function bufferToPng(
-  buffer: Buffer,
+  buffer: Uint8Array,
   width: number,
   height: number,
-): Promise<Buffer> {
+): Promise<Uint8Array> {
   const image = Jimp.fromBitmap({
     data: buffer,
     width,
     height,
   });
-
   return await image.getBuffer(JimpMime.png);
 }
 
 /**
  * Split an image buffer into an array of blocks (RGBA only)
- * @param buffer Image buffer
+ * @param buffer Image buffer (Uint8Array)
  * @param width Image width
  * @param height Image height
  * @param blockSize Block size
- * @returns Array of block buffers
+ * @returns Array of block buffers (Uint8Array[])
  */
 export function splitImageToBlocks(
-  buffer: Buffer,
+  buffer: Uint8Array,
   width: number,
   height: number,
   blockSize: number,
-): Buffer[] {
-  const blocks: Buffer[] = [];
+): Uint8Array[] {
+  const blocks: Uint8Array[] = [];
   const blockCountX = Math.ceil(width / blockSize);
   const blockCountY = Math.ceil(height / blockSize);
   for (let by = 0; by < blockCountY; by++) {
@@ -139,20 +136,20 @@ export function splitImageToBlocks(
 
 /**
  * Reconstruct an image buffer from an array of blocks (RGBA only)
- * @param blocks Array of block buffers
+ * @param blocks Array of block buffers (Uint8Array[])
  * @param width Image width
  * @param height Image height
  * @param blockSize Block size
- * @returns Image buffer
+ * @returns Image buffer (Uint8Array)
  */
 export function blocksToImageBuffer(
-  blocks: Buffer[],
+  blocks: Uint8Array[],
   width: number,
   height: number,
   blockSize: number,
-): Buffer {
+): Uint8Array {
   const channels = 4;
-  const imageBuffer = Buffer.alloc(width * height * channels);
+  const imageBuffer = new Uint8Array(width * height * channels);
   const blockCountX = Math.ceil(width / blockSize);
   const blockCountY = Math.ceil(height / blockSize);
   let blockIndex = 0;
@@ -181,16 +178,16 @@ export function blocksToImageBuffer(
 }
 
 /**
- * Load an image from file or buffer, convert to RGBA, and split into blocks (Jimp version)
+ * Load an image from file or buffer, convert to RGBA, and split into blocks
  * @param input Path to the image file or Buffer
  * @param blockSize Block size
  * @returns Promise resolving to an array of block buffers
  */
 export async function imageFileToBlocks(
-  input: string | Buffer,
+  input: string | Uint8Array,
   blockSize: number,
 ): Promise<{
-  blocks: Buffer[];
+  blocks: Uint8Array[];
   width: number;
   height: number;
   channels: number;
@@ -198,8 +195,14 @@ export async function imageFileToBlocks(
   blockCountY: number;
 }> {
   try {
+    // Uint8Array to ArrayBuffer
+    const source = ArrayBuffer.isView(input) ? input.buffer : input;
+    if (source instanceof SharedArrayBuffer) {
+      throw new Error("SharedArrayBuffer is not supported.");
+    }
+
     // Load image with Jimp
-    const image = await Jimp.read(input);
+    const image = await Jimp.read(source);
     const width = image.bitmap.width;
     const height = image.bitmap.height;
     const channels = 4; // Always use RGBA
@@ -216,18 +219,18 @@ export async function imageFileToBlocks(
 
 /**
  * Reconstruct a PNG image from blocks, width, height, blockSize, and channels
- * @param blocks Array of block buffers
+ * @param blocks Array of block buffers (Uint8Array[])
  * @param width Image width
  * @param height Image height
  * @param blockSize Block size
- * @returns Promise resolving to PNG buffer
+ * @returns Promise resolving to PNG buffer (Uint8Array)
  */
 export async function blocksToPngImage(
-  blocks: Buffer[],
+  blocks: Uint8Array[],
   width: number,
   height: number,
   blockSize: number,
-): Promise<Buffer> {
+): Promise<Uint8Array> {
   const imageBuffer = blocksToImageBuffer(blocks, width, height, blockSize);
   return await bufferToPng(imageBuffer, width, height);
 }

@@ -20,7 +20,7 @@ export async function createDir(dir: string, recursive = false) {
 export async function writeFile(
   dir: string,
   filename: string,
-  data: string | Buffer,
+  data: string | Uint8Array,
 ) {
   const filePath = path.join(dir, filename);
   await fs.writeFile(filePath, data);
@@ -41,6 +41,6 @@ export async function readJsonFile<T>(filePath: string): Promise<T> {
  * @param filePath Path to the file
  * @returns Content of the file
  */
-export async function readFileBuffer(filePath: string): Promise<Buffer> {
+export async function readFileBuffer(filePath: string): Promise<Uint8Array> {
   return await fs.readFile(filePath);
 }

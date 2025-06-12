@@ -16,6 +16,9 @@ import { SeededRandom, shuffleArrayWithKey } from "./utils/random";
 export class ImageFragmenter {
   private config: Required<FragmentationConfig>;
   private secretKey?: string;
+  // TODO: browser support
+  private encrypt: typeof CryptoUtils.encryptBuffer;
+  private uuidToIV: typeof CryptoUtils.uuidToIV;
 
   constructor(config: FragmentationConfig, secretKey?: string) {
     this.config = {
@@ -24,6 +27,9 @@ export class ImageFragmenter {
       seed: config.seed || SeededRandom.generateSeed(),
     };
     this.secretKey = secretKey;
+    // TODO: browser support
+    this.encrypt = CryptoUtils.encryptBuffer;
+    this.uuidToIV = CryptoUtils.uuidToIV;
   }
 
   async fragmentImages(imagePaths: string[]): Promise<FragmentationResult> {
@@ -32,7 +38,7 @@ export class ImageFragmenter {
 
     const shuffledBlocks = shuffleArrayWithKey(allBlocks, manifest.config.seed);
 
-    const fragmentedImages: Buffer[] = await Promise.all(
+    const fragmentedImages: Uint8Array[] = await Promise.all(
       manifest.images.map(async (_, i) => {
         // Calculate slice range using cumulative sum
         const start = fragmentBlocksCount
@@ -46,11 +52,12 @@ export class ImageFragmenter {
           manifest.config.blockSize,
         );
         // Encrypt if secretKey is set
+        // TODO: browser support
         return this.secretKey
-          ? CryptoUtils.encryptBuffer(
-              fragmentImage,
+          ? this.encrypt(
+              Buffer.from(fragmentImage),
               this.secretKey,
-              CryptoUtils.uuidToIV(manifest.id),
+              this.uuidToIV(manifest.id),
             )
           : fragmentImage;
       }),
@@ -84,11 +91,11 @@ export class ImageFragmenter {
 
   private async prepareFragments(imagePaths: string[]): Promise<{
     manifest: ManifestData;
-    allBlocks: Buffer[];
+    allBlocks: Uint8Array[];
     fragmentBlocksCount: number[];
   }> {
     const imageInfos: ImageInfo[] = [];
-    const allBlocks: Buffer[] = [];
+    const allBlocks: Uint8Array[] = [];
     for (let i = 0; i < imagePaths.length; i++) {
       const imagePath = imagePaths[i];
       const { blocks, width, height, channels, blockCountX, blockCountY } =
@@ -112,10 +119,10 @@ export class ImageFragmenter {
   }
 
   private async createFragmentImage(
-    blocks: Buffer[],
+    blocks: Uint8Array[],
     blockCount: number,
     blockSize: number,
-  ): Promise<Buffer> {
+  ): Promise<Uint8Array> {
     // Calculate fragmented image size
     const blocksPerRow = Math.ceil(Math.sqrt(blockCount));
     const imageWidth = blocksPerRow * blockSize;

@@ -10,15 +10,21 @@ import { unshuffleArrayWithKey } from "./utils/random";
 
 export class ImageRestorer {
   private secretKey?: string;
+  // TODO: browser support
+  private decrypt: typeof CryptoUtils.decryptBuffer;
+  private uuidToIV: typeof CryptoUtils.uuidToIV;
 
   constructor(secretKey?: string) {
     this.secretKey = secretKey;
+    // TODO: browser support
+    this.decrypt = CryptoUtils.decryptBuffer;
+    this.uuidToIV = CryptoUtils.uuidToIV;
   }
 
   async restoreImages(
-    fragmentImages: (string | Buffer)[],
+    fragmentImages: (string | Uint8Array)[],
     manifest: ManifestData,
-  ): Promise<Buffer[]> {
+  ): Promise<Uint8Array[]> {
     const { allBlocks } = await this.prepareRestores(fragmentImages, manifest);
 
     const restoredBlocks = unshuffleArrayWithKey(
@@ -26,7 +32,7 @@ export class ImageRestorer {
       manifest.config.seed,
     );
 
-    const restoredImages: Buffer[] = await Promise.all(
+    const restoredImages: Uint8Array[] = await Promise.all(
       manifest.images.map(async (imageInfo, i) => {
         // Calculate slice range using cumulative sum
         const blockCount = imageInfo.x * imageInfo.y;
@@ -46,9 +52,9 @@ export class ImageRestorer {
   }
 
   private async prepareRestores(
-    fragmentImages: (string | Buffer)[],
+    fragmentImages: (string | Uint8Array)[],
     manifest: ManifestData,
-  ): Promise<{ allBlocks: Buffer[]; fragmentBlocksCount: number[] }> {
+  ): Promise<{ allBlocks: Uint8Array[]; fragmentBlocksCount: number[] }> {
     const totalBlocks = manifest.images.reduce((a, b) => a + b.x * b.y, 0);
     const fragmentBlocksCount = calcBlocksPerFragment(
       totalBlocks,
@@ -65,22 +71,23 @@ export class ImageRestorer {
     return { allBlocks, fragmentBlocksCount };
   }
 
-  // Extract an array of blocks (Buffer) from a fragment image
+  // Extract an array of blocks (Uint8Array) from a fragment image
   private async extractBlocksFromFragment(
-    fragmentImage: string | Buffer,
+    fragmentImage: string | Uint8Array,
     manifest: ManifestData,
-  ): Promise<Buffer[]> {
+  ): Promise<Uint8Array[]> {
     // Read the buffer of the fragment image
-    const buf = Buffer.isBuffer(fragmentImage)
+    const buf: Uint8Array = ArrayBuffer.isView(fragmentImage)
       ? fragmentImage
       : await readFileBuffer(fragmentImage);
-    let imageBufferRaw: Buffer = buf;
+    let imageBufferRaw: Uint8Array = buf;
     if (manifest.secure && this.secretKey) {
       try {
-        imageBufferRaw = CryptoUtils.decryptBuffer(
-          buf,
+        // TODO: browser support
+        imageBufferRaw = this.decrypt(
+          Buffer.from(buf),
           this.secretKey,
-          CryptoUtils.uuidToIV(manifest.id),
+          this.uuidToIV(manifest.id),
         );
       } catch (e) {
         throw new Error(
@@ -96,10 +103,10 @@ export class ImageRestorer {
   }
 
   private async reconstructImage(
-    blocks: Buffer[],
+    blocks: Uint8Array[],
     blockSize: number,
     imageInfo: ShortImageInfo,
-  ): Promise<Buffer> {
+  ): Promise<Uint8Array> {
     const { w, h } = imageInfo;
     return await blocksToPngImage(blocks, w, h, blockSize);
   }

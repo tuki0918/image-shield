@@ -78,5 +78,5 @@ export interface FragmentationResult {
   /** Manifest data */
   manifest: ManifestData;
   /** Fragmented images */
-  fragmentedImages: Buffer[];
+  fragmentedImages: Uint8Array[];
 }
