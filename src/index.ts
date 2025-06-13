@@ -36,12 +36,13 @@ export default class ImageShield {
     );
 
     const prefix = manifest.config.prefix;
-    const ext = manifest.secure ? "png.enc" : "png";
-    const count = imagePaths.length;
-
+    const total = imagePaths.length;
     await Promise.all(
       fragmentedImages.map((img, i) => {
-        const filename = generateFragmentFileName(prefix, i, count, ext);
+        const filename = generateFragmentFileName(prefix, i, total, {
+          isFragmented: true,
+          isEncrypted: manifest.secure,
+        });
         return writeFile(outputDir, filename, img);
       }),
     );
@@ -60,12 +61,10 @@ export default class ImageShield {
     await createDir(outputDir, true);
 
     const prefix = manifest.config.prefix;
-    const ext = "png";
-    const count = imagePaths.length;
-
+    const total = imagePaths.length;
     await Promise.all(
       restoredImages.map((img, i) => {
-        const filename = generateFragmentFileName(prefix, i, count, ext);
+        const filename = generateFragmentFileName(prefix, i, total);
         return writeFile(outputDir, filename, img);
       }),
     );

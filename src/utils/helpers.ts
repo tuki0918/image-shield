@@ -17,16 +17,29 @@ export function verifySecretKey(
  * @param prefix - File name prefix
  * @param index - Index number (0-based, but output is 1-based)
  * @param totalLength - Total number of files (for zero-padding)
- * @param ext - Extension without dot (e.g., "png", "png.enc")
+ * @param options - Options for the file name
+ * @param options.isFragmented - Whether the fragment is fragmented
+ * @param options.isEncrypted - Whether the fragment is encrypted
  * @returns File name (e.g., img_1.png.enc)
  */
 export function generateFragmentFileName(
   prefix: string,
   index: number,
   totalLength: number,
-  ext: string, // without dot
+  options: {
+    isFragmented: boolean;
+    isEncrypted: boolean;
+  } = {
+    isFragmented: false,
+    isEncrypted: false,
+  },
 ): string {
+  const extension = "png";
   const numDigits = String(totalLength).length;
   const paddedIndex = String(index + 1).padStart(numDigits, "0");
-  return `${prefix}_${paddedIndex}.${ext}`;
+  const filenameSuffix = options.isFragmented ? "_shuffled" : "";
+  const extensionSuffix = options.isEncrypted ? ".enc" : "";
+  const filename = `${prefix}_${paddedIndex}${filenameSuffix}`;
+  const ext = `${extension}${extensionSuffix}`;
+  return `${filename}.${ext}`;
 }

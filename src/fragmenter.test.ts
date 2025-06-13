@@ -96,10 +96,15 @@ describe("ImageFragmenter", () => {
         prefix,
         i,
         fragmentBuffers.length,
-        ext,
+        {
+          isFragmented: true,
+          isEncrypted: !!secretKey,
+        },
       );
       expect(expectedName).toMatch(
-        new RegExp(`^${prefix}_${i + 1}\\.${ext.replace(".", "\\.")}$`),
+        new RegExp(
+          `^${prefix}_${i + 1}_shuffled\\.${ext.replace(".", "\\.")}$`,
+        ),
       );
     }
   });

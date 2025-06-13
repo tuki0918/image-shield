@@ -53,9 +53,9 @@ await ImageShield.encrypt({
 ```
 output
 └── fragmented
-    ├── img_1.png
-    ├── img_2.png
-    ├── img_3.png
+    ├── img_1_shuffled.png
+    ├── img_2_shuffled.png
+    ├── img_3_shuffled.png
     └── manifest.json
 ```
 </details>
@@ -65,9 +65,9 @@ output
 ```ts
 await ImageShield.decrypt({
   imagePaths: [
-    "./output/fragmented/img_1.png",
-    "./output/fragmented/img_2.png",
-    "./output/fragmented/img_3.png",
+    "./output/fragmented/img_1_shuffled.png",
+    "./output/fragmented/img_2_shuffled.png",
+    "./output/fragmented/img_3_shuffled.png",
   ],
   manifestPath: "./output/fragmented/manifest.json",
   outputDir: "./output/restored",
@@ -117,9 +117,9 @@ await ImageShield.encrypt({
 ```
 output
 └── fragmented
-    ├── img_1.png.enc
-    ├── img_2.png.enc
-    ├── img_3.png.enc
+    ├── img_1_shuffled.png.enc
+    ├── img_2_shuffled.png.enc
+    ├── img_3_shuffled.png.enc
     └── manifest.json
 ```
 </details>
@@ -129,9 +129,9 @@ output
 ```ts
 await ImageShield.decrypt({
   imagePaths: [
-    "./output/fragmented/img_1.png.enc",
-    "./output/fragmented/img_2.png.enc",
-    "./output/fragmented/img_3.png.enc",
+    "./output/fragmented/img_1_shuffled.png.enc",
+    "./output/fragmented/img_2_shuffled.png.enc",
+    "./output/fragmented/img_3_shuffled.png.enc",
   ],
   manifestPath: "./output/fragmented/manifest.json",
   outputDir: "./output/restored",

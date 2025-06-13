@@ -53,11 +53,13 @@ describe("ImageShield (integration)", () => {
     manifestPath = path.join(tmpDir, "manifest.json");
     fragmentPaths = [];
     for (let i = 0; i < originalImages.length; i++) {
-      const ext = secretKey ? "png.enc" : "png";
       fragmentPaths.push(
         path.join(
           tmpDir,
-          generateFragmentFileName(prefix, i, originalImages.length, ext),
+          generateFragmentFileName(prefix, i, originalImages.length, {
+            isFragmented: true,
+            isEncrypted: !!secretKey,
+          }),
         ),
       );
     }
@@ -74,7 +76,10 @@ describe("ImageShield (integration)", () => {
       restoredPaths.push(
         path.join(
           tmpDir,
-          generateFragmentFileName(prefix, i, fragmentPaths.length, "png"),
+          generateFragmentFileName(prefix, i, fragmentPaths.length, {
+            isFragmented: false,
+            isEncrypted: false,
+          }),
         ),
       );
     }
