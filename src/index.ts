@@ -8,7 +8,11 @@ import type {
   ManifestData,
 } from "./types";
 import { createDir, readJsonFile, writeFile } from "./utils/file";
-import { generateFragmentFileName, verifySecretKey } from "./utils/helpers";
+import {
+  generateFragmentFileName,
+  generateRestoredOriginalFileName,
+  verifySecretKey,
+} from "./utils/helpers";
 
 export {
   ImageFragmenter,
@@ -60,11 +64,14 @@ export default class ImageShield {
 
     await createDir(outputDir, true);
 
+    const imageInfos = manifest.images;
     const prefix = manifest.config.prefix;
     const total = imagePaths.length;
     await Promise.all(
       restoredImages.map((img, i) => {
-        const filename = generateFragmentFileName(prefix, i, total);
+        const filename =
+          generateRestoredOriginalFileName(imageInfos[i]) ??
+          generateFragmentFileName(prefix, i, total);
         return writeFile(outputDir, filename, img);
       }),
     );

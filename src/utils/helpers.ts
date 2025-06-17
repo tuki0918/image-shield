@@ -1,3 +1,5 @@
+import type { ShortImageInfo } from "../types";
+
 /**
  * Verify if a secretKey is valid
  * @param secretKey - The secret key to verify
@@ -42,4 +44,15 @@ export function generateFragmentFileName(
   const filename = `${prefix}_${paddedIndex}${filenameSuffix}`;
   const ext = `${extension}${extensionSuffix}`;
   return `${filename}.${ext}`;
+}
+
+/**
+ * Generate a restored original file name
+ * @param imageInfo - Image information
+ * @returns Restored original file name
+ */
+export function generateRestoredOriginalFileName(
+  imageInfo: ShortImageInfo,
+): string | undefined {
+  return imageInfo.name ? `${imageInfo.name}.png` : undefined;
 }

@@ -27,7 +27,7 @@ import ImageShield from "image-shield";
 
 ### Shuffle only
 
-If you do not set the `secretKey`, only shuffling will be applied to the image blocks.
+If you do not set the `secretKey`, only shuffling will be applied to the image.
 
 **Encrypt**
 
@@ -91,7 +91,7 @@ output
 
 ### Shuffle + Encrypt (recommended)
 
-If you set the `secretKey`, the image blocks will be shuffled and then encrypted.
+If you set the `secretKey`, the image will be shuffled and then encrypted.
 
 **Encrypt**
 
