@@ -51,7 +51,7 @@ export class ImageRestorer {
   ): Promise<{ allBlocks: Buffer[]; fragmentBlocksCount: number[] }> {
     if (manifest.images.length !== fragmentImages.length) {
       throw new Error(
-        "The number of images in the manifest does not match the number of fragment images.",
+        `The number of images in the manifest (${manifest.images.length}) does not match the number of fragment images (${fragmentImages.length}).`,
       );
     }
 
