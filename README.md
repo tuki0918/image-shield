@@ -223,3 +223,7 @@ manifest.json:
 > - The recommended mode is **Shuffle + Encrypt** for better security.
 > - The `manifest.json` file contains the necessary information for restoration, but it does not include the secret key.
 > - Input images are converted to PNG format.
+
+## Clients
+
+- [Raycast Extension](https://github.com/tuki0918/raycast-image-shield)
