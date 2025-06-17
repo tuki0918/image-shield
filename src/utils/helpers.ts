@@ -37,7 +37,7 @@ export function generateFragmentFileName(
   const extension = "png";
   const numDigits = String(totalLength).length;
   const paddedIndex = String(index + 1).padStart(numDigits, "0");
-  const filenameSuffix = options.isFragmented ? "_shuffled" : "";
+  const filenameSuffix = options.isFragmented ? "_fragmented" : "";
   const extensionSuffix = options.isEncrypted ? ".enc" : "";
   const filename = `${prefix}_${paddedIndex}${filenameSuffix}`;
   const ext = `${extension}${extensionSuffix}`;

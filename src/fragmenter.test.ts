@@ -103,7 +103,7 @@ describe("ImageFragmenter", () => {
       );
       expect(expectedName).toMatch(
         new RegExp(
-          `^${prefix}_${i + 1}_shuffled\\.${ext.replace(".", "\\.")}$`,
+          `^${prefix}_${i + 1}_fragmented\\.${ext.replace(".", "\\.")}$`,
         ),
       );
     }
