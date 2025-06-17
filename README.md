@@ -27,7 +27,7 @@ import ImageShield from "image-shield";
 
 ### Shuffle only
 
-If you do not set the `secretKey`, only shuffling will be applied to the image blocks.
+If you do not set the `secretKey`, only shuffling will be applied to the image.
 
 **Encrypt**
 
@@ -53,9 +53,9 @@ await ImageShield.encrypt({
 ```
 output
 └── fragmented
-    ├── img_1_shuffled.png
-    ├── img_2_shuffled.png
-    ├── img_3_shuffled.png
+    ├── img_1_fragmented.png
+    ├── img_2_fragmented.png
+    ├── img_3_fragmented.png
     └── manifest.json
 ```
 </details>
@@ -65,9 +65,9 @@ output
 ```ts
 await ImageShield.decrypt({
   imagePaths: [
-    "./output/fragmented/img_1_shuffled.png",
-    "./output/fragmented/img_2_shuffled.png",
-    "./output/fragmented/img_3_shuffled.png",
+    "./output/fragmented/img_1_fragmented.png",
+    "./output/fragmented/img_2_fragmented.png",
+    "./output/fragmented/img_3_fragmented.png",
   ],
   manifestPath: "./output/fragmented/manifest.json",
   outputDir: "./output/restored",
@@ -91,7 +91,7 @@ output
 
 ### Shuffle + Encrypt (recommended)
 
-If you set the `secretKey`, the image blocks will be shuffled and then encrypted.
+If you set the `secretKey`, the image will be shuffled and then encrypted.
 
 **Encrypt**
 
@@ -117,9 +117,9 @@ await ImageShield.encrypt({
 ```
 output
 └── fragmented
-    ├── img_1_shuffled.png.enc
-    ├── img_2_shuffled.png.enc
-    ├── img_3_shuffled.png.enc
+    ├── img_1_fragmented.png.enc
+    ├── img_2_fragmented.png.enc
+    ├── img_3_fragmented.png.enc
     └── manifest.json
 ```
 </details>
@@ -129,9 +129,9 @@ output
 ```ts
 await ImageShield.decrypt({
   imagePaths: [
-    "./output/fragmented/img_1_shuffled.png.enc",
-    "./output/fragmented/img_2_shuffled.png.enc",
-    "./output/fragmented/img_3_shuffled.png.enc",
+    "./output/fragmented/img_1_fragmented.png.enc",
+    "./output/fragmented/img_2_fragmented.png.enc",
+    "./output/fragmented/img_3_fragmented.png.enc",
   ],
   manifestPath: "./output/fragmented/manifest.json",
   outputDir: "./output/restored",

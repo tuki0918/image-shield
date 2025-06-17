@@ -44,3 +44,12 @@ export async function readJsonFile<T>(filePath: string): Promise<T> {
 export async function readFileBuffer(filePath: string): Promise<Buffer> {
   return await fs.readFile(filePath);
 }
+
+/**
+ * Get the filename without the extension
+ * @param filePath Path to the file
+ * @returns Filename without the extension
+ */
+export function fileNameWithoutExtension(filePath: string): string {
+  return path.basename(filePath, path.extname(filePath));
+}

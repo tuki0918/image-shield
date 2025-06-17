@@ -27,6 +27,8 @@ export interface FragmentationConfig {
   prefix?: string;
   /** Random seed (auto-generated if not specified) */
   seed?: number;
+  /** Restore original file name (optional, default: false) */
+  restoreFileName?: boolean;
 }
 
 export interface ImageInfo {
@@ -40,6 +42,8 @@ export interface ImageInfo {
   blockCountX: number;
   /** Number of blocks Y */
   blockCountY: number;
+  /** Original file name (optional) */
+  name?: string;
 }
 
 export interface ShortImageInfo {
@@ -53,6 +57,8 @@ export interface ShortImageInfo {
   x: number;
   /** Number of blocks Y */
   y: number;
+  /** Original file name (optional) */
+  name?: string;
 }
 
 export type EncryptionAlgorithm = "aes-256-cbc";

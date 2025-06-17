@@ -26,12 +26,12 @@ describe("generateFragmentFileName", () => {
         isFragmented: true,
         isEncrypted: false,
       }),
-    ).toBe("custom_100_shuffled.png");
+    ).toBe("custom_100_fragmented.png");
     expect(
       generateFragmentFileName("custom", 0, 100, {
         isFragmented: true,
         isEncrypted: false,
       }),
-    ).toBe("custom_001_shuffled.png");
+    ).toBe("custom_001_fragmented.png");
   });
 });

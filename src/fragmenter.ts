@@ -11,6 +11,7 @@ import {
   imageFileToBlocks,
 } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
+import { fileNameWithoutExtension } from "./utils/file";
 import { SeededRandom, shuffleArrayWithKey } from "./utils/random";
 
 export class ImageFragmenter {
@@ -22,6 +23,7 @@ export class ImageFragmenter {
       ...config,
       prefix: config.prefix ?? "fragment",
       seed: config.seed || SeededRandom.generateSeed(),
+      restoreFileName: config.restoreFileName ?? false,
     };
     this.secretKey = secretKey;
   }
@@ -63,6 +65,19 @@ export class ImageFragmenter {
   }
 
   private createManifest(imageInfos: ImageInfo[]): ManifestData {
+    // Check if there are duplicate file names when restoreFileName is true
+    if (this.config.restoreFileName && imageInfos.length > 1) {
+      const nameSet = new Set<string>();
+      for (const info of imageInfos) {
+        if (info.name !== undefined) {
+          if (nameSet.has(info.name)) {
+            throw new Error(`Duplicate file name detected: ${info.name}`);
+          }
+          nameSet.add(info.name);
+        }
+      }
+    }
+
     const secure = !!this.secretKey;
     const algorithm = secure ? "aes-256-cbc" : undefined;
     return {
@@ -76,6 +91,7 @@ export class ImageFragmenter {
         c: 4, // Always use 4 channels (RGBA) for generated PNG
         x: info.blockCountX,
         y: info.blockCountY,
+        name: info.name,
       })),
       algorithm,
       secure,
@@ -99,6 +115,9 @@ export class ImageFragmenter {
         channels,
         blockCountX,
         blockCountY,
+        name: this.config.restoreFileName
+          ? fileNameWithoutExtension(imagePath)
+          : undefined,
       };
       imageInfos.push(imageInfo);
       allBlocks.push(...blocks);
