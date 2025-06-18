@@ -24,11 +24,13 @@ export {
 // biome-ignore lint/complexity/noStaticOnlyClass:
 export default class ImageShield {
   static async encrypt(options: EncryptOptions): Promise<void> {
-    validateEncryptOptions(options);
+    const { imagePaths, config, outputDir, secretKey } =
+      validateEncryptOptions(options);
 
-    const { imagePaths, config, outputDir, secretKey } = options;
-
-    const fragmenter = new ImageFragmenter(config, verifySecretKey(secretKey));
+    const fragmenter = new ImageFragmenter(
+      config ?? {},
+      verifySecretKey(secretKey),
+    );
     const { manifest, fragmentedImages } =
       await fragmenter.fragmentImages(imagePaths);
 
@@ -53,9 +55,8 @@ export default class ImageShield {
   }
 
   static async decrypt(options: DecryptOptions): Promise<void> {
-    validateDecryptOptions(options);
-
-    const { imagePaths, manifestPath, outputDir, secretKey } = options;
+    const { imagePaths, manifestPath, outputDir, secretKey } =
+      validateDecryptOptions(options);
 
     const manifest = await readJsonFile<ManifestData>(manifestPath);
 
@@ -78,8 +79,8 @@ export default class ImageShield {
   }
 }
 
-function validateCommonOptions(
-  options: { imagePaths: string[]; outputDir: string; secretKey?: string },
+function validateCommonOptions<T extends EncryptOptions | DecryptOptions>(
+  options: T,
   context: string,
 ) {
   if (!options) throw new Error(`[${context}] Options object is required.`);
@@ -88,17 +89,16 @@ function validateCommonOptions(
     throw new Error(`[${context}] imagePaths must be a non-empty array.`);
   if (!outputDir || typeof outputDir !== "string")
     throw new Error(`[${context}] outputDir is required and must be a string.`);
+  return options;
 }
 
 function validateEncryptOptions(options: EncryptOptions) {
-  validateCommonOptions(options, "encrypt");
-  const { config } = options;
-  if (!config) throw new Error("[encrypt] config is required.");
+  return validateCommonOptions(options, "encrypt");
 }
 
 function validateDecryptOptions(options: DecryptOptions) {
-  validateCommonOptions(options, "decrypt");
   const { manifestPath } = options;
   if (!manifestPath || typeof manifestPath !== "string")
     throw new Error("[decrypt] manifestPath is required and must be a string.");
+  return validateCommonOptions(options, "decrypt");
 }

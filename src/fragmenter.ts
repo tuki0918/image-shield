@@ -1,4 +1,4 @@
-import { VERSION } from "./constraints";
+import { DEFAULT_FRAGMENTATION_CONFIG, VERSION } from "./constraints";
 import type {
   FragmentationConfig,
   FragmentationResult,
@@ -20,10 +20,12 @@ export class ImageFragmenter {
 
   constructor(config: FragmentationConfig, secretKey?: string) {
     this.config = {
-      ...config,
-      prefix: config.prefix ?? "fragment",
+      blockSize: config.blockSize ?? DEFAULT_FRAGMENTATION_CONFIG.BLOCK_SIZE,
+      prefix: config.prefix ?? DEFAULT_FRAGMENTATION_CONFIG.PREFIX,
       seed: config.seed || SeededRandom.generateSeed(),
-      restoreFileName: config.restoreFileName ?? false,
+      restoreFileName:
+        config.restoreFileName ??
+        DEFAULT_FRAGMENTATION_CONFIG.RESTORE_FILE_NAME,
     };
     this.secretKey = secretKey;
   }

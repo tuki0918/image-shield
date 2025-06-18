@@ -2,7 +2,7 @@ export interface EncryptOptions {
   /** Image paths (e.g., ["image1.png", "image2.png"]) */
   imagePaths: string[];
   /** Fragmentation config */
-  config: FragmentationConfig;
+  config?: FragmentationConfig;
   /** Output directory (e.g., "./output/fragments") */
   outputDir: string;
   /** Secret key (optional) */
@@ -22,7 +22,7 @@ export interface DecryptOptions {
 
 export interface FragmentationConfig {
   /** Pixel block size (e.g., 10x10 to 10) */
-  blockSize: number;
+  blockSize?: number;
   /** Prefix for fragment files (optional, default: "fragment") */
   prefix?: string;
   /** Random seed (auto-generated if not specified) */
