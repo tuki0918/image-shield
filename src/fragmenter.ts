@@ -120,7 +120,9 @@ export class ImageFragmenter {
           : undefined,
       };
       imageInfos.push(imageInfo);
-      allBlocks.push(...blocks);
+      for (const block of blocks) {
+        allBlocks.push(block);
+      }
     }
     const manifest = this.createManifest(imageInfos);
     const fragmentBlocksCount = calcBlocksPerFragment(
