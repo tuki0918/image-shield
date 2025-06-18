@@ -15,10 +15,18 @@ export class SeededRandom {
   }
 
   shuffle<T>(array: T[]): T[] {
-    const result = [...array];
+    const result = this.safeCopy(array);
     for (let i = result.length - 1; i > 0; i--) {
       const j = Math.floor(this.next() * (i + 1));
       [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
+  }
+
+  safeCopy<T>(array: T[]): T[] {
+    const result = new Array(array.length);
+    for (let i = 0; i < array.length; i++) {
+      result[i] = array[i];
     }
     return result;
   }
