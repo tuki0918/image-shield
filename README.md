@@ -33,15 +33,12 @@ If you do not set the `secretKey`, only shuffling will be applied to the image.
 
 ```ts
 await ImageShield.encrypt({
+  // config: { /** FragmentationConfig */ },
   imagePaths: [
     "./input_1.png",
     "./input_2.png",
     "./input_3.png",
   ],
-  config: {
-    blockSize: 1,
-    prefix: "img",
-  },
   outputDir: "./output/fragmented",
   // secretKey: undefined
 });
@@ -64,12 +61,12 @@ output
 
 ```ts
 await ImageShield.decrypt({
+  manifestPath: "./output/fragmented/manifest.json",
   imagePaths: [
     "./output/fragmented/img_1_fragmented.png",
     "./output/fragmented/img_2_fragmented.png",
     "./output/fragmented/img_3_fragmented.png",
   ],
-  manifestPath: "./output/fragmented/manifest.json",
   outputDir: "./output/restored",
   // secretKey: undefined
 });
@@ -97,15 +94,12 @@ If you set the `secretKey`, the image will be shuffled and then encrypted.
 
 ```ts
 await ImageShield.encrypt({
+  // config: { /** FragmentationConfig */ },
   imagePaths: [
     "./input_1.png",
     "./input_2.png",
     "./input_3.png",
   ],
-  config: {
-    blockSize: 1,
-    prefix: "img",
-  },
   outputDir: "./output/fragmented",
   secretKey: "secret",
 });
@@ -128,12 +122,12 @@ output
 
 ```ts
 await ImageShield.decrypt({
+  manifestPath: "./output/fragmented/manifest.json",
   imagePaths: [
     "./output/fragmented/img_1_fragmented.png.enc",
     "./output/fragmented/img_2_fragmented.png.enc",
     "./output/fragmented/img_3_fragmented.png.enc",
   ],
-  manifestPath: "./output/fragmented/manifest.json",
   outputDir: "./output/restored",
   secretKey: "secret",
 });
