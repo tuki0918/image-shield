@@ -1,5 +1,47 @@
 import { Jimp, JimpMime } from "jimp";
 
+const RGBA_CHANNELS = 4;
+
+/**
+ * Calculate block counts for width and height
+ * @param width Image width
+ * @param height Image height
+ * @param blockSize Block size
+ * @returns Object with blockCountX and blockCountY
+ */
+function calculateBlockCounts(
+  width: number,
+  height: number,
+  blockSize: number,
+): {
+  blockCountX: number;
+  blockCountY: number;
+} {
+  return {
+    blockCountX: Math.ceil(width / blockSize),
+    blockCountY: Math.ceil(height / blockSize),
+  };
+}
+
+/**
+ * Calculate actual block dimensions at edge positions
+ * @param position Block position (x or y)
+ * @param blockSize Standard block size
+ * @param imageSize Image dimension (width or height)
+ * @param blockCount Total block count in that dimension
+ * @returns Actual block dimension
+ */
+function calculateActualBlockSize(
+  position: number,
+  blockSize: number,
+  imageSize: number,
+  blockCount: number,
+): number {
+  return position === blockCount - 1
+    ? imageSize - position * blockSize
+    : blockSize;
+}
+
 /**
  * Extract a block from a buffer (specify image width/height/start position/block size)
  * Fixed to RGBA channels
@@ -20,7 +62,6 @@ export function extractBlock(
   startY: number,
   blockSize: number,
 ): Buffer {
-  const channels = 4;
   // If the block is at the edge, calculate the actual width/height
   const blockWidth = imageWidth
     ? Math.min(blockSize, imageWidth - startX)
@@ -34,8 +75,8 @@ export function extractBlock(
     for (let x = 0; x < blockWidth; x++) {
       const srcX = startX + x;
       const srcY = startY + y;
-      const pixelIndex = (srcY * imageWidth + srcX) * channels;
-      for (let c = 0; c < channels; c++) {
+      const pixelIndex = (srcY * imageWidth + srcX) * RGBA_CHANNELS;
+      for (let c = 0; c < RGBA_CHANNELS; c++) {
         blockData.push(buffer[pixelIndex + c] || 0);
       }
     }
@@ -66,16 +107,16 @@ export function placeBlock(
   blockWidth?: number,
   blockHeight?: number,
 ): void {
-  const channels = 4;
   // blockWidth/blockHeight is used if specified, otherwise blockSize is used
   const w = blockWidth ?? blockSize;
   const h = blockHeight ?? blockSize;
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      const srcIndex = (y * w + x) * channels;
-      const destIndex = ((destY + y) * targetWidth + (destX + x)) * channels;
-      if (destIndex + channels <= targetBuffer.length) {
-        for (let c = 0; c < channels; c++) {
+      const srcIndex = (y * w + x) * RGBA_CHANNELS;
+      const destIndex =
+        ((destY + y) * targetWidth + (destX + x)) * RGBA_CHANNELS;
+      if (destIndex + RGBA_CHANNELS <= targetBuffer.length) {
+        for (let c = 0; c < RGBA_CHANNELS; c++) {
           targetBuffer[destIndex + c] = blockData[srcIndex + c];
         }
       }
@@ -119,8 +160,11 @@ export function splitImageToBlocks(
   blockSize: number,
 ): Buffer[] {
   const blocks: Buffer[] = [];
-  const blockCountX = Math.ceil(width / blockSize);
-  const blockCountY = Math.ceil(height / blockSize);
+  const { blockCountX, blockCountY } = calculateBlockCounts(
+    width,
+    height,
+    blockSize,
+  );
   for (let by = 0; by < blockCountY; by++) {
     for (let bx = 0; bx < blockCountX; bx++) {
       const block = extractBlock(
@@ -151,18 +195,28 @@ export function blocksToImageBuffer(
   height: number,
   blockSize: number,
 ): Buffer {
-  const channels = 4;
-  const imageBuffer = Buffer.alloc(width * height * channels);
-  const blockCountX = Math.ceil(width / blockSize);
-  const blockCountY = Math.ceil(height / blockSize);
+  const imageBuffer = Buffer.alloc(width * height * RGBA_CHANNELS);
+  const { blockCountX, blockCountY } = calculateBlockCounts(
+    width,
+    height,
+    blockSize,
+  );
   let blockIndex = 0;
   for (let by = 0; by < blockCountY; by++) {
     for (let bx = 0; bx < blockCountX; bx++) {
       if (blockIndex < blocks.length) {
-        const blockWidth =
-          bx === blockCountX - 1 ? width - bx * blockSize : blockSize;
-        const blockHeight =
-          by === blockCountY - 1 ? height - by * blockSize : blockSize;
+        const blockWidth = calculateActualBlockSize(
+          bx,
+          blockSize,
+          width,
+          blockCountX,
+        );
+        const blockHeight = calculateActualBlockSize(
+          by,
+          blockSize,
+          height,
+          blockCountY,
+        );
         placeBlock(
           imageBuffer,
           blocks[blockIndex],
@@ -202,12 +256,15 @@ export async function imageFileToBlocks(
     const image = await Jimp.read(input);
     const width = image.bitmap.width;
     const height = image.bitmap.height;
-    const channels = 4; // Always use RGBA
+    const channels = RGBA_CHANNELS; // Always use RGBA
     // Ensure image is RGBA (Jimp always loads as RGBA)
     const imageBuffer = image.bitmap.data;
     const blocks = splitImageToBlocks(imageBuffer, width, height, blockSize);
-    const blockCountX = Math.ceil(width / blockSize);
-    const blockCountY = Math.ceil(height / blockSize);
+    const { blockCountX, blockCountY } = calculateBlockCounts(
+      width,
+      height,
+      blockSize,
+    );
     return { blocks, width, height, channels, blockCountX, blockCountY };
   } catch (e) {
     throw new Error("The manifest file may not match the image data.");
