@@ -1,6 +1,9 @@
 import { Jimp, JimpMime } from "jimp";
+import { CryptoUtils } from "./crypto";
 
 const RGBA_CHANNELS = 4;
+const PNG_UINT32_BYTES = 4;
+const PNG_METADATA_SIZE = PNG_UINT32_BYTES * 3; // width + height + imageBufferLength
 
 interface BlockCounts {
   blockCountX: number;
@@ -24,6 +27,52 @@ interface BlockPosition {
 interface BlockDimensions {
   width: number;
   height: number;
+}
+
+/**
+ * Create a Jimp image from raw RGBA image buffer
+ * @param imageBuffer Raw RGBA image buffer
+ * @param width Image width in pixels
+ * @param height Image height in pixels
+ * @returns Jimp image instance
+ */
+function createJimpFromImageBuffer(
+  imageBuffer: Buffer,
+  width: number,
+  height: number,
+): InstanceType<typeof Jimp> {
+  return new Jimp({
+    data: imageBuffer,
+    width,
+    height,
+  });
+}
+
+/**
+ * Format error message consistently
+ * @param operation Description of the operation that failed
+ * @param error The error that occurred
+ * @returns Formatted error message
+ */
+function formatErrorMessage(operation: string, error: unknown): string {
+  const errorMessage = error instanceof Error ? error.message : "Unknown error";
+  return `${operation}: ${errorMessage}`;
+}
+
+/**
+ * Convert raw RGBA image buffer to PNG buffer using Jimp
+ * @param imageBuffer Raw RGBA image buffer
+ * @param width Image width in pixels
+ * @param height Image height in pixels
+ * @returns Promise resolving to PNG buffer
+ */
+async function imageBufferToPng(
+  imageBuffer: Buffer,
+  width: number,
+  height: number,
+): Promise<Buffer> {
+  const image = createJimpFromImageBuffer(imageBuffer, width, height);
+  return await image.getBuffer(JimpMime.png);
 }
 
 /**
@@ -180,34 +229,6 @@ export function placeBlock(
     }
   }
 }
-
-/**
- * Convert a raw RGBA image buffer to PNG format using Jimp
- * @param buffer Raw RGBA image buffer
- * @param width Image width in pixels
- * @param height Image height in pixels
- * @returns PNG buffer
- */
-export async function bufferToPng(
-  buffer: Buffer,
-  width: number,
-  height: number,
-): Promise<Buffer> {
-  try {
-    const image = Jimp.fromBitmap({
-      data: buffer,
-      width,
-      height,
-    });
-
-    return await image.getBuffer(JimpMime.png);
-  } catch (error) {
-    throw new Error(
-      `Failed to convert buffer to PNG: ${error instanceof Error ? error.message : "Unknown error"}`,
-    );
-  }
-}
-
 /**
  * Split an RGBA image buffer into an array of blocks
  * @param buffer Source image buffer (RGBA format)
@@ -356,12 +377,10 @@ export async function blocksToPngImage(
 ): Promise<Buffer> {
   try {
     const imageBuffer = blocksToImageBuffer(blocks, width, height, blockSize);
-    return await bufferToPng(imageBuffer, width, height);
+    return await createPngFromImageBuffer(imageBuffer, width, height);
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
     throw new Error(
-      `Failed to reconstruct PNG image from blocks: ${errorMessage}`,
+      formatErrorMessage("Failed to reconstruct PNG image from blocks", error),
     );
   }
 }
@@ -400,4 +419,204 @@ export function calcBlocksPerFragment(
   }
 
   return fragmentBlockCounts;
+}
+
+/**
+ * Extract raw RGBA image buffer from a PNG buffer using Jimp
+ * @param pngBuffer PNG image buffer
+ * @returns Promise resolving to image buffer and image dimensions
+ */
+export async function extractImageBufferFromPng(
+  pngBuffer: Buffer,
+): Promise<{ imageBuffer: Buffer; width: number; height: number }> {
+  try {
+    const image = await Jimp.read(pngBuffer);
+    const { width, height } = image.bitmap;
+    const imageBuffer = Buffer.from(image.bitmap.data);
+
+    return { imageBuffer, width, height };
+  } catch (error) {
+    throw new Error(
+      formatErrorMessage("Failed to extract image buffer from PNG", error),
+    );
+  }
+}
+
+/**
+ * Create a PNG buffer from raw RGBA image buffer using Jimp
+ * @param imageBuffer Raw RGBA image buffer
+ * @param width Image width in pixels
+ * @param height Image height in pixels
+ * @returns Promise resolving to PNG buffer
+ */
+export async function createPngFromImageBuffer(
+  imageBuffer: Buffer,
+  width: number,
+  height: number,
+): Promise<Buffer> {
+  try {
+    return await imageBufferToPng(imageBuffer, width, height);
+  } catch (error) {
+    throw new Error(
+      formatErrorMessage("Failed to create PNG from image buffer", error),
+    );
+  }
+}
+
+/**
+ * Create metadata buffer with image dimensions and image buffer length
+ * @param width Image width
+ * @param height Image height
+ * @param imageBufferLength Image buffer length
+ * @returns Metadata buffer (12 bytes)
+ */
+export function createImageBufferMetadata(
+  width: number,
+  height: number,
+  imageBufferLength: number,
+): Buffer {
+  const metadata = Buffer.alloc(PNG_METADATA_SIZE); // 4 bytes for width, 4 bytes for height, 4 bytes for data length
+  metadata.writeUInt32BE(width, 0);
+  metadata.writeUInt32BE(height, PNG_UINT32_BYTES);
+  metadata.writeUInt32BE(imageBufferLength, PNG_UINT32_BYTES * 2);
+  return metadata;
+}
+
+/**
+ * Parse metadata from buffer
+ * @param metadataBuffer Buffer containing metadata
+ * @returns Parsed metadata object
+ */
+export function parseImageBufferMetadata(metadataBuffer: Buffer): {
+  width: number;
+  height: number;
+  imageBufferLength: number;
+} {
+  const width = metadataBuffer.readUInt32BE(0);
+  const height = metadataBuffer.readUInt32BE(PNG_UINT32_BYTES);
+  const imageBufferLength = metadataBuffer.readUInt32BE(PNG_UINT32_BYTES * 2);
+  return { width, height, imageBufferLength };
+}
+
+/**
+ * Remove trailing zero padding from buffer
+ * @param buffer Buffer to trim
+ * @returns Trimmed buffer
+ */
+export function removePadding(buffer: Buffer): Buffer {
+  let actualDataLength = buffer.length;
+  for (let i = buffer.length - 1; i >= 0; i--) {
+    if (buffer[i] !== 0) {
+      actualDataLength = i + 1;
+      break;
+    }
+  }
+  return buffer.subarray(0, actualDataLength);
+}
+
+/**
+ * Calculate optimal square dimensions for given data length
+ * @param dataLength Length of data in bytes
+ * @returns Optimal width and height for square-like image
+ */
+export function calculateOptimalDimensions(dataLength: number): {
+  width: number;
+  height: number;
+} {
+  const width = Math.ceil(Math.sqrt(dataLength / RGBA_CHANNELS));
+  const height = Math.ceil(dataLength / (width * RGBA_CHANNELS));
+  return { width, height };
+}
+
+/**
+ * Encrypt PNG image buffer with metadata
+ * @param pngBuffer Original PNG buffer
+ * @param secretKey Secret key for encryption
+ * @param manifestId Manifest ID used for IV generation
+ * @returns Encrypted PNG buffer
+ */
+export async function encryptPngImageBuffer(
+  pngBuffer: Buffer,
+  secretKey: string,
+  manifestId: string,
+): Promise<Buffer> {
+  // Extract raw RGBA image buffer using block utility
+  const { imageBuffer, width, height } =
+    await extractImageBufferFromPng(pngBuffer);
+
+  // Create metadata with original image buffer size and dimensions
+  const metadata = createImageBufferMetadata(width, height, imageBuffer.length);
+
+  // Combine metadata and image buffer
+  const dataToEncrypt = Buffer.concat([metadata, imageBuffer]);
+
+  // Encrypt the combined data
+  const encryptedData = CryptoUtils.encryptBuffer(
+    dataToEncrypt,
+    secretKey,
+    CryptoUtils.uuidToIV(manifestId),
+  );
+
+  // Calculate optimal dimensions for encrypted data
+  const { width: encryptedWidth, height: encryptedHeight } =
+    calculateOptimalDimensions(encryptedData.length);
+
+  // Create a padded buffer to fit exactly in the image dimensions
+  const paddedSize = encryptedWidth * encryptedHeight * RGBA_CHANNELS;
+  const paddedData = Buffer.alloc(paddedSize);
+  encryptedData.copy(paddedData, 0);
+
+  // Convert encrypted data back to PNG using createPngFromImageBuffer
+  return await createPngFromImageBuffer(
+    paddedData,
+    encryptedWidth,
+    encryptedHeight,
+  );
+}
+
+/**
+ * Decrypt PNG image buffer and extract original PNG
+ * @param encryptedPngBuffer Encrypted PNG buffer
+ * @param secretKey Secret key for decryption
+ * @param manifestId Manifest ID used for IV generation
+ * @returns Original PNG buffer
+ */
+export async function decryptPngImageBuffer(
+  encryptedPngBuffer: Buffer,
+  secretKey: string,
+  manifestId: string,
+): Promise<Buffer> {
+  // Extract raw RGBA image buffer from encrypted PNG using block utility
+  const { imageBuffer: encryptedImageData } =
+    await extractImageBufferFromPng(encryptedPngBuffer);
+
+  // Remove padding from encrypted data
+  const encryptedData = removePadding(encryptedImageData);
+
+  // Decrypt the data
+  const decryptedData = CryptoUtils.decryptBuffer(
+    encryptedData,
+    secretKey,
+    CryptoUtils.uuidToIV(manifestId),
+  );
+
+  // Parse metadata from the beginning of decrypted data
+  const {
+    width: originalWidth,
+    height: originalHeight,
+    imageBufferLength: originalImageBufferLength,
+  } = parseImageBufferMetadata(decryptedData.subarray(0, PNG_METADATA_SIZE));
+
+  // Extract the original image buffer (skip 12 bytes of metadata)
+  const originalImageBuffer = decryptedData.subarray(
+    PNG_METADATA_SIZE,
+    PNG_METADATA_SIZE + originalImageBufferLength,
+  );
+
+  // Create PNG from image buffer using block utility
+  return await createPngFromImageBuffer(
+    originalImageBuffer,
+    originalWidth,
+    originalHeight,
+  );
 }

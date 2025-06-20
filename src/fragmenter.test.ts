@@ -75,10 +75,15 @@ describe("ImageFragmenter", () => {
   test("fragment images are valid PNGs", async () => {
     for (const buf of fragmentBuffers) {
       if (secretKey) {
-        // If encrypted, it is correct that it cannot be opened as PNG
-        await expect(async () => {
-          await Jimp.read(buf);
-        }).rejects.toThrow();
+        // If encrypted, it should still be a valid PNG but with encrypted content
+        const jimpImage = await Jimp.read(buf);
+        expect(jimpImage.mime).toBe("image/png");
+        expect(jimpImage.bitmap.width).toBeGreaterThan(0);
+        expect(jimpImage.bitmap.height).toBeGreaterThan(0);
+        // The encrypted image should have different dimensions or content from originals
+        expect(
+          jimpImage.bitmap.width * jimpImage.bitmap.height,
+        ).toBeGreaterThanOrEqual(4); // At least encrypted data size
       } else {
         // If not encrypted, it should be openable as PNG
         const jimpImage = await Jimp.read(buf);
