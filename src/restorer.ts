@@ -19,7 +19,10 @@ export class ImageRestorer {
     fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
-    const { allBlocks } = await this.prepareRestores(fragmentImages, manifest);
+    const { allBlocks } = await this._prepareRestoreData(
+      fragmentImages,
+      manifest,
+    );
 
     const restoredBlocks = unshuffleArrayWithKey(
       allBlocks,
@@ -35,7 +38,7 @@ export class ImageRestorer {
           .reduce((sum, img) => sum + img.x * img.y, 0);
         const end = start + blockCount;
         const imageBlocks = restoredBlocks.slice(start, end);
-        return await this.reconstructImage(
+        return await this._reconstructImage(
           imageBlocks,
           manifest.config.blockSize,
           imageInfo,
@@ -45,7 +48,7 @@ export class ImageRestorer {
     return restoredImages;
   }
 
-  private async prepareRestores(
+  private async _prepareRestoreData(
     fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
   ): Promise<{ allBlocks: Buffer[]; fragmentBlocksCount: number[] }> {
@@ -60,19 +63,18 @@ export class ImageRestorer {
       totalBlocks,
       fragmentImages.length,
     );
-    const blocksArrays = await Promise.all(
-      fragmentImages.map((fragmentImage) =>
-        this.extractBlocksFromFragment(fragmentImage, manifest),
-      ),
+
+    const allBlocks = await this._extractBlocksFromFragments(
+      fragmentImages,
+      manifest,
+      fragmentBlocksCount,
     );
-    const allBlocks = blocksArrays.flatMap((blocks, i) =>
-      blocks.slice(0, fragmentBlocksCount[i]),
-    );
+
     return { allBlocks, fragmentBlocksCount };
   }
 
   // Extract an array of blocks (Buffer) from a fragment image
-  private async extractBlocksFromFragment(
+  private async _extractBlocksFromFragment(
     fragmentImage: string | Buffer,
     manifest: ManifestData,
   ): Promise<Buffer[]> {
@@ -101,7 +103,22 @@ export class ImageRestorer {
     return blocks;
   }
 
-  private async reconstructImage(
+  private async _extractBlocksFromFragments(
+    fragmentImages: (string | Buffer)[],
+    manifest: ManifestData,
+    fragmentBlocksCount: number[],
+  ): Promise<Buffer[]> {
+    const blocksArrays = await Promise.all(
+      fragmentImages.map((fragmentImage) =>
+        this._extractBlocksFromFragment(fragmentImage, manifest),
+      ),
+    );
+    return blocksArrays.flatMap((blocks, i) =>
+      blocks.slice(0, fragmentBlocksCount[i]),
+    );
+  }
+
+  private async _reconstructImage(
     blocks: Buffer[],
     blockSize: number,
     imageInfo: ShortImageInfo,
