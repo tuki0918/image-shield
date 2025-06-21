@@ -4,7 +4,10 @@ import path from "node:path";
 import { Jimp, JimpMime } from "jimp";
 import ImageShield from "./index";
 import type { ManifestData } from "./types";
-import { generateFragmentFileName } from "./utils/helpers";
+import {
+  generateFragmentFileName,
+  generateRestoredFileName,
+} from "./utils/helpers";
 
 describe("ImageShield (integration)", () => {
   // Use OS temp directory for test files
@@ -54,14 +57,14 @@ describe("ImageShield (integration)", () => {
     manifestPath = path.join(tmpDir, "manifest.json");
     fragmentPaths = [];
     for (let i = 0; i < originalImages.length; i++) {
+      const manifestDataForFragment = {
+        config: { prefix },
+        images: new Array(originalImages.length).fill({
+          name: `original_${i}.png`,
+        }),
+      } as unknown as ManifestData;
       fragmentPaths.push(
-        path.join(
-          tmpDir,
-          generateFragmentFileName(prefix, i, originalImages.length, {
-            isFragmented: true,
-            isEncrypted: !!secretKey,
-          }),
-        ),
+        path.join(tmpDir, generateFragmentFileName(manifestDataForFragment, i)),
       );
     }
     // Restore images using ImageShield.decrypt
@@ -77,10 +80,15 @@ describe("ImageShield (integration)", () => {
       restoredPaths.push(
         path.join(
           tmpDir,
-          generateFragmentFileName(prefix, i, fragmentPaths.length, {
-            isFragmented: false,
-            isEncrypted: false,
-          }),
+          generateRestoredFileName(
+            {
+              config: { prefix },
+              images: new Array(originalImages.length).fill({
+                name: `original_${i}.png`,
+              }),
+            } as unknown as ManifestData,
+            i,
+          ),
         ),
       );
     }
@@ -187,15 +195,14 @@ describe("ImageShield (restoreFileName + encrypt integration)", () => {
     manifestPath = path.join(tmpDir, "manifest.json");
     manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
     fragmentPaths = [];
+
+    if (!manifest) {
+      throw new Error("Manifest is not defined");
+    }
+
     for (let i = 0; i < originalImages.length; i++) {
       fragmentPaths.push(
-        path.join(
-          tmpDir,
-          generateFragmentFileName(prefix, i, originalImages.length, {
-            isFragmented: true,
-            isEncrypted: !!secretKey,
-          }),
-        ),
+        path.join(tmpDir, generateFragmentFileName(manifest, i)),
       );
     }
     // Restore images using ImageShield.decrypt

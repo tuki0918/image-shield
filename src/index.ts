@@ -10,6 +10,7 @@ import type {
 import { createDir, readJsonFile, writeFile } from "./utils/file";
 import {
   generateFragmentFileName,
+  generateRestoredFileName,
   generateRestoredOriginalFileName,
   verifySecretKey,
 } from "./utils/helpers";
@@ -41,14 +42,9 @@ export default class ImageShield {
       JSON.stringify(manifest, null, 2),
     );
 
-    const prefix = manifest.config.prefix;
-    const total = imagePaths.length;
     await Promise.all(
       fragmentedImages.map((img, i) => {
-        const filename = generateFragmentFileName(prefix, i, total, {
-          isFragmented: true,
-          isEncrypted: manifest.secure,
-        });
+        const filename = generateFragmentFileName(manifest, i);
         return writeFile(outputDir, filename, img);
       }),
     );
@@ -66,13 +62,11 @@ export default class ImageShield {
     await createDir(outputDir, true);
 
     const imageInfos = manifest.images;
-    const prefix = manifest.config.prefix;
-    const total = imagePaths.length;
     await Promise.all(
       restoredImages.map((img, i) => {
         const filename =
           generateRestoredOriginalFileName(imageInfos[i]) ??
-          generateFragmentFileName(prefix, i, total);
+          generateRestoredFileName(manifest, i);
         return writeFile(outputDir, filename, img);
       }),
     );

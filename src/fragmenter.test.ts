@@ -95,21 +95,14 @@ describe("ImageFragmenter", () => {
   });
 
   test("fragment file naming uses prefix and zero padding", () => {
+    if (!manifest) {
+      throw new Error("Manifest is not defined");
+    }
+
     for (let i = 0; i < fragmentBuffers.length; i++) {
-      const ext = secretKey ? "png.enc" : "png";
-      const expectedName = generateFragmentFileName(
-        prefix,
-        i,
-        fragmentBuffers.length,
-        {
-          isFragmented: true,
-          isEncrypted: !!secretKey,
-        },
-      );
+      const expectedName = generateFragmentFileName(manifest, i);
       expect(expectedName).toMatch(
-        new RegExp(
-          `^${prefix}_${i + 1}_fragmented\\.${ext.replace(".", "\\.")}$`,
-        ),
+        new RegExp(`^${manifest.config.prefix}_${i + 1}_fragmented\\.png$`),
       );
     }
   });
