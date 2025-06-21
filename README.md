@@ -111,9 +111,9 @@ await ImageShield.encrypt({
 ```
 output
 └── fragmented
-    ├── img_1_fragmented.png.enc
-    ├── img_2_fragmented.png.enc
-    ├── img_3_fragmented.png.enc
+    ├── img_1_fragmented.png
+    ├── img_2_fragmented.png
+    ├── img_3_fragmented.png
     └── manifest.json
 ```
 </details>
@@ -124,9 +124,9 @@ output
 await ImageShield.decrypt({
   manifestPath: "./output/fragmented/manifest.json",
   imagePaths: [
-    "./output/fragmented/img_1_fragmented.png.enc",
-    "./output/fragmented/img_2_fragmented.png.enc",
-    "./output/fragmented/img_3_fragmented.png.enc",
+    "./output/fragmented/img_1_fragmented.png",
+    "./output/fragmented/img_2_fragmented.png",
+    "./output/fragmented/img_3_fragmented.png",
   ],
   outputDir: "./output/restored",
   secretKey: "secret",
@@ -177,35 +177,36 @@ manifest.json:
 
 ```json
 {
-  "id": "b8d686d0-7eb1-4504-83ee-a3f0a5026752",
-  "version": "0.5.0",
-  "timestamp": "2025-06-03T16:09:57.417Z",
+  "id": "f057819e-fddd-484e-89ac-2be41bbe1f70",
+  "version": "0.7.0",
+  "timestamp": "2025-06-21T00:52:20.613Z",
   "config": {
-    "blockSize": 32,
+    "blockSize": 1,
     "prefix": "img",
-    "seed": 115247
+    "seed": 411220,
+    "restoreFileName": false
   },
   "images": [
     {
       "w": 500,
       "h": 500,
       "c": 4,
-      "x": 16,
-      "y": 16
+      "x": 500,
+      "y": 500
     },
     {
       "w": 400,
       "h": 600,
       "c": 4,
-      "x": 13,
-      "y": 19
+      "x": 400,
+      "y": 600
     },
     {
       "w": 600,
       "h": 400,
       "c": 4,
-      "x": 19,
-      "y": 13
+      "x": 600,
+      "y": 400
     }
   ],
   "algorithm": "aes-256-cbc",
