@@ -31,6 +31,16 @@ export interface FragmentationConfig {
   restoreFileName?: boolean;
 }
 
+/**
+ * Information about the image before fragmentation.
+ * This includes dimensions, channels, and block counts.
+ *
+ * For non-encrypted images: Contains original image information.
+ * For encrypted images: Contains information after encryption processing.
+ * Note: This is NOT information about the final fragmented images.
+ *
+ * The dimensions may differ from the original image due to encryption padding.
+ */
 export interface ImageInfo {
   /** Width */
   width: number;
@@ -46,6 +56,9 @@ export interface ImageInfo {
   name?: string;
 }
 
+/**
+ * Shortened version of ImageInfo
+ */
 export interface ShortImageInfo {
   /** Width */
   w: number;
