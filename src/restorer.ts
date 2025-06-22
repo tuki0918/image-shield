@@ -29,7 +29,22 @@ export class ImageRestorer {
       manifest.config.seed,
     );
 
-    return await this._reconstructAllImages(restoredBlocks, manifest);
+    const reconstructedImages = await this._reconstructAllImages(
+      restoredBlocks,
+      manifest,
+    );
+
+    // If encryption was used, decrypt the reconstructed images
+    const secretKey = this.secretKey;
+    if (manifest.secure && secretKey) {
+      return await Promise.all(
+        reconstructedImages.map((img) =>
+          decryptPngImageBuffer(img, secretKey, manifest.id),
+        ),
+      );
+    }
+
+    return reconstructedImages;
   }
 
   private async _reconstructAllImages(
@@ -111,13 +126,7 @@ export class ImageRestorer {
     expectedBlockCount: number,
   ): Promise<Buffer[]> {
     const buf = await this._readImageBuffer(fragmentImage);
-    const processedBuffer = await this._processImageBuffer(buf, manifest);
-
-    const { blocks } = await imageFileToBlocks(
-      processedBuffer,
-      manifest.config.blockSize,
-    );
-
+    const { blocks } = await imageFileToBlocks(buf, manifest.config.blockSize);
     return blocks.slice(0, expectedBlockCount);
   }
 
@@ -127,16 +136,6 @@ export class ImageRestorer {
     return Buffer.isBuffer(fragmentImage)
       ? fragmentImage
       : await readFileBuffer(fragmentImage);
-  }
-
-  private async _processImageBuffer(
-    buffer: Buffer,
-    manifest: ManifestData,
-  ): Promise<Buffer> {
-    if (manifest.secure && this.secretKey) {
-      return await decryptPngImageBuffer(buffer, this.secretKey, manifest.id);
-    }
-    return buffer;
   }
 
   private async _extractBlocksFromFragments(

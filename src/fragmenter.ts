@@ -12,7 +12,7 @@ import {
   imageFileToBlocks,
 } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
-import { fileNameWithoutExtension } from "./utils/file";
+import { fileNameWithoutExtension, readFileBuffer } from "./utils/file";
 import { SeededRandom, shuffleArrayWithKey } from "./utils/random";
 
 export class ImageFragmenter {
@@ -73,7 +73,7 @@ export class ImageFragmenter {
           manifest.config.blockSize,
         );
 
-        return await this._processFragmentImage(fragmentImage, manifest.id);
+        return fragmentImage;
       }),
     );
   }
@@ -90,23 +90,17 @@ export class ImageFragmenter {
     return { start, end };
   }
 
-  private async _processFragmentImage(
-    fragmentImage: Buffer,
+  private _createManifest(
     manifestId: string,
-  ): Promise<Buffer> {
-    return this.secretKey
-      ? await encryptPngImageBuffer(fragmentImage, this.secretKey, manifestId)
-      : fragmentImage;
-  }
-
-  private _createManifest(imageInfos: ImageInfo[]): ManifestData {
+    imageInfos: ImageInfo[],
+  ): ManifestData {
     this._validateFileNames(imageInfos);
 
     const secure = !!this.secretKey;
     const algorithm = secure ? "aes-256-cbc" : undefined;
 
     return {
-      id: CryptoUtils.generateUUID(),
+      id: manifestId,
       version: VERSION,
       timestamp: new Date().toISOString(),
       config: this.config,
@@ -149,22 +143,35 @@ export class ImageFragmenter {
     allBlocks: Buffer[];
     fragmentBlocksCount: number[];
   }> {
-    const { imageInfos, allBlocks } =
-      await this._processSourceImages(imagePaths);
-    const manifest = this._createManifest(imageInfos);
+    // Generate manifest ID first
+    const manifestId = CryptoUtils.generateUUID();
+
+    const { imageInfos, allBlocks } = await this._processSourceImages(
+      imagePaths,
+      { id: manifestId },
+    );
+
+    const manifest = this._createManifest(manifestId, imageInfos);
+
     const fragmentBlocksCount = calcBlocksPerFragment(
       allBlocks.length,
       imagePaths.length,
     );
+
     return { manifest, allBlocks, fragmentBlocksCount };
   }
 
-  private async _processSourceImages(imagePaths: string[]): Promise<{
+  private async _processSourceImages(
+    imagePaths: string[],
+    manifestInfo: Pick<ManifestData, "id">,
+  ): Promise<{
     imageInfos: ImageInfo[];
     allBlocks: Buffer[];
   }> {
     const processedImages = await Promise.all(
-      imagePaths.map((imagePath) => this._processSourceImage(imagePath)),
+      imagePaths.map((imagePath) =>
+        this._processSourceImage(imagePath, manifestInfo),
+      ),
     );
 
     const imageInfos = processedImages.map((p) => p.imageInfo);
@@ -173,12 +180,20 @@ export class ImageFragmenter {
     return { imageInfos, allBlocks };
   }
 
-  private async _processSourceImage(imagePath: string): Promise<{
+  private async _processSourceImage(
+    imagePath: string,
+    manifestInfo: Pick<ManifestData, "id">,
+  ): Promise<{
     imageInfo: ImageInfo;
     blocks: Buffer[];
   }> {
+    const processedImageBuffer = await this._processSourceImageBuffer(
+      imagePath,
+      manifestInfo,
+    );
+
     const { blocks, width, height, channels, blockCountX, blockCountY } =
-      await imageFileToBlocks(imagePath, this.config.blockSize);
+      await imageFileToBlocks(processedImageBuffer, this.config.blockSize);
 
     const imageInfo: ImageInfo = {
       width,
@@ -192,6 +207,23 @@ export class ImageFragmenter {
     };
 
     return { imageInfo, blocks };
+  }
+
+  private async _processSourceImageBuffer(
+    imagePath: string,
+    manifestInfo: Pick<ManifestData, "id">,
+  ): Promise<Buffer> {
+    const originalBuffer = await readFileBuffer(imagePath);
+
+    if (this.secretKey && manifestInfo.id) {
+      return await encryptPngImageBuffer(
+        originalBuffer,
+        this.secretKey,
+        manifestInfo.id,
+      );
+    }
+
+    return originalBuffer;
   }
 
   private async _createFragmentImage(
