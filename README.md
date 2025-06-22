@@ -158,6 +158,8 @@ output
 |:-------:|:---------------:|:---------------:|:---------------:|:----------------:|
 | ![](.docs/output_8.png) | ![](.docs/output_10.png) | ![](.docs/output_16.png) | ![](.docs/output_32.png) | ![](.docs/output_128.png) |
 
+> Note: If encryption is enabled, the input is encrypted and becomes a noise image.
+
 ### Input multiple images
 
 blockSize: `32`
@@ -170,6 +172,7 @@ blockSize: `32`
 |:-------:|:---------------:|:---------------:|
 | ![](.docs/output_m0.png) | ![](.docs/output_m1.png) | ![](.docs/output_m2.png) |
 
+> Note: If encryption is enabled, the input is encrypted and becomes a noise image.
 
 ## Manifest Structure
 
@@ -220,7 +223,6 @@ manifest.json:
   "secure": true
 }
 ```
-
 </details>
 
 ---
@@ -233,3 +235,4 @@ manifest.json:
 ## Clients
 
 - [Raycast Extension](https://github.com/tuki0918/raycast-image-shield)
+
