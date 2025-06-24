@@ -2,28 +2,29 @@ import { CryptoUtils, InvalidUUIDFormatError } from "./crypto";
 
 describe("CryptoUtils", () => {
   const key = "test-key-1234";
-  const buffer = Buffer.from("BufferData123");
+  const buffer = new Uint8Array([66, 117, 102, 102, 101, 114, 68, 97, 116, 97, 49, 50, 51]); // "BufferData123"
 
-  test("encryptBuffer/decryptBuffer", () => {
-    const iv = Buffer.from("1234567890abcdef1234567890abcdef", "hex");
-    const encrypted = CryptoUtils.encryptBuffer(buffer, key, iv);
-    const decrypted = CryptoUtils.decryptBuffer(encrypted, key, iv);
-    expect(decrypted.equals(buffer)).toBe(true);
+  test("encryptBuffer/decryptBuffer", async () => {
+    const iv = new Uint8Array([0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef, 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef]);
+    const encrypted = await CryptoUtils.encryptBuffer(buffer, key, iv);
+    const decrypted = await CryptoUtils.decryptBuffer(encrypted, key, iv);
+    expect(Array.from(decrypted)).toEqual(Array.from(buffer));
   });
 
-  test("keyTo32 returns 32 bytes", () => {
-    const result = CryptoUtils.keyTo32(key);
-    expect(result).toBeInstanceOf(Buffer);
+  test("keyTo32 returns 32 bytes", async () => {
+    const result = await CryptoUtils.keyTo32(key);
+    expect(result).toBeInstanceOf(Uint8Array);
     expect(result.length).toBe(32);
   });
 
-  test("uuidToIV returns correct Buffer", () => {
+  test("uuidToIV returns correct Uint8Array", () => {
     const uuid = "106e4326-1050-4e8a-850a-9e630f96de06";
     const iv = CryptoUtils.uuidToIV(uuid);
-    expect(iv).toBeInstanceOf(Buffer);
+    expect(iv).toBeInstanceOf(Uint8Array);
     expect(iv.length).toBe(16);
-    // check if the hex string
-    expect(iv.toString("hex")).toBe("106e432610504e8a850a9e630f96de06");
+    // check if the hex values are correct
+    const expected = new Uint8Array([0x10, 0x6e, 0x43, 0x26, 0x10, 0x50, 0x4e, 0x8a, 0x85, 0x0a, 0x9e, 0x63, 0x0f, 0x96, 0xde, 0x06]);
+    expect(Array.from(iv)).toEqual(Array.from(expected));
   });
 
   test("generateUUID returns correct UUID", () => {

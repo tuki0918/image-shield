@@ -1,4 +1,5 @@
-import crypto from "node:crypto";
+// Web Crypto API implementation for cross-platform compatibility
+// Works in both Node.js (15.6.0+) and browsers
 
 export class InvalidUUIDFormatError extends Error {
   constructor(message: string) {
@@ -9,36 +10,51 @@ export class InvalidUUIDFormatError extends Error {
 
 // biome-ignore lint/complexity/noStaticOnlyClass:
 export class CryptoUtils {
-  static encryptBuffer(buffer: Buffer, key: string, iv: Buffer): Buffer {
-    const cipher = crypto.createCipheriv(
-      "aes-256-cbc",
-      CryptoUtils.keyTo32(key),
-      iv,
+  static async encryptBuffer(buffer: Uint8Array, key: string, iv: Uint8Array): Promise<Uint8Array> {
+    const cryptoKey = await this.importKey(await this.keyTo32(key));
+    const encrypted = await crypto.subtle.encrypt(
+      { name: "AES-CBC", iv },
+      cryptoKey,
+      buffer
     );
-    return Buffer.concat([cipher.update(buffer), cipher.final()]);
+    return new Uint8Array(encrypted);
   }
 
-  static decryptBuffer(buffer: Buffer, key: string, iv: Buffer): Buffer {
-    const decipher = crypto.createDecipheriv(
-      "aes-256-cbc",
-      CryptoUtils.keyTo32(key),
-      iv,
+  static async decryptBuffer(buffer: Uint8Array, key: string, iv: Uint8Array): Promise<Uint8Array> {
+    const cryptoKey = await this.importKey(await this.keyTo32(key));
+    const decrypted = await crypto.subtle.decrypt(
+      { name: "AES-CBC", iv },
+      cryptoKey,
+      buffer
     );
-    return Buffer.concat([decipher.update(buffer), decipher.final()]);
+    return new Uint8Array(decrypted);
   }
 
-  static keyTo32(key: string): Buffer {
-    return crypto.createHash("sha256").update(key).digest();
+  static async keyTo32(key: string): Promise<Uint8Array> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(key);
+    const hash = await crypto.subtle.digest("SHA-256", data);
+    return new Uint8Array(hash);
   }
 
   static generateUUID(): string {
     return crypto.randomUUID();
   }
 
-  static uuidToIV(uuid: string): Buffer {
+  static uuidToIV(uuid: string): Uint8Array {
     const hex = uuid.replace(/-/g, "");
     if (hex.length !== 32)
       throw new InvalidUUIDFormatError("Invalid UUID format");
-    return Buffer.from(hex, "hex");
+    return new Uint8Array(hex.match(/.{2}/g)!.map(byte => parseInt(byte, 16)));
+  }
+
+  private static async importKey(keyData: Uint8Array): Promise<CryptoKey> {
+    return await crypto.subtle.importKey(
+      "raw",
+      keyData,
+      { name: "AES-CBC" },
+      false,
+      ["encrypt", "decrypt"]
+    );
   }
 }

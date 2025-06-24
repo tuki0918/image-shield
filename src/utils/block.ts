@@ -11,7 +11,7 @@ interface BlockCounts {
 }
 
 interface ImageFileToBlocksResult {
-  blocks: Buffer[];
+  blocks: Uint8Array[];
   width: number;
   height: number;
   channels: number;
@@ -550,9 +550,9 @@ export async function encryptPngImageBuffer(
   // Combine metadata and image buffer
   const dataToEncrypt = Buffer.concat([metadata, imageBuffer]);
 
-  // Encrypt the combined data
-  const encryptedData = CryptoUtils.encryptBuffer(
-    dataToEncrypt,
+  // Encrypt the combined data (async)
+  const encryptedData = await CryptoUtils.encryptBuffer(
+    new Uint8Array(dataToEncrypt),
     secretKey,
     CryptoUtils.uuidToIV(manifestId),
   );
@@ -564,7 +564,7 @@ export async function encryptPngImageBuffer(
   // Create a padded buffer to fit exactly in the image dimensions
   const paddedSize = encryptedWidth * encryptedHeight * RGBA_CHANNELS;
   const paddedData = Buffer.alloc(paddedSize);
-  encryptedData.copy(paddedData, 0);
+  paddedData.set(encryptedData, 0);
 
   // Convert encrypted data back to PNG using createPngFromImageBuffer
   return await createPngFromImageBuffer(
@@ -593,9 +593,9 @@ export async function decryptPngImageBuffer(
   // Remove padding from encrypted data
   const encryptedData = removePadding(encryptedImageData);
 
-  // Decrypt the data
-  const decryptedData = CryptoUtils.decryptBuffer(
-    encryptedData,
+  // Decrypt the data (async)
+  const decryptedData = await CryptoUtils.decryptBuffer(
+    new Uint8Array(encryptedData),
     secretKey,
     CryptoUtils.uuidToIV(manifestId),
   );
@@ -605,13 +605,13 @@ export async function decryptPngImageBuffer(
     width: originalWidth,
     height: originalHeight,
     imageBufferLength: originalImageBufferLength,
-  } = parseImageBufferMetadata(decryptedData.subarray(0, PNG_METADATA_SIZE));
+  } = parseImageBufferMetadata(Buffer.from(decryptedData.subarray(0, PNG_METADATA_SIZE)));
 
   // Extract the original image buffer (skip 12 bytes of metadata)
-  const originalImageBuffer = decryptedData.subarray(
+  const originalImageBuffer = Buffer.from(decryptedData.subarray(
     PNG_METADATA_SIZE,
     PNG_METADATA_SIZE + originalImageBufferLength,
-  );
+  ));
 
   // Create PNG from image buffer using block utility
   return await createPngFromImageBuffer(
