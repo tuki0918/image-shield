@@ -65,20 +65,13 @@ export default class BrowserImageShield {
   static async encrypt(options: BrowserEncryptOptions): Promise<BrowserEncryptResult> {
     const { images, config, secretKey } = this.validateEncryptOptions(options);
 
-    // Convert Files to paths (using file names for compatibility)
-    const imagePaths = images.map(file => file.name);
-
     const fragmenter = new ImageFragmenter(
       config ?? {},
       verifySecretKey(secretKey),
     );
 
-    // We need to modify fragmenter to accept File objects instead of paths
-    // For now, we'll use a workaround
-    const { manifest, fragmentedImages } = await this.fragmentImagesFromFiles(
-      fragmenter,
-      images
-    );
+    // Use the new browser-compatible method
+    const { manifest, fragmentedImages } = await fragmenter.fragmentFiles(images);
 
     // Create file blobs
     const files: Record<string, Blob> = {};
@@ -112,7 +105,7 @@ export default class BrowserImageShield {
     );
 
     const restorer = new ImageRestorer(verifySecretKey(secretKey));
-    const restoredImages = await restorer.restore(fragmentBuffers, manifestData);
+    const restoredImages = await restorer.restoreImages(fragmentBuffers, manifestData);
 
     // Convert restored images to Blobs
     const images = restoredImages.map(buffer => 
@@ -120,7 +113,9 @@ export default class BrowserImageShield {
     );
 
     // Generate original names
-    const originalNames = manifestData.sources.map(source => source.originalFileName);
+    const originalNames = manifestData.images.map((img, index) => 
+      img.name || `restored_${index}.png`
+    );
 
     return { images, originalNames };
   }
@@ -144,20 +139,6 @@ export default class BrowserImageShield {
       return BrowserFileHandler.downloadBlob(blob, originalName);
     });
     await Promise.all(downloads);
-  }
-
-  /**
-   * Helper method to fragment images from File objects
-   * This is a temporary workaround until we refactor the fragmenter
-   */
-  private static async fragmentImagesFromFiles(
-    fragmenter: ImageFragmenter,
-    files: File[]
-  ): Promise<{ manifest: ManifestData; fragmentedImages: Buffer[] }> {
-    // This is a simplified implementation
-    // In a full implementation, we would need to modify ImageFragmenter
-    // to work with File objects directly
-    throw new Error('Not implemented yet. Need to refactor ImageFragmenter for browser compatibility.');
   }
 
   private static validateEncryptOptions(options: BrowserEncryptOptions): Required<Omit<BrowserEncryptOptions, 'config' | 'secretKey'>> & Pick<BrowserEncryptOptions, 'config' | 'secretKey'> {

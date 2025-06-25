@@ -107,4 +107,13 @@ export class BrowserPath {
       .join('/')
       .replace(/\/+/g, '/');
   }
+
+  /**
+   * Get file name without extension (browser-compatible)
+   */
+  static fileNameWithoutExtension(pathOrFile: string | File): string {
+    const name = this.basename(pathOrFile);
+    const ext = this.extname(name);
+    return ext ? name.substring(0, name.length - ext.length) : name;
+  }
 }

@@ -55,6 +55,27 @@ export class ImageFragmenter {
     };
   }
 
+  /**
+   * Fragment images from File objects (browser-compatible)
+   */
+  async fragmentFiles(files: File[]): Promise<FragmentationResult> {
+    const { manifest, allBlocks, fragmentBlocksCount } =
+      await this._prepareFragmentDataFromFiles(files);
+
+    const shuffledBlocks = shuffleArrayWithKey(allBlocks, manifest.config.seed);
+
+    const fragmentedImages = await this._createFragmentedImages(
+      shuffledBlocks,
+      fragmentBlocksCount,
+      manifest,
+    );
+
+    return {
+      manifest,
+      fragmentedImages,
+    };
+  }
+
   private async _createFragmentedImages(
     shuffledBlocks: Buffer[],
     fragmentBlocksCount: number[],
@@ -161,6 +182,29 @@ export class ImageFragmenter {
     return { manifest, allBlocks, fragmentBlocksCount };
   }
 
+  private async _prepareFragmentDataFromFiles(files: File[]): Promise<{
+    manifest: ManifestData;
+    allBlocks: Buffer[];
+    fragmentBlocksCount: number[];
+  }> {
+    // Generate manifest ID first
+    const manifestId = CryptoUtils.generateUUID();
+
+    const { imageInfos, allBlocks } = await this._processSourceFiles(
+      files,
+      { id: manifestId },
+    );
+
+    const manifest = this._createManifest(manifestId, imageInfos);
+
+    const fragmentBlocksCount = calcBlocksPerFragment(
+      allBlocks.length,
+      files.length,
+    );
+
+    return { manifest, allBlocks, fragmentBlocksCount };
+  }
+
   private async _processSourceImages(
     imagePaths: string[],
     manifestInfo: Pick<ManifestData, "id">,
@@ -171,6 +215,25 @@ export class ImageFragmenter {
     const processedImages = await Promise.all(
       imagePaths.map((imagePath) =>
         this._processSourceImage(imagePath, manifestInfo),
+      ),
+    );
+
+    const imageInfos = processedImages.map((p) => p.imageInfo);
+    const allBlocks = processedImages.flatMap((p) => p.blocks);
+
+    return { imageInfos, allBlocks };
+  }
+
+  private async _processSourceFiles(
+    files: File[],
+    manifestInfo: Pick<ManifestData, "id">,
+  ): Promise<{
+    imageInfos: ImageInfo[];
+    allBlocks: Buffer[];
+  }> {
+    const processedImages = await Promise.all(
+      files.map((file) =>
+        this._processSourceFile(file, manifestInfo),
       ),
     );
 
@@ -192,8 +255,11 @@ export class ImageFragmenter {
       manifestInfo,
     );
 
-    const { blocks, width, height, channels, blockCountX, blockCountY } =
+    const { blocks: uint8Blocks, width, height, channels, blockCountX, blockCountY } =
       await imageFileToBlocks(processedImageBuffer, this.config.blockSize);
+
+    // Convert Uint8Array blocks to Buffer for compatibility
+    const blocks = uint8Blocks.map(block => Buffer.from(block));
 
     const imageInfo: ImageInfo = {
       width,
@@ -203,6 +269,38 @@ export class ImageFragmenter {
       blockCountY,
       name: this.config.restoreFileName
         ? fileNameWithoutExtension(imagePath)
+        : undefined,
+    };
+
+    return { imageInfo, blocks };
+  }
+
+  private async _processSourceFile(
+    file: File,
+    manifestInfo: Pick<ManifestData, "id">,
+  ): Promise<{
+    imageInfo: ImageInfo;
+    blocks: Buffer[];
+  }> {
+    const processedImageBuffer = await this._processSourceFileBuffer(
+      file,
+      manifestInfo,
+    );
+
+    const { blocks: uint8Blocks, width, height, channels, blockCountX, blockCountY } =
+      await imageFileToBlocks(processedImageBuffer, this.config.blockSize);
+
+    // Convert Uint8Array blocks to Buffer for compatibility
+    const blocks = uint8Blocks.map(block => Buffer.from(block));
+
+    const imageInfo: ImageInfo = {
+      width,
+      height,
+      channels,
+      blockCountX,
+      blockCountY,
+      name: this.config.restoreFileName
+        ? this._getFileNameWithoutExtension(file.name)
         : undefined,
     };
 
@@ -224,6 +322,39 @@ export class ImageFragmenter {
     }
 
     return originalBuffer;
+  }
+
+  private async _processSourceFileBuffer(
+    file: File,
+    manifestInfo: Pick<ManifestData, "id">,
+  ): Promise<Buffer> {
+    // Read File object as Buffer
+    const arrayBuffer = await this._readFileAsArrayBuffer(file);
+    const originalBuffer = Buffer.from(arrayBuffer);
+
+    if (this.secretKey && manifestInfo.id) {
+      return await encryptPngImageBuffer(
+        originalBuffer,
+        this.secretKey,
+        manifestInfo.id,
+      );
+    }
+
+    return originalBuffer;
+  }
+
+  private async _readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  private _getFileNameWithoutExtension(fileName: string): string {
+    const lastDotIndex = fileName.lastIndexOf('.');
+    return lastDotIndex > 0 ? fileName.substring(0, lastDotIndex) : fileName;
   }
 
   private async _createFragmentImage(

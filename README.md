@@ -11,6 +11,15 @@ This package provides two main modes for image fragmentation:
 - **Shuffle only**: If `secretKey` is not set, only shuffling is performed (no encryption).
 - **Shuffle + Encrypt (recommended)**: If `secretKey` is set, both shuffling and encryption are performed.
 
+### Browser Support
+
+This package supports both Node.js and browser environments:
+
+- **Node.js**: Full file system operations
+- **Browser**: File API for client-side operations with drag & drop support
+
+The browser version uses Web Crypto API for encryption and works with File objects instead of file paths.
+
 ---
 
 ## Installation
@@ -231,6 +240,46 @@ manifest.json:
 > - The recommended mode is **Shuffle + Encrypt** for better security.
 > - The `manifest.json` file contains the necessary information for restoration, but it does not include the secret key.
 > - Input images are converted to PNG format.
+
+## Browser Usage
+
+For browser environments, use the browser-specific API:
+
+```html
+<script type="module">
+import BrowserImageShield from './dist/image-shield-browser.es.js';
+
+// Encrypt files from file input
+const files = Array.from(document.getElementById('fileInput').files);
+const result = await BrowserImageShield.encrypt({
+  images: files,
+  secretKey: 'your-secret-key' // optional
+});
+
+// Download all generated files
+await BrowserImageShield.downloadFiles(result);
+
+// Decrypt fragments
+const fragmentFiles = Array.from(document.getElementById('fragmentInput').files);
+const manifestFile = fragmentFiles.find(f => f.name === 'manifest.json');
+const pngFiles = fragmentFiles.filter(f => f.name.endsWith('.png'));
+
+const manifestData = JSON.parse(await manifestFile.text());
+
+const decryptResult = await BrowserImageShield.decrypt({
+  fragmentFiles: pngFiles,
+  manifestData: manifestData,
+  secretKey: 'your-secret-key' // optional, must match encrypt key
+});
+
+// Download restored images
+await BrowserImageShield.downloadImages(decryptResult);
+</script>
+```
+
+### Browser Demo
+
+A working demo is available in `demo.html`. Open it in your browser to try the functionality with drag & drop file support.
 
 ## Clients
 

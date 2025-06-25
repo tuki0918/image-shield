@@ -127,7 +127,7 @@ export class ImageRestorer {
   ): Promise<Buffer[]> {
     const buf = await this._readImageBuffer(fragmentImage);
     const { blocks } = await imageFileToBlocks(buf, manifest.config.blockSize);
-    return blocks.slice(0, expectedBlockCount);
+    return blocks.slice(0, expectedBlockCount) as Buffer[];
   }
 
   private async _readImageBuffer(

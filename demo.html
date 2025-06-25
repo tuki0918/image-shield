@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImageShield Browser Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .section {
+            margin: 40px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .file-input {
+            margin: 10px 0;
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .file-input.drag-over {
+            border-color: #007acc;
+            background-color: #f0f8ff;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005a99;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        .error {
+            color: red;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🛡️ ImageShield Browser Demo</h1>
+    <p>このデモでは、ブラウザ上で画像の暗号化・断片化と復号・復元を試すことができます。</p>
+
+    <!-- 暗号化セクション -->
+    <div class="section">
+        <h2>🔒 画像の暗号化と断片化</h2>
+        <div class="file-input" id="encrypt-dropzone">
+            <input type="file" id="encrypt-files" multiple accept="image/*">
+            <p>画像ファイルを選択またはドラッグ&ドロップしてください</p>
+        </div>
+        <div>
+            <label>
+                シークレットキー (任意):
+                <input type="password" id="encrypt-key" placeholder="暗号化キーを入力">
+            </label>
+        </div>
+        <button id="encrypt-btn" disabled>暗号化して断片化</button>
+        <div id="encrypt-results" class="results" style="display: none;"></div>
+    </div>
+
+    <!-- 復号セクション -->
+    <div class="section">
+        <h2>🔓 断片の復号と復元</h2>
+        <div class="file-input" id="decrypt-dropzone">
+            <input type="file" id="decrypt-files" multiple accept=".png,.json">
+            <p>断片ファイル（.png）とマニフェスト（manifest.json）を選択してください</p>
+        </div>
+        <div>
+            <label>
+                シークレットキー (暗号化した場合):
+                <input type="password" id="decrypt-key" placeholder="復号キーを入力">
+            </label>
+        </div>
+        <button id="decrypt-btn" disabled>復号して復元</button>
+        <div id="decrypt-results" class="results" style="display: none;"></div>
+    </div>
+
+    <!-- マニフェスト表示 -->
+    <div class="section">
+        <h2>📋 マニフェスト情報</h2>
+        <textarea id="manifest-display" readonly placeholder="暗号化後、マニフェスト情報がここに表示されます"></textarea>
+    </div>
+
+    <script type="module">
+        import BrowserImageShield from './dist/image-shield-browser.es.js';
+
+        // UI Elements
+        const encryptFiles = document.getElementById('encrypt-files');
+        const encryptBtn = document.getElementById('encrypt-btn');
+        const encryptResults = document.getElementById('encrypt-results');
+        const encryptKey = document.getElementById('encrypt-key');
+
+        const decryptFiles = document.getElementById('decrypt-files');
+        const decryptBtn = document.getElementById('decrypt-btn');
+        const decryptResults = document.getElementById('decrypt-results');
+        const decryptKey = document.getElementById('decrypt-key');
+
+        const manifestDisplay = document.getElementById('manifest-display');
+
+        // Encrypt functionality
+        encryptFiles.addEventListener('change', () => {
+            encryptBtn.disabled = encryptFiles.files.length === 0;
+        });
+
+        encryptBtn.addEventListener('click', async () => {
+            try {
+                encryptBtn.disabled = true;
+                encryptResults.innerHTML = '<p>処理中...</p>';
+                encryptResults.style.display = 'block';
+
+                const files = Array.from(encryptFiles.files);
+                const secretKey = encryptKey.value || undefined;
+
+                const result = await BrowserImageShield.encrypt({
+                    images: files,
+                    secretKey: secretKey
+                });
+
+                // Display manifest
+                manifestDisplay.value = JSON.stringify(result.manifest, null, 2);
+
+                // Download all files
+                await BrowserImageShield.downloadFiles(result);
+
+                encryptResults.innerHTML = `
+                    <div class="success">
+                        <h3>✅ 暗号化完了</h3>
+                        <p>処理された画像: ${files.length}枚</p>
+                        <p>生成された断片: ${Object.keys(result.files).length - 1}個</p>
+                        <p>セキュア: ${result.manifest.secure ? 'はい' : 'いいえ'}</p>
+                    </div>
+                `;
+            } catch (error) {
+                encryptResults.innerHTML = `<div class="error">エラー: ${error.message}</div>`;
+            } finally {
+                encryptBtn.disabled = false;
+            }
+        });
+
+        // Decrypt functionality
+        decryptFiles.addEventListener('change', () => {
+            const files = Array.from(decryptFiles.files);
+            const hasManifest = files.some(f => f.name === 'manifest.json');
+            const hasFragments = files.some(f => f.name.endsWith('.png'));
+            decryptBtn.disabled = !hasManifest || !hasFragments;
+        });
+
+        decryptBtn.addEventListener('click', async () => {
+            try {
+                decryptBtn.disabled = true;
+                decryptResults.innerHTML = '<p>処理中...</p>';
+                decryptResults.style.display = 'block';
+
+                const files = Array.from(decryptFiles.files);
+                const manifestFile = files.find(f => f.name === 'manifest.json');
+                const fragmentFiles = files.filter(f => f.name.endsWith('.png'));
+
+                // Read manifest
+                const manifestText = await manifestFile.text();
+                const manifestData = JSON.parse(manifestText);
+
+                const secretKey = decryptKey.value || undefined;
+
+                const result = await BrowserImageShield.decrypt({
+                    fragmentFiles: fragmentFiles,
+                    manifestData: manifestData,
+                    secretKey: secretKey
+                });
+
+                // Download restored images
+                await BrowserImageShield.downloadImages(result);
+
+                decryptResults.innerHTML = `
+                    <div class="success">
+                        <h3>✅ 復号完了</h3>
+                        <p>復元された画像: ${result.images.length}枚</p>
+                        <p>ファイル名: ${result.originalNames.join(', ')}</p>
+                    </div>
+                `;
+            } catch (error) {
+                decryptResults.innerHTML = `<div class="error">エラー: ${error.message}</div>`;
+            } finally {
+                decryptBtn.disabled = false;
+            }
+        });
+
+        // Drag and drop functionality
+        function setupDragAndDrop(dropzone, fileInput) {
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropzone.classList.add('drag-over');
+            });
+
+            dropzone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('drag-over');
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('drag-over');
+                fileInput.files = e.dataTransfer.files;
+                fileInput.dispatchEvent(new Event('change'));
+            });
+        }
+
+        setupDragAndDrop(document.getElementById('encrypt-dropzone'), encryptFiles);
+        setupDragAndDrop(document.getElementById('decrypt-dropzone'), decryptFiles);
+    </script>
+</body>
+</html>
