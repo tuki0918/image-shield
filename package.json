@@ -3,15 +3,15 @@
   "version": "0.8.0",
   "description": "Image fragmentation and restoration.",
   "main": "dist/index.js",
-  "browser": "dist/image-shield.umd.js",
-  "module": "dist/image-shield.es.js",
+  "browser": "dist/image-shield-browser.umd.js",
+  "module": "dist/image-shield-browser.es.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "browser": "./dist/image-shield.umd.js",
-      "import": "./dist/image-shield.es.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/image-shield-browser.umd.js",
+      "import": "./dist/image-shield-browser.es.js",
+      "require": "./dist/index.js"
     }
   },
   "files": [
@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "build:browser": "vite build",
+    "build:browser": "vite build --config vite.config.browser.ts",
     "build:all": "npm run build && npm run build:browser",
     "build:check": "tsc -p tsconfig.build.json --noEmit",
     "build:typecheck": "tsc --noEmit",

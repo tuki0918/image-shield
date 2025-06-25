@@ -4,14 +4,19 @@ import { resolve } from 'path';
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'ImageShield',
-      fileName: (format) => `image-shield.${format}.js`,
+      entry: resolve(__dirname, 'src/browser.ts'),
+      name: 'ImageShieldBrowser',
+      fileName: (format) => `image-shield-browser.${format}.js`,
       formats: ['es', 'umd']
     },
     rollupOptions: {
       // 外部依存関係を指定（ライブラリとして使用される際に除外）
-      external: [],
+      external: [
+        'node:fs',
+        'node:path',
+        'fs',
+        'path'
+      ],
       output: {
         globals: {}
       }
@@ -26,7 +31,9 @@ export default defineConfig({
   resolve: {
     alias: {
       // Node.js固有のモジュールのポリフィルが必要な場合はここで設定
-      buffer: 'buffer'
+      buffer: 'buffer',
+      // Node.js file operations を browser stub で置き換え
+      './utils/file': resolve(__dirname, 'src/utils/file-browser-stub.ts')
     }
   },
   optimizeDeps: {
