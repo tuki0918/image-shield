@@ -35,6 +35,7 @@
     "vitest": "^3.1.4"
   },
   "dependencies": {
+    "@tuki0918/seeded-shuffle": "^0.1.0",
     "jimp": "^1.6.0"
   }
 }
