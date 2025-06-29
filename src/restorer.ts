@@ -1,3 +1,4 @@
+import { unshuffle } from "@tuki0918/seeded-shuffle";
 import type { ManifestData, ShortImageInfo } from "./types";
 import {
   blocksToPngImage,
@@ -6,7 +7,6 @@ import {
   imageFileToBlocks,
 } from "./utils/block";
 import { readFileBuffer } from "./utils/file";
-import { unshuffleArrayWithKey } from "./utils/random";
 
 export class ImageRestorer {
   private secretKey?: string;
@@ -24,10 +24,7 @@ export class ImageRestorer {
       manifest,
     );
 
-    const restoredBlocks = unshuffleArrayWithKey(
-      allBlocks,
-      manifest.config.seed,
-    );
+    const restoredBlocks = unshuffle(allBlocks, manifest.config.seed);
 
     const reconstructedImages = await this._reconstructAllImages(
       restoredBlocks,

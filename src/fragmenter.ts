@@ -1,3 +1,4 @@
+import { SeededRandom, shuffle } from "@tuki0918/seeded-shuffle";
 import { DEFAULT_FRAGMENTATION_CONFIG, VERSION } from "./constraints";
 import type {
   FragmentationConfig,
@@ -13,7 +14,6 @@ import {
 } from "./utils/block";
 import { CryptoUtils } from "./utils/crypto";
 import { fileNameWithoutExtension, readFileBuffer } from "./utils/file";
-import { SeededRandom, shuffleArrayWithKey } from "./utils/random";
 
 export class ImageFragmenter {
   private config: Required<FragmentationConfig>;
@@ -41,7 +41,7 @@ export class ImageFragmenter {
     const { manifest, allBlocks, fragmentBlocksCount } =
       await this._prepareFragmentData(imagePaths);
 
-    const shuffledBlocks = shuffleArrayWithKey(allBlocks, manifest.config.seed);
+    const shuffledBlocks = shuffle(allBlocks, manifest.config.seed);
 
     const fragmentedImages = await this._createFragmentedImages(
       shuffledBlocks,
