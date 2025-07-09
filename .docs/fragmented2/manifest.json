@@ -1,0 +1,36 @@
+{
+  "id": "6c6c38a9-b856-49fd-9005-cb4c23c9e2c0",
+  "version": "0.8.0",
+  "timestamp": "2025-07-09T22:30:20.274Z",
+  "config": {
+    "blockSize": 2,
+    "prefix": "img",
+    "seed": 535767,
+    "restoreFileName": false
+  },
+  "images": [
+    {
+      "w": 501,
+      "h": 500,
+      "c": 4,
+      "x": 251,
+      "y": 250
+    },
+    {
+      "w": 490,
+      "h": 490,
+      "c": 4,
+      "x": 245,
+      "y": 245
+    },
+    {
+      "w": 490,
+      "h": 490,
+      "c": 4,
+      "x": 245,
+      "y": 245
+    }
+  ],
+  "algorithm": "aes-256-cbc",
+  "secure": true
+}
