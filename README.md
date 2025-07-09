@@ -55,6 +55,17 @@ output
     ├── img_3_fragmented.png
     └── manifest.json
 ```
+
+| input 1 | input 2 | input 3 |
+|:-------:|:---------------:|:---------------:|
+| ![](.docs/input_sample.png) | ![](.docs/input_sample_mono.png) | ![](.docs/input_sample_blue.png) |
+| 500 x 500px (109KB) | 400 x 600px (4KB) | 600 x 400px (3KB) |
+
+| output 1 | output 2 | output 3 |
+|:-------:|:---------------:|:---------------:|
+| ![](.docs/fragmented1/img_1_fragmented.png) | ![](.docs/fragmented1/img_2_fragmented.png) | ![](.docs/fragmented1/img_3_fragmented.png) |
+| 494 x 494px (334KB) | 494 x 494px (335KB) | 494 x 494px (334KB) |
+
 </details>
 
 **Decrypt**
@@ -82,6 +93,17 @@ output
     ├── img_2.png
     └── img_3.png
 ```
+
+| input 1 | input 2 | input 3 |
+|:-------:|:---------------:|:---------------:|
+| ![](.docs/fragmented1/img_1_fragmented.png) | ![](.docs/fragmented1/img_2_fragmented.png) | ![](.docs/fragmented1/img_3_fragmented.png) |
+| 494 x 494px (334KB) | 494 x 494px (335KB) | 494 x 494px (334KB) |
+
+| output 1 | output 2 | output 3 |
+|:-------:|:---------------:|:---------------:|
+| ![](.docs/restored1/img_1.png) | ![](.docs/restored1/img_2.png) | ![](.docs/restored1/img_3.png) |
+| 500 x 500px (117KB) | 400 x 600px (2KB) | 600 x 400px (2KB) |
+
 </details>
 
 ---
@@ -116,6 +138,17 @@ output
     ├── img_3_fragmented.png
     └── manifest.json
 ```
+
+| input 1 | input 2 | input 3 |
+|:-------:|:---------------:|:---------------:|
+| ![](.docs/input_sample.png) | ![](.docs/input_sample_mono.png) | ![](.docs/input_sample_blue.png) |
+| 500 x 500px (109KB) | 400 x 600px (4KB) | 600 x 400px (3KB) |
+
+| output 1 | output 2 | output 3 |
+|:-------:|:---------------:|:---------------:|
+| ![](.docs/fragmented2/img_1_fragmented.png) | ![](.docs/fragmented2/img_2_fragmented.png) | ![](.docs/fragmented2/img_3_fragmented.png) |
+| 494 x 494px (976KB) | 494 x 494px (976KB) | 494 x 494px (976KB) |
+
 </details>
 
 **Decrypt**
@@ -143,6 +176,17 @@ output
     ├── img_2.png
     └── img_3.png
 ```
+
+| input 1 | input 2 | input 3 |
+|:-------:|:---------------:|:---------------:|
+| ![](.docs/fragmented2/img_1_fragmented.png) | ![](.docs/fragmented2/img_2_fragmented.png) | ![](.docs/fragmented2/img_3_fragmented.png) |
+| 494 x 494px (976KB) | 494 x 494px (976KB) | 494 x 494px (976KB) |
+
+| output 1 | output 2 | output 3 |
+|:-------:|:---------------:|:---------------:|
+| ![](.docs/restored2/img_1.png) | ![](.docs/restored2/img_2.png) | ![](.docs/restored2/img_3.png) |
+| 500 x 500px (117KB) | 400 x 600px (2KB) | 600 x 400px (2KB) |
+
 </details>
 
 
@@ -150,7 +194,7 @@ output
 
 ### List by blockSize
 
-| input | blockSize: 1 | blockSize: 2 | blockSize: 3 | blockSize: 4 |
+| input | blockSize: 1 | blockSize: 2 (default) | blockSize: 3 | blockSize: 4 |
 |:-------:|:---------------:|:---------------:|:---------------:|:----------------:|
 | ![](.docs/input_sample.png) | ![](.docs/output_1.png) | ![](.docs/output_2.png) | ![](.docs/output_3.png) | ![](.docs/output_4.png) |
 
