@@ -8,10 +8,19 @@ This npm package provides functionality for image fragmentation and restoration.
 
 This package provides two main modes for image fragmentation:
 
-- **Shuffle only**: If `secretKey` is not set, only shuffling is performed (no encryption).
-- **Shuffle + Encrypt (recommended)**: If `secretKey` is set, both shuffling and encryption are performed.
+### 🔀 Shuffle Only Mode
+- If `secretKey` is not set, only shuffling is performed.
 
----
+```
+Original Image → Load → Convert to RGBA → Shuffle → Fragmented PNG Output`
+```
+
+### 🔐 Shuffle + Encrypt Mode (Recommended)
+- If `secretKey` is set, both shuffling and encryption are performed.
+
+```
+Original Image → Load → Convert to RGBA → Encrypt → Shuffle → Fragmented PNG Output`
+```
 
 ## Installation
 
@@ -27,7 +36,7 @@ import ImageShield from "image-shield";
 
 ### Shuffle only
 
-If you do not set the `secretKey`, only shuffling will be applied to the image.
+If you do not set the `secretKey`, only shuffling will be applied to the images.
 
 **Encrypt**
 
@@ -110,7 +119,7 @@ output
 
 ### Shuffle + Encrypt (recommended)
 
-If you set the `secretKey`, the image will be shuffled and then encrypted.
+If you set the `secretKey`, both shuffling and encryption will be applied to the images.
 
 **Encrypt**
 
