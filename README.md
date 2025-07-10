@@ -198,15 +198,13 @@ output
 |:-------:|:---------------:|:---------------:|:---------------:|:----------------:|
 | ![](.docs/input_sample.png) | ![](.docs/output_1.png) | ![](.docs/output_2.png) | ![](.docs/output_3.png) | ![](.docs/output_4.png) |
 
-| blockSize: 8 | blockSize: 10 | blockSize: 16 | blockSize: 32 | blockSize: 128 |
+| blockSize: 8 | blockSize: 16 | blockSize: 32 | blockSize: 50 | blockSize: 128 |
 |:-------:|:---------------:|:---------------:|:---------------:|:----------------:|
-| ![](.docs/output_8.png) | ![](.docs/output_10.png) | ![](.docs/output_16.png) | ![](.docs/output_32.png) | ![](.docs/output_128.png) |
-
-> Note: If encryption is enabled, the input is encrypted and becomes a noise image.
+| ![](.docs/output_8.png) | ![](.docs/output_16.png) | ![](.docs/output_32.png) | ![](.docs/output_50.png) | ![](.docs/output_128.png) |
 
 ### Input multiple images
 
-blockSize: `32`
+blockSize: `50`
 
 | input 1 | input 2 | input 3 |
 |:-------:|:---------------:|:---------------:|
@@ -216,21 +214,19 @@ blockSize: `32`
 |:-------:|:---------------:|:---------------:|
 | ![](.docs/output_m0.png) | ![](.docs/output_m1.png) | ![](.docs/output_m2.png) |
 
-> Note: If encryption is enabled, the input is encrypted and becomes a noise image.
-
 ## Manifest Structure
 
 manifest.json:
 
 ```json
 {
-  "id": "7f2b2838-3f35-4ae8-a50b-154220ef3d7c",
+  "id": "cd3c6a30-17ed-4893-85ea-8e644ab1a4a1",
   "version": "0.8.0",
-  "timestamp": "2025-06-22T06:29:08.476Z",
+  "timestamp": "2025-07-10T00:21:16.699Z",
   "config": {
     "blockSize": 2,
     "prefix": "img",
-    "seed": 850367,
+    "seed": 860865,
     "restoreFileName": false
   },
   "images": [
@@ -254,13 +250,6 @@ manifest.json:
       "c": 4,
       "x": 245,
       "y": 245
-    },
-    {
-      "w": 887,
-      "h": 887,
-      "c": 4,
-      "x": 444,
-      "y": 444
     }
   ],
   "algorithm": "aes-256-cbc",
