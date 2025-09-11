@@ -1,13 +1,12 @@
 import crypto from "node:crypto";
-import { CryptoProvider, InvalidUUIDFormatError } from "@image-shield/core";
+import {
+  type CryptoProvider,
+  InvalidUUIDFormatError,
+} from "@image-shield/core";
 
 export class NodeCryptoProvider implements CryptoProvider {
   encryptBuffer(buffer: Buffer, key: string, iv: Buffer): Buffer {
-    const cipher = crypto.createCipheriv(
-      "aes-256-cbc",
-      this.keyTo32(key),
-      iv,
-    );
+    const cipher = crypto.createCipheriv("aes-256-cbc", this.keyTo32(key), iv);
     return Buffer.concat([cipher.update(buffer), cipher.final()]);
   }
 

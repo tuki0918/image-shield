@@ -1,19 +1,19 @@
 import {
-  MANIFEST_FILE_NAME,
   CryptoUtils,
   type DecryptOptions,
   type EncryptOptions,
   type FragmentationConfig,
+  MANIFEST_FILE_NAME,
   type ManifestData,
   generateFragmentFileName,
   generateRestoredFileName,
   generateRestoredOriginalFileName,
   verifySecretKey,
 } from "@image-shield/core";
+import { NodeCryptoProvider } from "./crypto";
+import { createDir, readJsonFile, writeFile } from "./file";
 import { ImageFragmenter } from "./fragmenter";
 import { ImageRestorer } from "./restorer";
-import { createDir, readJsonFile, writeFile } from "./file";
-import { NodeCryptoProvider } from "./crypto";
 
 // Initialize the crypto provider
 CryptoUtils.setProvider(new NodeCryptoProvider());
@@ -25,7 +25,6 @@ export {
   type ManifestData,
 };
 
-// biome-ignore lint/complexity/noStaticOnlyClass:
 export default class ImageShield {
   static async encrypt(options: EncryptOptions): Promise<void> {
     const { imagePaths, config, outputDir, secretKey } =

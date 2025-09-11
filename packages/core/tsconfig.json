@@ -1,14 +1,15 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "noEmit": false,
-    "outDir": "./dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "node",
     "rootDir": "./src",
+    "outDir": "./dist",
     "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "composite": true
+    "sourceMap": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["dist", "**/*.test.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["**/*.test.ts"]
 }

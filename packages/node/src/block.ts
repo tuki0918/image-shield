@@ -1,5 +1,5 @@
-import { Jimp, JimpMime } from "jimp";
 import { CryptoUtils } from "@image-shield/core";
+import { Jimp, JimpMime } from "jimp";
 
 const RGBA_CHANNELS = 4;
 const PNG_UINT32_BYTES = 4;

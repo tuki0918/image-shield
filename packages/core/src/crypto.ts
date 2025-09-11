@@ -13,7 +13,6 @@ export interface CryptoProvider {
   uuidToIV(uuid: string): Buffer;
 }
 
-// biome-ignore lint/complexity/noStaticOnlyClass:
 export class CryptoUtils {
   private static provider: CryptoProvider | null = null;
 
@@ -23,7 +22,9 @@ export class CryptoUtils {
 
   static getProvider(): CryptoProvider {
     if (!CryptoUtils.provider) {
-      throw new Error("Crypto provider not set. Call CryptoUtils.setProvider() first.");
+      throw new Error(
+        "Crypto provider not set. Call CryptoUtils.setProvider() first.",
+      );
     }
     return CryptoUtils.provider;
   }

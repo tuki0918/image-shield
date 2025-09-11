@@ -1,13 +1,13 @@
 import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { Jimp, JimpMime } from "jimp";
-import ImageShield from "./index";
 import type { ManifestData } from "@image-shield/core";
 import {
   generateFragmentFileName,
   generateRestoredFileName,
 } from "@image-shield/core";
+import { Jimp, JimpMime } from "jimp";
+import ImageShield from "./index";
 
 describe("ImageShield (integration)", () => {
   // Use OS temp directory for test files

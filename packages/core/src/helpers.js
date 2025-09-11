@@ -4,10 +4,10 @@
  * @returns The secret key if valid, undefined otherwise
  */
 export function verifySecretKey(secretKey) {
-    if (!!secretKey && secretKey.trim().length > 0) {
-        return secretKey;
-    }
-    return undefined;
+  if (!!secretKey && secretKey.trim().length > 0) {
+    return secretKey;
+  }
+  return undefined;
 }
 /**
  * Generate a file name with prefix, 1-based zero-padded index, and extension
@@ -17,17 +17,21 @@ export function verifySecretKey(secretKey) {
  * @param options.isFragmented - Whether the fragment is fragmented
  * @returns File name (e.g., img_1.png.enc)
  */
-export function generateFileName(manifest, index, options = {
+export function generateFileName(
+  manifest,
+  index,
+  options = {
     isFragmented: false,
-}) {
-    const prefix = manifest.config.prefix;
-    const totalLength = manifest.images.length;
-    const extension = "png";
-    const numDigits = String(totalLength).length;
-    const paddedIndex = String(index + 1).padStart(numDigits, "0");
-    const filenameSuffix = options.isFragmented ? "_fragmented" : "";
-    const filename = `${prefix}_${paddedIndex}${filenameSuffix}`;
-    return `${filename}.${extension}`;
+  },
+) {
+  const prefix = manifest.config.prefix;
+  const totalLength = manifest.images.length;
+  const extension = "png";
+  const numDigits = String(totalLength).length;
+  const paddedIndex = String(index + 1).padStart(numDigits, "0");
+  const filenameSuffix = options.isFragmented ? "_fragmented" : "";
+  const filename = `${prefix}_${paddedIndex}${filenameSuffix}`;
+  return `${filename}.${extension}`;
 }
 /**
  * Generate a fragment file name
@@ -36,9 +40,9 @@ export function generateFileName(manifest, index, options = {
  * @returns Fragment file name (e.g., img_1_fragmented.png)
  */
 export function generateFragmentFileName(manifest, index) {
-    return generateFileName(manifest, index, {
-        isFragmented: true,
-    });
+  return generateFileName(manifest, index, {
+    isFragmented: true,
+  });
 }
 /**
  * Generate a restored file name
@@ -47,9 +51,9 @@ export function generateFragmentFileName(manifest, index) {
  * @returns Restored file name (e.g., img_1.png)
  */
 export function generateRestoredFileName(manifest, index) {
-    return generateFileName(manifest, index, {
-        isFragmented: false,
-    });
+  return generateFileName(manifest, index, {
+    isFragmented: false,
+  });
 }
 /**
  * Generate a restored original file name
@@ -57,6 +61,6 @@ export function generateRestoredFileName(manifest, index) {
  * @returns Restored original file name
  */
 export function generateRestoredOriginalFileName(imageInfo) {
-    return imageInfo.name ? `${imageInfo.name}.png` : undefined;
+  return imageInfo.name ? `${imageInfo.name}.png` : undefined;
 }
 //# sourceMappingURL=helpers.js.map

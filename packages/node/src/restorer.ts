@@ -1,9 +1,9 @@
-import { unshuffle } from "@tuki0918/seeded-shuffle";
 import {
   type ManifestData,
   type ShortImageInfo,
   calcBlocksPerFragment,
 } from "@image-shield/core";
+import { unshuffle } from "@tuki0918/seeded-shuffle";
 import {
   blocksToPngImage,
   decryptPngImageBuffer,
