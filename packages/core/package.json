@@ -1,0 +1,22 @@
+{
+  "name": "@image-shield/core",
+  "version": "0.8.1",
+  "description": "Core image fragmentation and restoration logic",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "build:check": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@tuki0918/seeded-shuffle": "^0.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^3.1.4"
+  }
+}

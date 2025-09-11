@@ -1,0 +1,22 @@
+{
+  "name": "@image-shield/browser",
+  "version": "0.8.1",
+  "description": "Browser implementation of image fragmentation and restoration (RESERVED)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "echo 'Browser implementation not yet available'",
+    "build:check": "echo 'Browser implementation not yet available'",
+    "test": "echo 'Browser implementation not yet available'"
+  },
+  "dependencies": {
+    "@image-shield/core": "file:../core"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^3.1.4"
+  }
+}

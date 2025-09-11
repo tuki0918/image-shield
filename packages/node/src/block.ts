@@ -1,5 +1,5 @@
 import { Jimp, JimpMime } from "jimp";
-import { CryptoUtils } from "./crypto";
+import { CryptoUtils } from "@image-shield/core";
 
 const RGBA_CHANNELS = 4;
 const PNG_UINT32_BYTES = 4;
@@ -383,42 +383,6 @@ export async function blocksToPngImage(
       formatErrorMessage("Failed to reconstruct PNG image from blocks", error),
     );
   }
-}
-
-/**
- * Calculate how many blocks should be assigned to each fragment
- * Distributes blocks as evenly as possible across fragments
- * @param totalBlocks Total number of blocks to distribute
- * @param fragmentCount Number of fragments to distribute blocks across
- * @returns Array where each element represents the number of blocks for that fragment
- */
-export function calcBlocksPerFragment(
-  totalBlocks: number,
-  fragmentCount: number,
-): number[] {
-  if (fragmentCount <= 0) {
-    throw new Error("Fragment count must be greater than 0");
-  }
-
-  if (totalBlocks <= 0) {
-    return new Array(fragmentCount).fill(0);
-  }
-
-  const baseBlocksPerFragment = Math.ceil(totalBlocks / fragmentCount);
-  const fragmentBlockCounts: number[] = [];
-  let remainingBlocks = totalBlocks;
-
-  // Distribute blocks, ensuring no fragment gets more blocks than available
-  for (let i = 0; i < fragmentCount; i++) {
-    const blocksForThisFragment = Math.min(
-      baseBlocksPerFragment,
-      remainingBlocks,
-    );
-    fragmentBlockCounts.push(blocksForThisFragment);
-    remainingBlocks -= blocksForThisFragment;
-  }
-
-  return fragmentBlockCounts;
 }
 
 /**

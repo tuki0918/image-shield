@@ -2,10 +2,10 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { Jimp, JimpMime } from "jimp";
+import { calcBlocksPerFragment } from "@image-shield/core";
 import {
   blocksToImageBuffer,
   blocksToPngImage,
-  calcBlocksPerFragment,
   extractBlock,
   imageFileToBlocks,
   placeBlock,
