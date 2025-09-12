@@ -14,8 +14,8 @@
     "baseUrl": ".",
     "paths": {
       "@image-shield/core": ["../core/dist"]
-    }
+    },
+    "types": ["node", "vitest/globals"]
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["**/*.test.ts"]
+  "include": ["src/**/*.ts"]
 }

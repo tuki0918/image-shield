@@ -8,8 +8,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "build:check": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "build:check": "tsc -p tsconfig.build.json --noEmit",
     "test": "vitest"
   },
   "dependencies": {
