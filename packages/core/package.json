@@ -13,7 +13,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@tuki0918/seeded-shuffle": "^0.1.0"
+    "@tuki0918/seeded-shuffle": "^1.0.0"
   },
   "devDependencies": {
     "typescript": "^5.7.2",
