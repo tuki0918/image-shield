@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@image-shield/core": "file:../core",
-    "@tuki0918/seeded-shuffle": "^0.1.0",
+    "@tuki0918/seeded-shuffle": "^1.0.0",
     "jimp": "^1.6.0"
   },
   "devDependencies": {

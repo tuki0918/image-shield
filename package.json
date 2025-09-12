@@ -40,7 +40,7 @@
     "vitest": "^3.1.4"
   },
   "dependencies": {
-    "@tuki0918/seeded-shuffle": "^0.1.0",
+    "@tuki0918/seeded-shuffle": "^1.0.0",
     "jimp": "^1.6.0",
     "@image-shield/core": "file:packages/core",
     "@image-shield/node": "file:packages/node"
