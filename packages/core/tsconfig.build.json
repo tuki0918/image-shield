@@ -1,6 +1,12 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "noEmit": false,
+    "module": "ES2022",
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "declaration": true,
+    "sourceMap": true,
     "types": ["node"]
   },
   "exclude": ["**/*.test.ts"]
