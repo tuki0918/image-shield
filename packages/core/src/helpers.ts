@@ -1,4 +1,4 @@
-import type { ManifestData } from "../types";
+import type { ManifestData } from "./types";
 
 /**
  * Verify if a secretKey is valid

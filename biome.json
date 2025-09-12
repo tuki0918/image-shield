@@ -7,7 +7,13 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["node_modules/*", "coverage/*", "dist/*", "package.json"]
+    "ignore": [
+      "node_modules/*",
+      "coverage/*",
+      "dist/*",
+      "packages/*/dist/*",
+      "package.json"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -19,7 +25,10 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "complexity": {
+        "noStaticOnlyClass": "off"
+      }
     }
   },
   "javascript": {

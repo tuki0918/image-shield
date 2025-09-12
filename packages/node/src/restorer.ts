@@ -1,12 +1,15 @@
+import {
+  type ManifestData,
+  type ShortImageInfo,
+  calcBlocksPerFragment,
+} from "@image-shield/core";
 import { unshuffle } from "@tuki0918/seeded-shuffle";
-import type { ManifestData, ShortImageInfo } from "./types";
 import {
   blocksToPngImage,
-  calcBlocksPerFragment,
   decryptPngImageBuffer,
   imageFileToBlocks,
-} from "./utils/block";
-import { readFileBuffer } from "./utils/file";
+} from "./block";
+import { readFileBuffer } from "./file";
 
 export class ImageRestorer {
   private secretKey?: string;

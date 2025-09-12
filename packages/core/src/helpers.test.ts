@@ -1,4 +1,3 @@
-import type { ManifestData } from "../types";
 import {
   generateFileName,
   generateFragmentFileName,
@@ -6,6 +5,7 @@ import {
   generateRestoredOriginalFileName,
   verifySecretKey,
 } from "./helpers";
+import type { ManifestData } from "./types";
 
 describe("verifySecretKey", () => {
   test("should return secret key when valid", () => {
