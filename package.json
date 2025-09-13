@@ -12,9 +12,11 @@
     "packages/*/dist"
   ],
   "scripts": {
-    "build": "npm run build --workspaces && tsc -p tsconfig.build.json",
-    "build:check": "npm run build:check --workspaces && tsc -p tsconfig.build.json --noEmit",
-    "build:typecheck": "npm run build:check --workspaces",
+    "build": "npm run build:packages && tsc -p tsconfig.build.json",
+    "build:packages": "npm run build -w @image-shield/core && npm run build -w @image-shield/node && npm run build -w @image-shield/cli && npm run build -w @image-shield/browser",
+    "build:check": "npm run build:check:packages && tsc -p tsconfig.build.json --noEmit",
+    "build:check:packages": "npm run build:check -w @image-shield/core && npm run build:check -w @image-shield/node && npm run build:check -w @image-shield/cli && npm run build:check -w @image-shield/browser",
+    "build:typecheck": "npm run build:check:packages && tsc -p tsconfig.build.json --noEmit",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "prepare": "husky",
