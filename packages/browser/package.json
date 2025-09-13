@@ -1,22 +1,25 @@
 {
   "name": "@image-shield/browser",
   "version": "0.8.1",
-  "description": "Browser implementation of image fragmentation and restoration (RESERVED)",
+  "description": "Browser implementation of image fragmentation and restoration (decrypt only)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "echo 'Browser implementation not yet available'",
-    "build:check": "echo 'Browser implementation not yet available'",
-    "test": "echo 'Browser implementation not yet available'"
+    "build": "tsc -p tsconfig.build.json",
+    "build:check": "tsc -p tsconfig.build.json --noEmit",
+    "test": "vitest"
   },
   "dependencies": {
-    "@image-shield/core": "file:../core"
+    "@image-shield/core": "file:../core",
+    "@tuki0918/seeded-shuffle": "^1.0.0"
   },
   "devDependencies": {
     "typescript": "^5.7.2",
-    "vitest": "^3.1.4"
+    "vitest": "^3.1.4",
+    "jsdom": "^25.0.1",
+    "@types/node": "^22.10.2"
   }
 }
