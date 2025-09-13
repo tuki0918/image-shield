@@ -11,15 +11,19 @@
     "dist"
   ],
   "scripts": {
-    "build": "echo 'CLI implementation not yet available'",
-    "build:check": "echo 'CLI implementation not yet available'", 
-    "test": "echo 'CLI implementation not yet available'"
+    "build": "tsc -p tsconfig.build.json",
+    "build:check": "tsc -p tsconfig.build.json --noEmit",
+    "test": "vitest",
+    "dev": "tsx src/cli.ts"
   },
   "dependencies": {
     "@image-shield/core": "file:../core",
-    "@image-shield/node": "file:../node"
+    "@image-shield/node": "file:../node",
+    "commander": "^12.1.0"
   },
   "devDependencies": {
+    "@types/node": "^22.10.1",
+    "tsx": "^4.20.5",
     "typescript": "^5.7.2",
     "vitest": "^3.1.4"
   }
