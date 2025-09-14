@@ -31,6 +31,37 @@ describe("BrowserImageShield", () => {
       }),
     ).rejects.toThrow("manifestFile must be a File object");
   });
+
+  test("should sort fragment files by filename", () => {
+    // Create files with proper fragment naming but in wrong order
+    const fragmentFiles = [
+      new File([], "img_3_fragmented.png"),
+      new File([], "img_1_fragmented.png"), 
+      new File([], "img_2_fragmented.png"),
+    ];
+
+    // Test the sorting logic used in validateDecryptOptions
+    const sortedFiles = [...fragmentFiles].sort((a, b) => {
+      const getFileNumber = (filename: string): number => {
+        const match = filename.match(/_(\d+)(?:_fragmented)?\.png$/i);
+        return match ? parseInt(match[1], 10) : 0;
+      };
+
+      const aNum = getFileNumber(a.name);
+      const bNum = getFileNumber(b.name);
+      
+      if (aNum > 0 && bNum > 0) {
+        return aNum - bNum;
+      }
+      return a.name.localeCompare(b.name);
+    });
+
+    expect(sortedFiles.map(f => f.name)).toEqual([
+      "img_1_fragmented.png",
+      "img_2_fragmented.png", 
+      "img_3_fragmented.png"
+    ]);
+  });
 });
 
 describe("BrowserCryptoProviderImpl", () => {

@@ -28,6 +28,7 @@ const manifestFile: File = /* manifest file from input */;
 const secretKey = 'your-secret-key';
 
 // Decrypt and auto-download restored images
+// Note: Fragment files are automatically sorted by filename to ensure correct order
 const restoredFiles = await BrowserImageShield.decrypt({
   imageFiles: fragmentFiles,
   manifestFile: manifestFile,
@@ -35,6 +36,8 @@ const restoredFiles = await BrowserImageShield.decrypt({
   autoDownload: true // Will automatically trigger downloads
 });
 ```
+
+**Important**: Fragment files must be named correctly (e.g., `img_1_fragmented.png`, `img_2_fragmented.png`) to ensure proper ordering during restoration. The library automatically sorts files by their numeric suffix.
 
 ### Working with Blobs
 
@@ -66,6 +69,7 @@ for (const blob of restoredBlobs) {
   <div>
     <label for="fragments">Select Fragment Files:</label>
     <input type="file" id="fragments" multiple accept="image/*">
+    <small>Note: Select all fragment files (they will be automatically sorted by filename)</small>
   </div>
   
   <div>
@@ -183,3 +187,25 @@ try {
   }
 }
 ```
+
+## Troubleshooting
+
+### Multiple Images Not Restoring Correctly
+
+If single images restore correctly but multiple images fail, this is usually due to **file ordering issues**. The browser implementation automatically sorts fragment files by their numeric suffix to ensure correct restoration order.
+
+**Solution**: Ensure your fragment files are named with the correct pattern:
+- ✅ Good: `img_1_fragmented.png`, `img_2_fragmented.png`, `img_3_fragmented.png`  
+- ❌ Bad: `fragmented_img1.png`, `img_frag_1.png`, random names
+
+### Performance Considerations
+
+- **Large Images**: Processing time increases with image size. Consider using smaller block sizes for better performance.
+- **Memory Usage**: The browser keeps all images in memory during processing. Very large images may cause memory issues.
+- **File API Limits**: Some browsers have limits on file sizes and concurrent operations.
+
+## Browser Compatibility
+
+- **Modern Browsers**: Chrome 88+, Firefox 85+, Safari 14+, Edge 88+
+- **Required APIs**: Web Crypto API, Canvas API, File API
+- **Not Supported**: Internet Explorer

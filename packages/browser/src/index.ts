@@ -153,8 +153,28 @@ function validateDecryptOptions(options: BrowserDecryptOptions) {
     }
   }
 
+  // Sort image files by filename to ensure correct order
+  // Fragment files should be named like: prefix_1_fragmented.png, prefix_2_fragmented.png, etc.
+  const sortedImageFiles = [...options.imageFiles].sort((a, b) => {
+    // Extract numeric part from filename for proper ordering
+    const getFileNumber = (filename: string): number => {
+      // Look for pattern like "prefix_N_fragmented.png" or "prefix_N.png"
+      const match = filename.match(/_(\d+)(?:_fragmented)?\.png$/i);
+      return match ? parseInt(match[1], 10) : 0;
+    };
+
+    const aNum = getFileNumber(a.name);
+    const bNum = getFileNumber(b.name);
+    
+    // If numbers are found, sort by number; otherwise sort alphabetically
+    if (aNum > 0 && bNum > 0) {
+      return aNum - bNum;
+    }
+    return a.name.localeCompare(b.name);
+  });
+
   return {
-    imageFiles: options.imageFiles,
+    imageFiles: sortedImageFiles,
     manifestFile: options.manifestFile,
     secretKey: options.secretKey,
     autoDownload: options.autoDownload ?? true,
