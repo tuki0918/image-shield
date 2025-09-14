@@ -3,61 +3,74 @@ import {
   InvalidUUIDFormatError,
 } from "@image-shield/core";
 
+// Browser-specific crypto provider interface using browser-native types
+export interface BrowserCryptoProvider
+  extends Omit<
+    CryptoProvider,
+    "encryptBuffer" | "decryptBuffer" | "keyTo32" | "uuidToIV"
+  > {
+  encryptBuffer(buffer: Uint8Array, key: string, iv: Uint8Array): Uint8Array;
+  decryptBuffer(buffer: Uint8Array, key: string, iv: Uint8Array): Uint8Array;
+  decryptBufferAsync(
+    buffer: Uint8Array,
+    key: string,
+    iv: Uint8Array,
+  ): Promise<Uint8Array>;
+  keyTo32(key: string): Uint8Array;
+  keyTo32Async(key: string): Promise<Uint8Array>;
+  uuidToIV(uuid: string): Uint8Array;
+}
+
 // Browser implementation needs to be async, but the interface is sync
 // We'll create a wrapper that handles the async nature
-export class BrowserCryptoProvider implements CryptoProvider {
+export class BrowserCryptoProviderImpl implements BrowserCryptoProvider {
   private static cachedKeys = new Map<string, CryptoKey>();
 
-  encryptBuffer(buffer: Buffer, key: string, iv: Buffer): Buffer {
+  encryptBuffer(buffer: Uint8Array, key: string, iv: Uint8Array): Uint8Array {
     throw new Error("Encrypt functionality not implemented for browser");
   }
 
-  decryptBuffer(buffer: Buffer, key: string, iv: Buffer): Buffer {
+  decryptBuffer(buffer: Uint8Array, key: string, iv: Uint8Array): Uint8Array {
     // This is a sync interface but Web Crypto API is async
     // We'll throw an error suggesting to use the async version
     throw new Error("Use decryptBufferAsync for browser implementation");
   }
 
   async decryptBufferAsync(
-    buffer: Buffer,
+    buffer: Uint8Array,
     key: string,
-    iv: Buffer,
-  ): Promise<Buffer> {
+    iv: Uint8Array,
+  ): Promise<Uint8Array> {
     const keyBuffer = await this.keyTo32Async(key);
 
-    // Convert Buffer to ArrayBuffer for Web Crypto API
-    const dataArray = new Uint8Array(buffer);
-    const keyArray = new Uint8Array(keyBuffer);
-    const ivArray = new Uint8Array(iv);
-
     // Import key for AES-CBC (cache it for reuse)
-    let cryptoKey = BrowserCryptoProvider.cachedKeys.get(key);
+    let cryptoKey = BrowserCryptoProviderImpl.cachedKeys.get(key);
     if (!cryptoKey) {
       cryptoKey = await crypto.subtle.importKey(
         "raw",
-        keyArray,
+        keyBuffer,
         { name: "AES-CBC" },
         false,
         ["decrypt"],
       );
-      BrowserCryptoProvider.cachedKeys.set(key, cryptoKey);
+      BrowserCryptoProviderImpl.cachedKeys.set(key, cryptoKey);
     }
 
     // Decrypt the data
     const decryptedData = await crypto.subtle.decrypt(
       {
         name: "AES-CBC",
-        iv: ivArray,
+        iv: iv,
       },
       cryptoKey,
-      dataArray,
+      buffer,
     );
 
-    // Convert back to Buffer
-    return Buffer.from(decryptedData);
+    // Convert back to Uint8Array
+    return new Uint8Array(decryptedData);
   }
 
-  keyTo32(key: string): Buffer {
+  keyTo32(key: string): Uint8Array {
     // For sync compatibility, we'll use a simple deterministic hash
     // In real usage, prefer keyTo32Async
     const encoder = new TextEncoder();
@@ -79,15 +92,15 @@ export class BrowserCryptoProvider implements CryptoProvider {
       result[i] = (seed >>> 24) & 0xff;
     }
 
-    return Buffer.from(result);
+    return result;
   }
 
-  async keyTo32Async(key: string): Promise<Buffer> {
+  async keyTo32Async(key: string): Promise<Uint8Array> {
     // Proper async implementation using Web Crypto API
     const encoder = new TextEncoder();
     const data = encoder.encode(key);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    return Buffer.from(hashBuffer);
+    return new Uint8Array(hashBuffer);
   }
 
   generateUUID(): string {
@@ -104,11 +117,17 @@ export class BrowserCryptoProvider implements CryptoProvider {
     });
   }
 
-  uuidToIV(uuid: string): Buffer {
+  uuidToIV(uuid: string): Uint8Array {
     const hex = uuid.replace(/-/g, "");
     if (hex.length !== 32) {
       throw new InvalidUUIDFormatError("Invalid UUID format");
     }
-    return Buffer.from(hex, "hex");
+
+    // Convert hex string to Uint8Array
+    const result = new Uint8Array(16);
+    for (let i = 0; i < 16; i++) {
+      result[i] = Number.parseInt(hex.substr(i * 2, 2), 16);
+    }
+    return result;
   }
 }

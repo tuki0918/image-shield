@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { BrowserCryptoProvider } from "./crypto";
+import { BrowserCryptoProviderImpl } from "./crypto";
 import BrowserImageShield from "./index";
 
 describe("BrowserImageShield", () => {
@@ -33,36 +33,36 @@ describe("BrowserImageShield", () => {
   });
 });
 
-describe("BrowserCryptoProvider", () => {
+describe("BrowserCryptoProviderImpl", () => {
   test("should create crypto provider", () => {
-    const provider = new BrowserCryptoProvider();
+    const provider = new BrowserCryptoProviderImpl();
     expect(provider).toBeDefined();
   });
 
   test("should throw error for encrypt (not implemented)", () => {
-    const provider = new BrowserCryptoProvider();
+    const provider = new BrowserCryptoProviderImpl();
     expect(() => {
       provider.encryptBuffer(
-        Buffer.from("test"),
+        new Uint8Array([1, 2, 3, 4]),
         "key",
-        Buffer.from("iv123456789abcde"),
+        new Uint8Array(16),
       );
     }).toThrow("Encrypt functionality not implemented for browser");
   });
 
   test("should throw error for sync decrypt (use async version)", () => {
-    const provider = new BrowserCryptoProvider();
+    const provider = new BrowserCryptoProviderImpl();
     expect(() => {
       provider.decryptBuffer(
-        Buffer.from("test"),
+        new Uint8Array([1, 2, 3, 4]),
         "key",
-        Buffer.from("iv123456789abcde"),
+        new Uint8Array(16),
       );
     }).toThrow("Use decryptBufferAsync for browser implementation");
   });
 
   test("should generate deterministic key", () => {
-    const provider = new BrowserCryptoProvider();
+    const provider = new BrowserCryptoProviderImpl();
     const key1 = provider.keyTo32("test-key");
     const key2 = provider.keyTo32("test-key");
 
@@ -71,7 +71,7 @@ describe("BrowserCryptoProvider", () => {
   });
 
   test("should generate UUID", () => {
-    const provider = new BrowserCryptoProvider();
+    const provider = new BrowserCryptoProviderImpl();
     const uuid = provider.generateUUID();
 
     expect(uuid).toMatch(
@@ -80,16 +80,20 @@ describe("BrowserCryptoProvider", () => {
   });
 
   test("should convert UUID to IV", () => {
-    const provider = new BrowserCryptoProvider();
+    const provider = new BrowserCryptoProviderImpl();
     const uuid = "550e8400-e29b-41d4-a716-446655440000";
     const iv = provider.uuidToIV(uuid);
 
     expect(iv).toHaveLength(16);
-    expect(iv.toString("hex")).toBe("550e8400e29b41d4a716446655440000");
+    expect(
+      Array.from(iv)
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join(""),
+    ).toBe("550e8400e29b41d4a716446655440000");
   });
 
   test("should throw error for invalid UUID format", () => {
-    const provider = new BrowserCryptoProvider();
+    const provider = new BrowserCryptoProviderImpl();
 
     expect(() => {
       provider.uuidToIV("invalid-uuid");

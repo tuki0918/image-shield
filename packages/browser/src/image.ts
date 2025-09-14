@@ -93,27 +93,32 @@ export async function imageDataToPng(
 
 /**
  * Create ImageData from raw RGBA buffer
- * @param buffer Raw RGBA buffer
+ * @param buffer Raw RGBA buffer (Uint8Array or Uint8ClampedArray)
  * @param width Image width
  * @param height Image height
  * @returns ImageData object
  */
 export function bufferToImageData(
-  buffer: Buffer,
+  buffer: Uint8Array | Uint8ClampedArray,
   width: number,
   height: number,
 ): BrowserImageData {
-  const data = new Uint8ClampedArray(buffer);
+  const data =
+    buffer instanceof Uint8ClampedArray
+      ? buffer
+      : new Uint8ClampedArray(buffer);
   return { data, width, height };
 }
 
 /**
- * Convert ImageData to Buffer
+ * Convert ImageData to Uint8ClampedArray
  * @param imageData ImageData object
- * @returns Buffer containing RGBA data
+ * @returns Uint8ClampedArray containing RGBA data
  */
-export function imageDataToBuffer(imageData: BrowserImageData): Buffer {
-  return Buffer.from(imageData.data);
+export function imageDataToBuffer(
+  imageData: BrowserImageData,
+): Uint8ClampedArray {
+  return imageData.data;
 }
 
 /**
@@ -122,13 +127,13 @@ export function imageDataToBuffer(imageData: BrowserImageData): Buffer {
  * @returns Promise resolving to object with buffer and dimensions
  */
 export async function extractImageBuffer(pngBlob: Blob): Promise<{
-  imageBuffer: Buffer;
+  imageBuffer: Uint8ClampedArray;
   width: number;
   height: number;
 }> {
   const imageData = await loadImageData(pngBlob);
   return {
-    imageBuffer: Buffer.from(imageData.data),
+    imageBuffer: imageData.data,
     width: imageData.width,
     height: imageData.height,
   };
@@ -136,13 +141,13 @@ export async function extractImageBuffer(pngBlob: Blob): Promise<{
 
 /**
  * Create PNG blob from raw RGBA buffer
- * @param imageBuffer Raw RGBA buffer
+ * @param imageBuffer Raw RGBA buffer (Uint8Array or Uint8ClampedArray)
  * @param width Image width
  * @param height Image height
  * @returns Promise resolving to PNG Blob
  */
 export async function createPngFromBuffer(
-  imageBuffer: Buffer,
+  imageBuffer: Uint8Array | Uint8ClampedArray,
   width: number,
   height: number,
 ): Promise<Blob> {

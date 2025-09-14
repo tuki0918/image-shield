@@ -7,7 +7,7 @@ import {
   generateRestoredOriginalFileName,
   verifySecretKey,
 } from "@image-shield/core";
-import { BrowserCryptoProvider } from "./crypto";
+import { BrowserCryptoProviderImpl } from "./crypto";
 import { createFile, downloadFile, readJsonFile } from "./file";
 import { BrowserImageRestorer } from "./restorer";
 
@@ -23,8 +23,58 @@ export interface BrowserDecryptOptions {
   autoDownload?: boolean;
 }
 
-// Initialize the crypto provider
-CryptoUtils.setProvider(new BrowserCryptoProvider());
+// Initialize the crypto provider - note: we use a compatibility wrapper for the core interface
+// The actual implementation will need to handle type differences internally
+const browserCryptoProvider = new BrowserCryptoProviderImpl();
+
+// Create a compatibility wrapper for the core interface
+const coreCompatibilityProvider = {
+  encryptBuffer: (
+    buffer: Buffer | Uint8Array,
+    key: string,
+    iv: Buffer | Uint8Array,
+  ) => {
+    // Convert to browser types and delegate
+    const uint8Buffer =
+      buffer instanceof Buffer ? new Uint8Array(buffer) : buffer;
+    const uint8IV = iv instanceof Buffer ? new Uint8Array(iv) : iv;
+    const result = browserCryptoProvider.encryptBuffer(
+      uint8Buffer,
+      key,
+      uint8IV,
+    );
+    // Convert back to Buffer for core interface compatibility
+    return Buffer.from(result);
+  },
+  decryptBuffer: (
+    buffer: Buffer | Uint8Array,
+    key: string,
+    iv: Buffer | Uint8Array,
+  ) => {
+    // Convert to browser types and delegate
+    const uint8Buffer =
+      buffer instanceof Buffer ? new Uint8Array(buffer) : buffer;
+    const uint8IV = iv instanceof Buffer ? new Uint8Array(iv) : iv;
+    const result = browserCryptoProvider.decryptBuffer(
+      uint8Buffer,
+      key,
+      uint8IV,
+    );
+    // Convert back to Buffer for core interface compatibility
+    return Buffer.from(result);
+  },
+  keyTo32: (key: string) => {
+    const result = browserCryptoProvider.keyTo32(key);
+    return Buffer.from(result);
+  },
+  generateUUID: () => browserCryptoProvider.generateUUID(),
+  uuidToIV: (uuid: string) => {
+    const result = browserCryptoProvider.uuidToIV(uuid);
+    return Buffer.from(result);
+  },
+};
+
+CryptoUtils.setProvider(coreCompatibilityProvider);
 
 export { BrowserImageRestorer, type FragmentationConfig, type ManifestData };
 

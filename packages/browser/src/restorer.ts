@@ -47,7 +47,7 @@ export class BrowserImageRestorer {
   }
 
   private async _reconstructAllImages(
-    restoredBlocks: Buffer[],
+    restoredBlocks: Uint8Array[],
     manifest: ManifestData,
   ): Promise<Blob[]> {
     return await Promise.all(
@@ -82,7 +82,7 @@ export class BrowserImageRestorer {
   private async _prepareRestoreData(
     fragmentBlobs: Blob[],
     manifest: ManifestData,
-  ): Promise<{ allBlocks: Buffer[]; fragmentBlocksCount: number[] }> {
+  ): Promise<{ allBlocks: Uint8Array[]; fragmentBlocksCount: number[] }> {
     this._validateInputs(fragmentBlobs, manifest);
 
     const totalBlocks = this._calculateTotalBlocks(manifest.images);
@@ -115,12 +115,12 @@ export class BrowserImageRestorer {
     return images.reduce((total, image) => total + image.x * image.y, 0);
   }
 
-  // Extract an array of blocks (Buffer) from a fragment image blob
+  // Extract an array of blocks (Uint8Array) from a fragment image blob
   private async _extractBlocksFromFragment(
     fragmentBlob: Blob,
     manifest: ManifestData,
     expectedBlockCount: number,
-  ): Promise<Buffer[]> {
+  ): Promise<Uint8Array[]> {
     const { blocks } = await imageBlobToBlocks(
       fragmentBlob,
       manifest.config.blockSize,
@@ -132,7 +132,7 @@ export class BrowserImageRestorer {
     fragmentBlobs: Blob[],
     manifest: ManifestData,
     fragmentBlocksCount: number[],
-  ): Promise<Buffer[]> {
+  ): Promise<Uint8Array[]> {
     const blocksArrays = await Promise.all(
       fragmentBlobs.map((fragmentBlob, i) =>
         this._extractBlocksFromFragment(
@@ -146,7 +146,7 @@ export class BrowserImageRestorer {
   }
 
   private async _reconstructImage(
-    blocks: Buffer[],
+    blocks: Uint8Array[],
     blockSize: number,
     imageInfo: ShortImageInfo,
   ): Promise<Blob> {

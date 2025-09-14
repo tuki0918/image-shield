@@ -14,13 +14,13 @@ export async function readJsonFile<T>(file: File | Blob): Promise<T> {
 
 /**
  * Create a downloadable file blob
- * @param data Data to include in the file (string, Buffer, Uint8Array, or Blob)
+ * @param data Data to include in the file (string, Uint8Array, or Blob)
  * @param filename Suggested filename
  * @param mimeType MIME type of the file
  * @returns File object
  */
 export function createFile(
-  data: string | Buffer | Uint8Array | Blob,
+  data: string | Uint8Array | Blob,
   filename: string,
   mimeType = "application/octet-stream",
 ): File {
@@ -29,8 +29,6 @@ export function createFile(
   if (data instanceof Blob) {
     blob = data;
   } else if (typeof data === "string") {
-    blob = new Blob([data], { type: mimeType });
-  } else if (Buffer.isBuffer(data)) {
     blob = new Blob([data], { type: mimeType });
   } else {
     blob = new Blob([data], { type: mimeType });
@@ -77,11 +75,11 @@ export async function fileToArrayBuffer(
 }
 
 /**
- * Convert File or Blob to Buffer
+ * Convert File or Blob to Uint8Array
  * @param file File or Blob
- * @returns Promise resolving to Buffer
+ * @returns Promise resolving to Uint8Array
  */
-export async function fileToBuffer(file: File | Blob): Promise<Buffer> {
+export async function fileToUint8Array(file: File | Blob): Promise<Uint8Array> {
   const arrayBuffer = await fileToArrayBuffer(file);
-  return Buffer.from(arrayBuffer);
+  return new Uint8Array(arrayBuffer);
 }

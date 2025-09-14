@@ -11,7 +11,7 @@ interface BlockCounts {
 }
 
 interface ImageBlobToBlocksResult {
-  blocks: Buffer[];
+  blocks: Uint8Array[];
   width: number;
   height: number;
   channels: number;
@@ -54,7 +54,7 @@ export async function imageBlobToBlocks(
     height,
     blockSize,
   );
-  const blocks: Buffer[] = [];
+  const blocks: Uint8Array[] = [];
 
   for (let blockY = 0; blockY < blockCountY; blockY++) {
     for (let blockX = 0; blockX < blockCountX; blockX++) {
@@ -88,16 +88,16 @@ export async function imageBlobToBlocks(
  * @param blockX Block X coordinate
  * @param blockY Block Y coordinate
  * @param blockSize Block size
- * @returns Buffer containing the block data
+ * @returns Uint8Array containing the block data
  */
 function extractBlock(
-  imageBuffer: Buffer,
+  imageBuffer: Uint8ClampedArray,
   imageWidth: number,
   imageHeight: number,
   blockX: number,
   blockY: number,
   blockSize: number,
-): Buffer {
+): Uint8Array {
   const startX = blockX * blockSize;
   const startY = blockY * blockSize;
   const endX = Math.min(startX + blockSize, imageWidth);
@@ -105,7 +105,7 @@ function extractBlock(
 
   const blockWidth = endX - startX;
   const blockHeight = endY - startY;
-  const blockBuffer = Buffer.alloc(blockSize * blockSize * RGBA_CHANNELS);
+  const blockBuffer = new Uint8Array(blockSize * blockSize * RGBA_CHANNELS);
 
   for (let y = 0; y < blockHeight; y++) {
     for (let x = 0; x < blockWidth; x++) {
@@ -132,7 +132,7 @@ function extractBlock(
  * @returns Promise resolving to PNG Blob
  */
 export async function blocksToPngBlob(
-  blocks: Buffer[],
+  blocks: Uint8Array[],
   imageWidth: number,
   imageHeight: number,
   blockSize: number,
@@ -142,7 +142,9 @@ export async function blocksToPngBlob(
     imageHeight,
     blockSize,
   );
-  const imageBuffer = Buffer.alloc(imageWidth * imageHeight * RGBA_CHANNELS);
+  const imageBuffer = new Uint8ClampedArray(
+    imageWidth * imageHeight * RGBA_CHANNELS,
+  );
 
   let blockIndex = 0;
   for (let blockY = 0; blockY < blockCountY; blockY++) {
@@ -176,13 +178,13 @@ export async function blocksToPngBlob(
  * @param blockBuffer Block data buffer
  */
 function insertBlock(
-  imageBuffer: Buffer,
+  imageBuffer: Uint8ClampedArray,
   imageWidth: number,
   imageHeight: number,
   blockX: number,
   blockY: number,
   blockSize: number,
-  blockBuffer: Buffer,
+  blockBuffer: Uint8Array,
 ): void {
   const startX = blockX * blockSize;
   const startY = blockY * blockSize;
@@ -207,27 +209,32 @@ function insertBlock(
 }
 
 /**
- * Parse metadata from buffer
- * @param metadataBuffer Buffer containing metadata
+ * Parse metadata from buffer using DataView for proper byte reading
+ * @param metadataBuffer Uint8Array containing metadata
  * @returns Parsed metadata object
  */
-export function parseImageBufferMetadata(metadataBuffer: Buffer): {
+export function parseImageBufferMetadata(metadataBuffer: Uint8Array): {
   width: number;
   height: number;
   imageBufferLength: number;
 } {
-  const width = metadataBuffer.readUInt32BE(0);
-  const height = metadataBuffer.readUInt32BE(PNG_UINT32_BYTES);
-  const imageBufferLength = metadataBuffer.readUInt32BE(PNG_UINT32_BYTES * 2);
+  const view = new DataView(
+    metadataBuffer.buffer,
+    metadataBuffer.byteOffset,
+    metadataBuffer.byteLength,
+  );
+  const width = view.getUint32(0, false); // Big-endian
+  const height = view.getUint32(PNG_UINT32_BYTES, false); // Big-endian
+  const imageBufferLength = view.getUint32(PNG_UINT32_BYTES * 2, false); // Big-endian
   return { width, height, imageBufferLength };
 }
 
 /**
  * Remove trailing zero padding from buffer
- * @param buffer Buffer to trim
+ * @param buffer Uint8Array to trim
  * @returns Trimmed buffer
  */
-export function removePadding(buffer: Buffer): Buffer {
+export function removePadding(buffer: Uint8Array): Uint8Array {
   let actualDataLength = buffer.length;
   for (let i = buffer.length - 1; i >= 0; i--) {
     if (buffer[i] !== 0) {
@@ -255,16 +262,16 @@ export async function decryptPngImageBlob(
     await extractImageBuffer(encryptedPngBlob);
 
   // Remove padding from encrypted data
-  const encryptedData = removePadding(encryptedImageData);
+  const encryptedData = removePadding(new Uint8Array(encryptedImageData));
 
   // Decrypt the data using the async crypto provider
-  const { BrowserCryptoProvider } = await import("./crypto");
-  const cryptoProvider = new BrowserCryptoProvider();
+  const { BrowserCryptoProviderImpl } = await import("./crypto");
+  const cryptoProvider = new BrowserCryptoProviderImpl();
 
   const decryptedData = await cryptoProvider.decryptBufferAsync(
     encryptedData,
     secretKey,
-    CryptoUtils.uuidToIV(manifestId),
+    cryptoProvider.uuidToIV(manifestId),
   );
 
   // Parse metadata from the beginning of decrypted data
