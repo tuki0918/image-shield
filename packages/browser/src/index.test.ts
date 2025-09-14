@@ -89,7 +89,7 @@ describe("BrowserCryptoProviderImpl", () => {
         "key",
         new Uint8Array(16),
       );
-    }).toThrow("Use decryptBufferAsync for browser implementation");
+    }).toThrow("Synchronous decryption not yet implemented");
   });
 
   test("should generate deterministic key", () => {

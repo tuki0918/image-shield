@@ -198,6 +198,24 @@ If single images restore correctly but multiple images fail, this is usually due
 - ✅ Good: `img_1_fragmented.png`, `img_2_fragmented.png`, `img_3_fragmented.png`  
 - ❌ Bad: `fragmented_img1.png`, `img_frag_1.png`, random names
 
+The library will automatically sort the files by extracting the numeric part from their names (e.g., `1`, `2`, `3` from the examples above).
+
+### Encrypted Images Failing to Decrypt
+
+If you experience issues with encrypted image decryption, this was a known issue that has been resolved. The browser implementation now uses:
+
+- **Compatible Key Derivation**: Uses the same SHA-256 algorithm as the Node.js version for consistent key generation
+- **Proper Crypto Integration**: Uses Web Crypto API with correct AES-256-CBC parameters
+- **Consistent IV Generation**: UUID-to-IV conversion matches the Node.js implementation exactly
+
+**Key Features of the Fix**:
+- ✅ Browser crypto now produces identical keys to Node.js for the same secret key
+- ✅ Encrypted images created by `@image-shield/node` can be decrypted by `@image-shield/browser`
+- ✅ Full compatibility between Node.js and browser environments
+- ✅ Both single and multiple encrypted images work correctly
+
+**Testing**: The fix has been thoroughly tested with comprehensive crypto compatibility tests ensuring the browser and Node.js implementations are fully compatible.
+
 ### Performance Considerations
 
 - **Large Images**: Processing time increases with image size. Consider using smaller block sizes for better performance.

@@ -264,14 +264,18 @@ export async function decryptPngImageBlob(
   // Remove padding from encrypted data
   const encryptedData = removePadding(new Uint8Array(encryptedImageData));
 
-  // Decrypt the data using the async crypto provider
+  // Use the browser crypto provider directly with proper key derivation
   const { BrowserCryptoProviderImpl } = await import("./crypto");
   const cryptoProvider = new BrowserCryptoProviderImpl();
+
+  // Use the sync keyTo32 method that's compatible with Node.js
+  const keyBytes = cryptoProvider.keyTo32(secretKey);
+  const ivBytes = cryptoProvider.uuidToIV(manifestId);
 
   const decryptedData = await cryptoProvider.decryptBufferAsync(
     encryptedData,
     secretKey,
-    cryptoProvider.uuidToIV(manifestId),
+    ivBytes,
   );
 
   // Parse metadata from the beginning of decrypted data
