@@ -11,10 +11,9 @@ import { validateImagePaths, validateOutputDirectory } from "../validators";
 export function registerEncryptCommand(program: Command): void {
   program
     .command("encrypt")
-    .description("Fragment and encrypt images")
+    .description("Fragment images using shuffle-only mode")
     .argument("<images...>", "Input image file paths")
     .requiredOption("-o, --output <dir>", "Output directory")
-    .option("-k, --key <key>", "Secret key for encryption")
     .option("-b, --block-size <size>", "Pixel block size", (value: string) => {
       const num = Number.parseInt(value, 10);
       if (Number.isNaN(num) || num <= 0) {
@@ -44,7 +43,7 @@ async function handleEncryptCommand(
   options: EncryptOptions,
 ): Promise<void> {
   try {
-    console.log("🔐 Starting image encryption...");
+    console.log("🔀 Starting image fragmentation...");
 
     const imagePaths = validateImagePaths(images);
     const outputDir = validateOutputDirectory(options.output);
@@ -59,10 +58,9 @@ async function handleEncryptCommand(
       imagePaths,
       outputDir,
       config: Object.keys(config).length > 0 ? config : undefined,
-      secretKey: options.key,
     });
 
-    console.log(`✅ Images encrypted successfully to: ${outputDir}`);
+    console.log(`✅ Images fragmented successfully to: ${outputDir}`);
   } catch (error) {
     console.error(
       `❌ Encryption failed: ${error instanceof Error ? error.message : String(error)}`,

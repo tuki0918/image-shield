@@ -18,7 +18,6 @@ export function registerDecryptCommand(program: Command): void {
     .argument("<fragments...>", "Fragment file paths")
     .requiredOption("-m, --manifest <path>", "Manifest file path")
     .requiredOption("-o, --output <dir>", "Output directory")
-    .option("-k, --key <key>", "Secret key for decryption")
     .action(handleDecryptCommand);
 }
 
@@ -32,7 +31,7 @@ async function handleDecryptCommand(
   options: DecryptOptions,
 ): Promise<void> {
   try {
-    console.log("🔓 Starting image decryption...");
+    console.log("🔄 Starting image restoration...");
 
     const imagePaths = validateImagePaths(fragments);
     const manifestPath = validateManifestPath(options.manifest);
@@ -42,13 +41,12 @@ async function handleDecryptCommand(
       imagePaths,
       manifestPath,
       outputDir,
-      secretKey: options.key,
     });
 
     console.log(`✅ Images restored successfully to: ${outputDir}`);
   } catch (error) {
     console.error(
-      `❌ Decryption failed: ${error instanceof Error ? error.message : String(error)}`,
+      `❌ Restoration failed: ${error instanceof Error ? error.message : String(error)}`,
     );
     process.exit(1);
   }

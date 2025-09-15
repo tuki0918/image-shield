@@ -15,20 +15,13 @@ This project is organized as a monorepo with the following packages:
 
 ## Features
 
-This package provides two main modes for image fragmentation:
+This package provides image fragmentation using shuffle-only mode:
 
-### 🔀 Shuffle Only Mode
-- If `secretKey` is not set, only shuffling is performed.
+### 🔀 Shuffle Mode
+- Images are fragmented using a shuffling algorithm to obscure the original content.
 
 ```
 Original Image → Load → Convert to RGBA → Shuffle → Fragmented PNG Output
-```
-
-### 🔐 Shuffle + Encrypt Mode (Recommended)
-- If `secretKey` is set, both shuffling and encryption are performed.
-
-```
-Original Image → Load → Convert to RGBA → Encrypt → Shuffle → Fragmented PNG Output
 ```
 
 ## Installation
@@ -43,11 +36,11 @@ npm i image-shield
 import ImageShield from "image-shield";
 ```
 
-### Shuffle only
+### Shuffle Mode
 
-If you do not set the `secretKey`, only shuffling will be applied to the images.
+Image fragmentation using shuffle algorithm to protect images.
 
-**Encrypt**
+**Fragment**
 
 ```ts
 await ImageShield.encrypt({
@@ -58,7 +51,6 @@ await ImageShield.encrypt({
     "./input_3.png",
   ],
   outputDir: "./output/fragmented",
-  // secretKey: undefined
 });
 ```
 
@@ -86,7 +78,7 @@ output
 
 </details>
 
-**Decrypt**
+**Restore**
 
 ```ts
 await ImageShield.decrypt({
@@ -97,7 +89,6 @@ await ImageShield.decrypt({
     "./output/fragmented/img_3_fragmented.png",
   ],
   outputDir: "./output/restored",
-  // secretKey: undefined
 });
 ```
 
@@ -126,40 +117,13 @@ output
 
 ---
 
-### Shuffle + Encrypt (recommended)
+## Shuffle Overview
 
-If you set the `secretKey`, both shuffling and encryption will be applied to the images.
+### List by blockSize
 
-**Encrypt**
-
-```ts
-await ImageShield.encrypt({
-  // config: { /** FragmentationConfig */ },
-  imagePaths: [
-    "./input_1.png",
-    "./input_2.png",
-    "./input_3.png",
-  ],
-  outputDir: "./output/fragmented",
-  secretKey: "secret",
-});
-```
-
-<details>
-<summary>Output:</summary>
-
-```
-output
-└── fragmented
-    ├── img_1_fragmented.png
-    ├── img_2_fragmented.png
-    ├── img_3_fragmented.png
-    └── manifest.json
-```
-
-| input 1 | input 2 | input 3 |
-|:-------:|:---------------:|:---------------:|
-| ![](.docs/input_sample.png) | ![](.docs/input_sample_mono.png) | ![](.docs/input_sample_blue.png) |
+| input | blockSize: 1 | blockSize: 2 (default) | blockSize: 3 | blockSize: 4 |
+|:-------:|:---------------:|:---------------:|:---------------:|:----------------:|
+| ![](.docs/input_sample.png) | ![](.docs/output_1.png) | ![](.docs/output_2.png) | ![](.docs/output_3.png) | ![](.docs/output_4.png) |
 | 500 x 500px (109KB) | 400 x 600px (4KB) | 600 x 400px (3KB) |
 
 | output 1 | output 2 | output 3 |
@@ -279,8 +243,8 @@ manifest.json:
 ---
 
 > [!NOTE]
-> - The recommended mode is **Shuffle + Encrypt** for better security.
-> - The `manifest.json` file contains the necessary information for restoration, but it does not include the secret key.
+> - Images are fragmented using shuffle-only mode.
+> - The `manifest.json` file contains the necessary information for restoration.
 > - Input images are converted to PNG format.
 
 ## Clients

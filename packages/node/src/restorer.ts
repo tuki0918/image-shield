@@ -6,17 +6,12 @@ import {
 import { unshuffle } from "@tuki0918/seeded-shuffle";
 import {
   blocksToPngImage,
-  decryptPngImageBuffer,
   imageFileToBlocks,
 } from "./block";
 import { readFileBuffer } from "./file";
 
 export class ImageRestorer {
-  private secretKey?: string;
-
-  constructor(secretKey?: string) {
-    this.secretKey = secretKey;
-  }
+  constructor() {}
 
   async restoreImages(
     fragmentImages: (string | Buffer)[],
@@ -33,16 +28,6 @@ export class ImageRestorer {
       restoredBlocks,
       manifest,
     );
-
-    // If encryption was used, decrypt the reconstructed images
-    const secretKey = this.secretKey;
-    if (manifest.secure && secretKey) {
-      return await Promise.all(
-        reconstructedImages.map((img) =>
-          decryptPngImageBuffer(img, secretKey, manifest.id),
-        ),
-      );
-    }
 
     return reconstructedImages;
   }

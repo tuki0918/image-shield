@@ -1,6 +1,5 @@
 export interface EncryptOptions {
   output: string;
-  key?: string;
   blockSize?: number;
   prefix?: string;
   seed?: number;
@@ -10,5 +9,4 @@ export interface EncryptOptions {
 export interface DecryptOptions {
   manifest: string;
   output: string;
-  key?: string;
 }

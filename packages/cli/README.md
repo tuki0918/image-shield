@@ -35,7 +35,7 @@ Commands:
 
 ### Encrypt Command
 
-Fragment and optionally encrypt images into multiple pieces.
+Fragment images into multiple pieces using shuffle-only mode.
 
 ```bash
 image-shield encrypt <images...> -o <output_directory> [options]
@@ -46,22 +46,16 @@ image-shield encrypt <images...> -o <output_directory> [options]
 | Option | Description | Required | Default |
 |--------|-------------|----------|---------|
 | `-o, --output <dir>` | Output directory for fragments and manifest | ✅ | - |
-| `-k, --key <key>` | Secret key for encryption | ❌ | - |
 | `-b, --block-size <size>` | Pixel block size (positive integer) | ❌ | 10 |
 | `-p, --prefix <prefix>` | Prefix for fragment files | ❌ | "fragment" |
 | `-s, --seed <seed>` | Random seed (integer) | ❌ | auto-generated |
-| `--restore-filename` | Restore original file names when decrypting | ❌ | false |
+| `--restore-filename` | Restore original file names when restoring | ❌ | false |
 
 #### Examples
 
 **Basic fragmentation:**
 ```bash
 image-shield encrypt image1.jpg image2.png -o ./fragments
-```
-
-**With encryption:**
-```bash
-image-shield encrypt image.jpg -o ./secure-fragments -k mySecretKey123
 ```
 
 **Custom configuration:**
@@ -99,18 +93,12 @@ image-shield decrypt <fragments...> -m <manifest_path> -o <output_directory> [op
 |--------|-------------|----------|
 | `-m, --manifest <path>` | Path to the manifest.json file | ✅ |
 | `-o, --output <dir>` | Output directory for restored images | ✅ |
-| `-k, --key <key>` | Secret key for decryption (if encrypted) | ❌ |
 
 #### Examples
 
 **Basic restoration:**
 ```bash
 image-shield decrypt ./fragments/*.png -m ./fragments/manifest.json -o ./restored
-```
-
-**With decryption:**
-```bash
-image-shield decrypt ./secure-fragments/*.png -m ./secure-fragments/manifest.json -o ./restored -k mySecretKey123
 ```
 
 **Specific fragments:**

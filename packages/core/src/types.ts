@@ -5,8 +5,6 @@ export interface EncryptOptions {
   config?: FragmentationConfig;
   /** Output directory (e.g., "./output/fragments") */
   outputDir: string;
-  /** Secret key (optional) */
-  secretKey?: string;
 }
 
 export interface DecryptOptions {
@@ -16,8 +14,6 @@ export interface DecryptOptions {
   manifestPath: string;
   /** Output directory (e.g., "./output/restored") */
   outputDir: string;
-  /** Secret key (optional) */
-  secretKey?: string;
 }
 
 export interface FragmentationConfig {
@@ -74,7 +70,6 @@ export interface ShortImageInfo {
   name?: string;
 }
 
-export type EncryptionAlgorithm = "aes-256-cbc";
 
 export interface ManifestData {
   /** UUID */
@@ -87,10 +82,8 @@ export interface ManifestData {
   config: Required<FragmentationConfig>;
   /** Image information */
   images: ShortImageInfo[];
-  /** Algorithm (only set if secure is true) */
-  algorithm?: EncryptionAlgorithm;
-  /** Secure (true if encrypted) */
-  secure: boolean;
+  /** Secure (always false since encryption is removed) */
+  secure: false;
 }
 
 export interface FragmentationResult {
