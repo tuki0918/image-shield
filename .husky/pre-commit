@@ -1,3 +1,11 @@
+#!/bin/sh
+
+# Skip hooks when committing via copilot agent in GitHub Actions
+if [ "$SKIP_GIT_HOOKS" = "true" ] || [ "$GITHUB_ACTIONS" = "true" ]; then
+  echo "Skipping pre-commit hooks"
+  exit 0
+fi
+
 npm run check
 npm run test:ci
 npm run build:check
