@@ -1,5 +1,4 @@
 import {
-  CryptoUtils,
   DEFAULT_FRAGMENTATION_CONFIG,
   type FragmentationConfig,
   type FragmentationResult,
@@ -7,10 +6,10 @@ import {
   type ManifestData,
   calcBlocksPerFragment,
 } from "@image-shield/core";
+import { randomUUID } from "node:crypto";
 import { SeededRandom, shuffle } from "@tuki0918/seeded-shuffle";
 import {
   blocksToPngImage,
-  encryptPngImageBuffer,
   imageFileToBlocks,
 } from "./block";
 import { VERSION } from "./constants";
@@ -18,11 +17,9 @@ import { fileNameWithoutExtension, readFileBuffer } from "./file";
 
 export class ImageFragmenter {
   private config: Required<FragmentationConfig>;
-  private secretKey?: string;
 
-  constructor(config: FragmentationConfig, secretKey?: string) {
+  constructor(config: FragmentationConfig) {
     this.config = this._initializeConfig(config);
-    this.secretKey = secretKey;
   }
 
   private _initializeConfig(
@@ -97,17 +94,13 @@ export class ImageFragmenter {
   ): ManifestData {
     this._validateFileNames(imageInfos);
 
-    const secure = !!this.secretKey;
-    const algorithm = secure ? "aes-256-cbc" : undefined;
-
     return {
       id: manifestId,
       version: VERSION,
       timestamp: new Date().toISOString(),
       config: this.config,
       images: this._mapImageInfosToShortFormat(imageInfos),
-      algorithm,
-      secure,
+      secure: false,
     };
   }
 
@@ -145,7 +138,7 @@ export class ImageFragmenter {
     fragmentBlocksCount: number[];
   }> {
     // Generate manifest ID first
-    const manifestId = CryptoUtils.generateUUID();
+    const manifestId = randomUUID();
 
     const { imageInfos, allBlocks } = await this._processSourceImages(
       imagePaths,
@@ -215,15 +208,6 @@ export class ImageFragmenter {
     manifestInfo: Pick<ManifestData, "id">,
   ): Promise<Buffer> {
     const originalBuffer = await readFileBuffer(imagePath);
-
-    if (this.secretKey && manifestInfo.id) {
-      return await encryptPngImageBuffer(
-        originalBuffer,
-        this.secretKey,
-        manifestInfo.id,
-      );
-    }
-
     return originalBuffer;
   }
 

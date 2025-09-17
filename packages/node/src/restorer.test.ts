@@ -1,14 +1,10 @@
 import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { CryptoUtils, type ManifestData } from "@image-shield/core";
+import type { ManifestData } from "@image-shield/core";
 import { Jimp, JimpMime } from "jimp";
-import { NodeCryptoProvider } from "./crypto";
 import { ImageFragmenter } from "./fragmenter";
 import { ImageRestorer } from "./restorer";
-
-// Initialize crypto provider
-CryptoUtils.setProvider(new NodeCryptoProvider());
 
 describe("ImageRestorer", () => {
   const tmpDir = path.join(tmpdir(), "restorer_test_tmp");
@@ -112,8 +108,8 @@ describe("ImageRestorer", () => {
       expect(restorer).toBeInstanceOf(ImageRestorer);
     });
 
-    test("initializes with secret key", () => {
-      const restorer = new ImageRestorer("test-secret");
+    test("initializes without secret key (encryption removed)", () => {
+      const restorer = new ImageRestorer();
       expect(restorer).toBeInstanceOf(ImageRestorer);
     });
   });
@@ -146,23 +142,18 @@ describe("ImageRestorer", () => {
       expect(jimpImage.bitmap.height).toBe(4);
     });
 
-    test("restores single image with encryption", async () => {
-      const secretKey = "test-secret-key";
-
-      // First fragment the image with encryption
-      const fragmenter = new ImageFragmenter(
-        {
-          blockSize: 2,
-          seed: "test-seed",
-        },
-        secretKey,
-      );
+    test("restores single image (encryption removed)", async () => {
+      // Fragment the image without encryption
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+      });
       const { manifest, fragmentedImages } = await fragmenter.fragmentImages([
         testImagePath,
       ]);
 
-      // Then restore it with the same secret key
-      const restorer = new ImageRestorer(secretKey);
+      // Then restore it
+      const restorer = new ImageRestorer();
       const restoredImages = await restorer.restoreImages(
         fragmentedImages,
         manifest,
@@ -345,25 +336,19 @@ describe("ImageRestorer", () => {
       ).rejects.toThrow("Fragment image count mismatch");
     });
 
-    test("returns encrypted data when secret key is missing for encrypted data", async () => {
-      const secretKey = "test-secret-key";
-
-      // Fragment with encryption
-      const fragmenter = new ImageFragmenter(
-        {
-          blockSize: 2,
-          seed: "test-seed",
-        },
-        secretKey,
-      );
+    test("restores data normally (encryption removed)", async () => {
+      // Fragment without encryption  
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+      });
       const { manifest, fragmentedImages } = await fragmenter.fragmentImages([
         testImagePath,
       ]);
 
-      // Try to restore without secret key
-      const restorer = new ImageRestorer(); // No secret key
+      // Restore normally
+      const restorer = new ImageRestorer();
 
-      // Should return encrypted data (not throw error)
       const restoredImages = await restorer.restoreImages(
         fragmentedImages,
         manifest,
@@ -371,46 +356,32 @@ describe("ImageRestorer", () => {
       expect(restoredImages).toHaveLength(1);
       expect(Buffer.isBuffer(restoredImages[0])).toBe(true);
 
-      // The restored image should be a valid PNG but contain encrypted data
+      // The restored image should be a valid PNG
       const restoredJimp = await Jimp.read(restoredImages[0]);
       expect(restoredJimp.mime).toBe("image/png");
 
-      // Now verify that using the correct key produces the original image
-      const restorerWithKey = new ImageRestorer(secretKey);
-      const decryptedImages = await restorerWithKey.restoreImages(
-        fragmentedImages,
-        manifest,
-      );
-      const decryptedJimp = await Jimp.read(decryptedImages[0]);
+      // Image should match original dimensions
       const originalJimp = await Jimp.read(testImagePath);
-
-      // Decrypted image should match original dimensions
-      expect(decryptedJimp.bitmap.width).toBe(originalJimp.bitmap.width);
-      expect(decryptedJimp.bitmap.height).toBe(originalJimp.bitmap.height);
+      expect(restoredJimp.bitmap.width).toBe(originalJimp.bitmap.width);
+      expect(restoredJimp.bitmap.height).toBe(originalJimp.bitmap.height);
     });
 
-    test("throws error when wrong secret key is used", async () => {
-      const correctKey = "correct-secret-key";
-      const wrongKey = "wrong-secret-key";
-
-      // Fragment with correct key
-      const fragmenter = new ImageFragmenter(
-        {
-          blockSize: 2,
-          seed: "test-seed",
-        },
-        correctKey,
-      );
+    test("no longer throws error for wrong secret key (encryption removed)", async () => {
+      // With encryption removed, there's no concept of wrong keys anymore
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+      });
       const { manifest, fragmentedImages } = await fragmenter.fragmentImages([
         testImagePath,
       ]);
 
-      // Try to restore with wrong key
-      const restorer = new ImageRestorer(wrongKey);
-
-      await expect(
-        restorer.restoreImages(fragmentedImages, manifest),
-      ).rejects.toThrow();
+      // All restorers work the same way now
+      const restorer = new ImageRestorer();
+      
+      const restoredImages = await restorer.restoreImages(fragmentedImages, manifest);
+      expect(restoredImages).toHaveLength(1);
+      expect(Buffer.isBuffer(restoredImages[0])).toBe(true);
     });
 
     test("handles non-existent fragment file", async () => {

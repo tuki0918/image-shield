@@ -3,23 +3,8 @@ import {
   generateFragmentFileName,
   generateRestoredFileName,
   generateRestoredOriginalFileName,
-  verifySecretKey,
 } from "./helpers";
 import type { ManifestData } from "./types";
-
-describe("verifySecretKey", () => {
-  test("should return secret key when valid", () => {
-    expect(verifySecretKey("validKey")).toBe("validKey");
-    expect(verifySecretKey("  validKey  ")).toBe("  validKey  ");
-  });
-
-  test("should return undefined when invalid", () => {
-    expect(verifySecretKey("")).toBeUndefined();
-    expect(verifySecretKey("   ")).toBeUndefined();
-    expect(verifySecretKey(null)).toBeUndefined();
-    expect(verifySecretKey(undefined)).toBeUndefined();
-  });
-});
 
 describe("generateFileName", () => {
   const mockManifest = {
