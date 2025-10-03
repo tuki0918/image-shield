@@ -27,7 +27,7 @@ This package provides two main modes for image fragmentation:
 Original Image → Load → Convert to RGBA → Shuffle → Fragmented PNG Output
 ```
 
-### 🔐 Shuffle + Encrypt Mode (Recommended)
+### 🔐 Shuffle + Encrypt Mode
 - If `secretKey` is set, both shuffling and encryption are performed.
 
 ```
@@ -46,7 +46,7 @@ npm i image-shield
 import ImageShield from "image-shield";
 ```
 
-### Shuffle only
+### 🔀 Shuffle Only Mode
 
 If you do not set the `secretKey`, only shuffling will be applied to the images.
 
@@ -129,7 +129,7 @@ output
 
 ---
 
-### Shuffle + Encrypt (recommended)
+### 🔐 Shuffle + Encrypt　Mode
 
 If you set the `secretKey`, both shuffling and encryption will be applied to the images.
 
@@ -282,7 +282,6 @@ manifest.json:
 ---
 
 > [!NOTE]
-> - The recommended mode is **Shuffle + Encrypt** for better security.
 > - The `manifest.json` file contains the necessary information for restoration, but it does not include the secret key.
 > - Input images are converted to PNG format.
 
