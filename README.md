@@ -27,7 +27,7 @@ This package provides two main modes for image fragmentation:
 Original Image → Load → Convert to RGBA → Shuffle → Fragmented PNG Output
 ```
 
-### 🔐 Shuffle + Encrypt Mode
+### 🔐 Shuffle + Encrypt Mode (Deprecated)
 - If `secretKey` is set, both shuffling and encryption are performed.
 
 ```
