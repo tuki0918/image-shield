@@ -1,5 +1,4 @@
 import {
-  CryptoUtils,
   type DecryptOptions,
   type EncryptOptions,
   type FragmentationConfig,
@@ -9,13 +8,9 @@ import {
   generateRestoredFileName,
   generateRestoredOriginalFileName,
 } from "@image-shield/core";
-import { NodeCryptoProvider } from "./crypto";
 import { createDir, readJsonFile, writeFile } from "./file";
 import { ImageFragmenter } from "./fragmenter";
 import { ImageRestorer } from "./restorer";
-
-// Initialize the crypto provider
-CryptoUtils.setProvider(new NodeCryptoProvider());
 
 export {
   ImageFragmenter,

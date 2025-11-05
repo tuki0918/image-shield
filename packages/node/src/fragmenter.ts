@@ -1,5 +1,5 @@
+import crypto from "node:crypto";
 import {
-  CryptoUtils,
   DEFAULT_FRAGMENTATION_CONFIG,
   type FragmentationConfig,
   type FragmentationResult,
@@ -134,7 +134,7 @@ export class ImageFragmenter {
     fragmentBlocksCount: number[];
   }> {
     // Generate manifest ID first
-    const manifestId = CryptoUtils.generateUUID();
+    const manifestId = crypto.randomUUID();
 
     const { imageInfos, allBlocks } = await this._processSourceImages(
       imagePaths,

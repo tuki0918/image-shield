@@ -1,14 +1,10 @@
 import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { CryptoUtils, type ManifestData } from "@image-shield/core";
+import type { ManifestData } from "@image-shield/core";
 import { Jimp, JimpMime } from "jimp";
-import { NodeCryptoProvider } from "./crypto";
 import { ImageFragmenter } from "./fragmenter";
 import { ImageRestorer } from "./restorer";
-
-// Initialize crypto provider
-CryptoUtils.setProvider(new NodeCryptoProvider());
 
 describe("ImageRestorer", () => {
   const tmpDir = path.join(tmpdir(), "restorer_test_tmp");

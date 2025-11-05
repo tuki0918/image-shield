@@ -2,17 +2,12 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
-  CryptoUtils,
   DEFAULT_FRAGMENTATION_CONFIG,
   type FragmentationConfig,
   type ManifestData,
 } from "@image-shield/core";
 import { Jimp, JimpMime } from "jimp";
-import { NodeCryptoProvider } from "./crypto";
 import { ImageFragmenter } from "./fragmenter";
-
-// Initialize crypto provider
-CryptoUtils.setProvider(new NodeCryptoProvider());
 
 describe("ImageFragmenter", () => {
   const tmpDir = path.join(tmpdir(), "fragmenter_test_tmp");
