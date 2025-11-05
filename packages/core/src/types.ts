@@ -26,7 +26,7 @@ export interface FragmentationConfig {
   /** Prefix for fragment files (optional, default: "fragment") */
   prefix?: string;
   /** Random seed (auto-generated if not specified) */
-  seed?: number;
+  seed?: number | string;
   /** Restore original file name (optional, default: false) */
   restoreFileName?: boolean;
 }
