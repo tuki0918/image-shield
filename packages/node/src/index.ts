@@ -8,7 +8,6 @@ import {
   generateFragmentFileName,
   generateRestoredFileName,
   generateRestoredOriginalFileName,
-  verifySecretKey,
 } from "@image-shield/core";
 import { NodeCryptoProvider } from "./crypto";
 import { createDir, readJsonFile, writeFile } from "./file";
@@ -27,13 +26,9 @@ export {
 
 export default class ImageShield {
   static async encrypt(options: EncryptOptions): Promise<void> {
-    const { imagePaths, config, outputDir, secretKey } =
-      validateEncryptOptions(options);
+    const { imagePaths, config, outputDir } = validateEncryptOptions(options);
 
-    const fragmenter = new ImageFragmenter(
-      config ?? {},
-      verifySecretKey(secretKey),
-    );
+    const fragmenter = new ImageFragmenter(config ?? {});
     const { manifest, fragmentedImages } =
       await fragmenter.fragmentImages(imagePaths);
 
@@ -53,12 +48,12 @@ export default class ImageShield {
   }
 
   static async decrypt(options: DecryptOptions): Promise<void> {
-    const { imagePaths, manifestPath, outputDir, secretKey } =
+    const { imagePaths, manifestPath, outputDir } =
       validateDecryptOptions(options);
 
     const manifest = await readJsonFile<ManifestData>(manifestPath);
 
-    const restorer = new ImageRestorer(verifySecretKey(secretKey));
+    const restorer = new ImageRestorer();
     const restoredImages = await restorer.restoreImages(imagePaths, manifest);
 
     await createDir(outputDir, true);

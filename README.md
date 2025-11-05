@@ -18,20 +18,12 @@ This project is a monorepo that contains the following packages:
 
 ## Features
 
-This package provides two main modes for image fragmentation:
+This package provides image fragmentation functionality:
 
-### 🔀 Shuffle Only Mode
-- If `secretKey` is not set, only shuffling is performed.
+### 🔀 Shuffle Mode
 
 ```
 Original Image → Load → Convert to RGBA → Shuffle → Fragmented PNG Output
-```
-
-### 🔐 Shuffle + Encrypt Mode (Deprecated)
-- If `secretKey` is set, both shuffling and encryption are performed.
-
-```
-Original Image → Load → Convert to RGBA → Encrypt → Shuffle → Fragmented PNG Output
 ```
 
 ## Installation
@@ -46,11 +38,9 @@ npm i image-shield
 import ImageShield from "image-shield";
 ```
 
-### 🔀 Shuffle Only Mode
+### 🔀 Shuffle Mode
 
-If you do not set the `secretKey`, only shuffling will be applied to the images.
-
-**Encrypt**
+**Fragment**
 
 ```ts
 await ImageShield.encrypt({
@@ -61,7 +51,6 @@ await ImageShield.encrypt({
     "./input_3.png",
   ],
   outputDir: "./output/fragmented",
-  // secretKey: undefined
 });
 ```
 
@@ -89,7 +78,7 @@ output
 
 </details>
 
-**Decrypt**
+**Restore**
 
 ```ts
 await ImageShield.decrypt({
@@ -100,7 +89,6 @@ await ImageShield.decrypt({
     "./output/fragmented/img_3_fragmented.png",
   ],
   outputDir: "./output/restored",
-  // secretKey: undefined
 });
 ```
 
@@ -128,88 +116,6 @@ output
 </details>
 
 ---
-
-### 🔐 Shuffle + Encrypt　Mode
-
-If you set the `secretKey`, both shuffling and encryption will be applied to the images.
-
-**Encrypt**
-
-```ts
-await ImageShield.encrypt({
-  // config: { /** FragmentationConfig */ },
-  imagePaths: [
-    "./input_1.png",
-    "./input_2.png",
-    "./input_3.png",
-  ],
-  outputDir: "./output/fragmented",
-  secretKey: "secret",
-});
-```
-
-<details>
-<summary>Output:</summary>
-
-```
-output
-└── fragmented
-    ├── img_1_fragmented.png
-    ├── img_2_fragmented.png
-    ├── img_3_fragmented.png
-    └── manifest.json
-```
-
-| input 1 | input 2 | input 3 |
-|:-------:|:---------------:|:---------------:|
-| ![](.docs/input_sample.png) | ![](.docs/input_sample_mono.png) | ![](.docs/input_sample_blue.png) |
-| 500 x 500px (109KB) | 400 x 600px (4KB) | 600 x 400px (3KB) |
-
-| output 1 | output 2 | output 3 |
-|:-------:|:---------------:|:---------------:|
-| ![](.docs/fragmented2/img_1_fragmented.png) | ![](.docs/fragmented2/img_2_fragmented.png) | ![](.docs/fragmented2/img_3_fragmented.png) |
-| 494 x 494px (976KB) | 494 x 494px (976KB) | 494 x 494px (976KB) |
-
-</details>
-
-**Decrypt**
-
-```ts
-await ImageShield.decrypt({
-  manifestPath: "./output/fragmented/manifest.json",
-  imagePaths: [
-    "./output/fragmented/img_1_fragmented.png",
-    "./output/fragmented/img_2_fragmented.png",
-    "./output/fragmented/img_3_fragmented.png",
-  ],
-  outputDir: "./output/restored",
-  secretKey: "secret",
-});
-```
-
-<details>
-<summary>Output:</summary>
-
-```
-output
-└── restored
-    ├── img_1.png
-    ├── img_2.png
-    └── img_3.png
-```
-
-| input 1 | input 2 | input 3 |
-|:-------:|:---------------:|:---------------:|
-| ![](.docs/fragmented2/img_1_fragmented.png) | ![](.docs/fragmented2/img_2_fragmented.png) | ![](.docs/fragmented2/img_3_fragmented.png) |
-| 494 x 494px (976KB) | 494 x 494px (976KB) | 494 x 494px (976KB) |
-
-| output 1 | output 2 | output 3 |
-|:-------:|:---------------:|:---------------:|
-| ![](.docs/restored2/img_1.png) | ![](.docs/restored2/img_2.png) | ![](.docs/restored2/img_3.png) |
-| 500 x 500px (117KB) | 400 x 600px (2KB) | 600 x 400px (2KB) |
-
-</details>
-
 
 ## Shuffle Overview
 
@@ -272,9 +178,7 @@ manifest.json:
       "x": 245,
       "y": 245
     }
-  ],
-  "algorithm": "aes-256-cbc",
-  "secure": true
+  ]
 }
 ```
 </details>
@@ -282,7 +186,7 @@ manifest.json:
 ---
 
 > [!NOTE]
-> - The `manifest.json` file contains the necessary information for restoration, but it does not include the secret key.
+> - The `manifest.json` file contains the necessary information for restoration.
 > - Input images are converted to PNG format.
 
 ## Clients

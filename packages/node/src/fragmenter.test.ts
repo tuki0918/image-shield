@@ -125,15 +125,10 @@ describe("ImageFragmenter", () => {
       const fragmenter = new ImageFragmenter(config);
       expect(fragmenter).toBeInstanceOf(ImageFragmenter);
     });
-
-    test("initializes with secret key", () => {
-      const fragmenter = new ImageFragmenter({}, "test-secret");
-      expect(fragmenter).toBeInstanceOf(ImageFragmenter);
-    });
   });
 
   describe("fragmentImages", () => {
-    test("fragments single image without encryption", async () => {
+    test("fragments single image", async () => {
       const fragmenter = new ImageFragmenter({
         blockSize: 2,
         prefix: "test",
@@ -146,28 +141,6 @@ describe("ImageFragmenter", () => {
       expect(result.fragmentedImages).toBeDefined();
       expect(result.manifest.images).toHaveLength(1);
       expect(result.fragmentedImages).toHaveLength(1);
-      expect(result.manifest.secure).toBe(false);
-      expect(result.manifest.algorithm).toBeUndefined();
-    });
-
-    test("fragments single image with encryption", async () => {
-      const fragmenter = new ImageFragmenter(
-        {
-          blockSize: 2,
-          prefix: "test",
-          seed: "test-seed",
-        },
-        "test-secret-key",
-      );
-
-      const result = await fragmenter.fragmentImages([testImagePath]);
-
-      expect(result.manifest).toBeDefined();
-      expect(result.fragmentedImages).toBeDefined();
-      expect(result.manifest.images).toHaveLength(1);
-      expect(result.fragmentedImages).toHaveLength(1);
-      expect(result.manifest.secure).toBe(true);
-      expect(result.manifest.algorithm).toBe("aes-256-cbc");
     });
 
     test("fragments multiple images", async () => {

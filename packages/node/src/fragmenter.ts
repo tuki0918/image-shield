@@ -8,21 +8,15 @@ import {
   calcBlocksPerFragment,
 } from "@image-shield/core";
 import { SeededRandom, shuffle } from "@tuki0918/seeded-shuffle";
-import {
-  blocksToPngImage,
-  encryptPngImageBuffer,
-  imageFileToBlocks,
-} from "./block";
+import { blocksToPngImage, imageFileToBlocks } from "./block";
 import { VERSION } from "./constants";
 import { fileNameWithoutExtension, readFileBuffer } from "./file";
 
 export class ImageFragmenter {
   private config: Required<FragmentationConfig>;
-  private secretKey?: string;
 
-  constructor(config: FragmentationConfig, secretKey?: string) {
+  constructor(config: FragmentationConfig) {
     this.config = this._initializeConfig(config);
-    this.secretKey = secretKey;
   }
 
   private _initializeConfig(
@@ -97,17 +91,12 @@ export class ImageFragmenter {
   ): ManifestData {
     this._validateFileNames(imageInfos);
 
-    const secure = !!this.secretKey;
-    const algorithm = secure ? "aes-256-cbc" : undefined;
-
     return {
       id: manifestId,
       version: VERSION,
       timestamp: new Date().toISOString(),
       config: this.config,
       images: this._mapImageInfosToShortFormat(imageInfos),
-      algorithm,
-      secure,
     };
   }
 
@@ -214,17 +203,7 @@ export class ImageFragmenter {
     imagePath: string,
     manifestInfo: Pick<ManifestData, "id">,
   ): Promise<Buffer> {
-    const originalBuffer = await readFileBuffer(imagePath);
-
-    if (this.secretKey && manifestInfo.id) {
-      return await encryptPngImageBuffer(
-        originalBuffer,
-        this.secretKey,
-        manifestInfo.id,
-      );
-    }
-
-    return originalBuffer;
+    return await readFileBuffer(imagePath);
   }
 
   private async _createFragmentImage(
