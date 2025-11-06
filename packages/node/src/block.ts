@@ -1,11 +1,9 @@
+import {
+  type BlockCounts,
+  RGBA_CHANNELS,
+  calculateBlockCounts,
+} from "@image-shield/core";
 import { Jimp, JimpMime } from "jimp";
-
-const RGBA_CHANNELS = 4;
-
-interface BlockCounts {
-  blockCountX: number;
-  blockCountY: number;
-}
 
 interface ImageFileToBlocksResult {
   blocks: Buffer[];
@@ -54,24 +52,6 @@ function createJimpFromImageBuffer(
 function formatErrorMessage(operation: string, error: unknown): string {
   const errorMessage = error instanceof Error ? error.message : "Unknown error";
   return `${operation}: ${errorMessage}`;
-}
-
-/**
- * Calculate block counts for width and height
- * @param width Image width
- * @param height Image height
- * @param blockSize Block size
- * @returns Object with blockCountX and blockCountY
- */
-function calculateBlockCounts(
-  width: number,
-  height: number,
-  blockSize: number,
-): BlockCounts {
-  return {
-    blockCountX: Math.ceil(width / blockSize),
-    blockCountY: Math.ceil(height / blockSize),
-  };
 }
 
 /**
@@ -335,10 +315,9 @@ export async function imageFileToBlocks(
       blockCountY: blockCounts.blockCountY,
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    console.error(`Error processing image file: ${errorMessage}`);
-    throw new Error("The manifest file may not match the image data.");
+    throw new Error(
+      `${formatErrorMessage("Failed to process image file", error)}. The manifest file may not match the image data.`,
+    );
   }
 }
 
