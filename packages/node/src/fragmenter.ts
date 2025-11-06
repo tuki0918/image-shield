@@ -93,7 +93,7 @@ export class ImageFragmenter {
       version: VERSION,
       timestamp: new Date().toISOString(),
       config: this.config,
-      images: this._mapImageInfosToShortFormat(imageInfos),
+      images: imageInfos,
     };
   }
 
@@ -112,17 +112,6 @@ export class ImageFragmenter {
         nameSet.add(info.name);
       }
     }
-  }
-
-  private _mapImageInfosToShortFormat(imageInfos: ImageInfo[]) {
-    return imageInfos.map((info) => ({
-      w: info.width,
-      h: info.height,
-      c: 4, // Always use 4 channels (RGBA) for generated PNG
-      x: info.blockCountX,
-      y: info.blockCountY,
-      name: info.name,
-    }));
   }
 
   private async _prepareFragmentData(imagePaths: string[]): Promise<{
@@ -169,11 +158,11 @@ export class ImageFragmenter {
       await imageFileToBlocks(imageBuffer, this.config.blockSize);
 
     const imageInfo: ImageInfo = {
-      width,
-      height,
-      channels,
-      blockCountX,
-      blockCountY,
+      w: width,
+      h: height,
+      c: 4, // Always use 4 channels (RGBA) for generated PNG
+      x: blockCountX,
+      y: blockCountY,
       name: this.config.restoreFileName
         ? fileNameWithoutExtension(imagePath)
         : undefined,

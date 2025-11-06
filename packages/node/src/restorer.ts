@@ -1,6 +1,6 @@
 import {
+  type ImageInfo,
   type ManifestData,
-  type ShortImageInfo,
   calcBlocksPerFragment,
 } from "@image-shield/core";
 import { unshuffle } from "@tuki0918/seeded-shuffle";
@@ -48,7 +48,7 @@ export class ImageRestorer {
   }
 
   private _calculateBlockRange(
-    images: ShortImageInfo[],
+    images: ImageInfo[],
     targetIndex: number,
   ): { start: number; end: number } {
     const blockCount = images[targetIndex].x * images[targetIndex].y;
@@ -95,7 +95,7 @@ export class ImageRestorer {
     }
   }
 
-  private _calculateTotalBlocks(images: ShortImageInfo[]): number {
+  private _calculateTotalBlocks(images: ImageInfo[]): number {
     return images.reduce((total, image) => total + image.x * image.y, 0);
   }
 
@@ -136,7 +136,7 @@ export class ImageRestorer {
   private async _reconstructImage(
     blocks: Buffer[],
     blockSize: number,
-    imageInfo: ShortImageInfo,
+    imageInfo: ImageInfo,
   ): Promise<Buffer> {
     const { w, h } = imageInfo;
     return await blocksToPngImage(blocks, w, h, blockSize);

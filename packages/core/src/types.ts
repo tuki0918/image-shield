@@ -33,24 +33,6 @@ export interface FragmentationConfig {
  */
 export interface ImageInfo {
   /** Width */
-  width: number;
-  /** Height */
-  height: number;
-  /** Number of channels */
-  channels: number;
-  /** Number of blocks X */
-  blockCountX: number;
-  /** Number of blocks Y */
-  blockCountY: number;
-  /** Original file name (optional) */
-  name?: string;
-}
-
-/**
- * Shortened version of ImageInfo
- */
-export interface ShortImageInfo {
-  /** Width */
   w: number;
   /** Height */
   h: number;
@@ -74,7 +56,7 @@ export interface ManifestData {
   /** Config */
   config: Required<FragmentationConfig>;
   /** Image information */
-  images: ShortImageInfo[];
+  images: ImageInfo[];
 }
 
 export interface FragmentationResult {
