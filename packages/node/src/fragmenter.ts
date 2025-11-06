@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import {
   DEFAULT_FRAGMENTATION_CONFIG,
   type FragmentationConfig,
@@ -11,6 +10,7 @@ import { SeededRandom, shuffle } from "@tuki0918/seeded-shuffle";
 import { blocksToPngImage, imageFileToBlocks } from "./block";
 import { VERSION } from "./constants";
 import { fileNameWithoutExtension, readFileBuffer } from "./file";
+import { generateManifestId } from "./utils";
 
 export class ImageFragmenter {
   private config: Required<FragmentationConfig>;
@@ -119,7 +119,7 @@ export class ImageFragmenter {
     allBlocks: Buffer[];
     fragmentBlocksCount: number[];
   }> {
-    const manifestId = crypto.randomUUID();
+    const manifestId = generateManifestId();
 
     const { imageInfos, allBlocks } =
       await this._processSourceImages(imagePaths);
