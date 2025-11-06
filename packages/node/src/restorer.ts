@@ -105,17 +105,15 @@ export class ImageRestorer {
     manifest: ManifestData,
     expectedBlockCount: number,
   ): Promise<Buffer[]> {
-    const buf = await this._readImageBuffer(fragmentImage);
-    const { blocks } = await imageFileToBlocks(buf, manifest.config.blockSize);
-    return blocks.slice(0, expectedBlockCount);
-  }
-
-  private async _readImageBuffer(
-    fragmentImage: string | Buffer,
-  ): Promise<Buffer> {
-    return Buffer.isBuffer(fragmentImage)
+    const imageBuffer = Buffer.isBuffer(fragmentImage)
       ? fragmentImage
       : await readFileBuffer(fragmentImage);
+
+    const { blocks } = await imageFileToBlocks(
+      imageBuffer,
+      manifest.config.blockSize,
+    );
+    return blocks.slice(0, expectedBlockCount);
   }
 
   private async _extractBlocksFromFragments(

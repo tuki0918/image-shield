@@ -57,22 +57,6 @@ function formatErrorMessage(operation: string, error: unknown): string {
 }
 
 /**
- * Convert raw RGBA image buffer to PNG buffer using Jimp
- * @param imageBuffer Raw RGBA image buffer
- * @param width Image width in pixels
- * @param height Image height in pixels
- * @returns Promise resolving to PNG buffer
- */
-async function imageBufferToPng(
-  imageBuffer: Buffer,
-  width: number,
-  height: number,
-): Promise<Buffer> {
-  const image = createJimpFromImageBuffer(imageBuffer, width, height);
-  return await image.getBuffer(JimpMime.png);
-}
-
-/**
  * Calculate block counts for width and height
  * @param width Image width
  * @param height Image height
@@ -416,7 +400,8 @@ export async function createPngFromImageBuffer(
   height: number,
 ): Promise<Buffer> {
   try {
-    return await imageBufferToPng(imageBuffer, width, height);
+    const image = createJimpFromImageBuffer(imageBuffer, width, height);
+    return await image.getBuffer(JimpMime.png);
   } catch (error) {
     throw new Error(
       formatErrorMessage("Failed to create PNG from image buffer", error),
