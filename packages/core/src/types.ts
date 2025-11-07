@@ -23,8 +23,8 @@ export interface FragmentationConfig {
   prefix?: string;
   /** Random seed (auto-generated if not specified) */
   seed?: number | string;
-  /** Restore original file name (optional, default: false) */
-  restoreFileName?: boolean;
+  /** Preserve original file name (optional, default: false) */
+  preserveName?: boolean;
 }
 
 /**

@@ -49,7 +49,7 @@ image-shield shuffle <images...> -o <output_directory> [options]
 | `-b, --block-size <size>` | Pixel block size (positive integer) | ❌ | 10 |
 | `-p, --prefix <prefix>` | Prefix for fragment files | ❌ | "fragment" |
 | `-s, --seed <seed>` | Random seed (integer) | ❌ | auto-generated |
-| `--restore-filename` | Restore original file names when restoring | ❌ | false |
+| `--preserve-name` | Preserve original file names | ❌ | false |
 
 #### Examples
 
@@ -60,7 +60,7 @@ image-shield shuffle image1.jpg image2.png -o ./fragments
 
 **Custom configuration:**
 ```bash
-image-shield shuffle *.jpg -o ./output -b 20 -p "my_fragment" --restore-filename
+image-shield shuffle *.jpg -o ./output -b 20 -p "my_fragment" --preserve-name
 ```
 
 **With seed for reproducible results:**
@@ -127,7 +127,7 @@ The CLI provides clear error messages for common issues:
 
 2. **Fragment images:**
    ```bash
-   image-shield shuffle images/photo1.jpg images/photo2.png -o ./backup --restore-filename
+   image-shield shuffle images/photo1.jpg images/photo2.png -o ./backup --preserve-name
    ```
    ```
    🔀 Starting image fragmentation...
@@ -166,7 +166,7 @@ image-shield shuffle sensitive/*.jpg \
   -b 5 \
   -p "secure_chunk" \
   -s 42 \
-  --restore-filename
+  --preserve-name
 
 # The output will use smaller blocks (5x5 pixels) and custom naming
 ```
@@ -186,7 +186,7 @@ BACKUP_DIR="./backup"
 echo "Creating backup..."
 image-shield shuffle "$IMAGES_DIR"/*.{jpg,png} \
   -o "$BACKUP_DIR" \
-  --restore-filename
+  --preserve-name
 
 if [ $? -eq 0 ]; then
   echo "✅ Backup completed successfully"

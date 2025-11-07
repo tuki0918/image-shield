@@ -152,7 +152,7 @@ manifest.json:
     "blockSize": 2,
     "prefix": "img",
     "seed": 72411,
-    "restoreFileName": false
+    "preserveName": false
   },
   "images": [
     {

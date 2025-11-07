@@ -26,9 +26,8 @@ export class ImageFragmenter {
       blockSize: config.blockSize ?? DEFAULT_FRAGMENTATION_CONFIG.BLOCK_SIZE,
       prefix: config.prefix ?? DEFAULT_FRAGMENTATION_CONFIG.PREFIX,
       seed: config.seed || SeededRandom.generateSeed(),
-      restoreFileName:
-        config.restoreFileName ??
-        DEFAULT_FRAGMENTATION_CONFIG.RESTORE_FILE_NAME,
+      preserveName:
+        config.preserveName ?? DEFAULT_FRAGMENTATION_CONFIG.PRESERVE_NAME,
     };
   }
 
@@ -98,7 +97,7 @@ export class ImageFragmenter {
   }
 
   private _validateFileNames(imageInfos: ImageInfo[]): void {
-    if (!this.config.restoreFileName || imageInfos.length <= 1) {
+    if (!this.config.preserveName || imageInfos.length <= 1) {
       return;
     }
 
@@ -163,7 +162,7 @@ export class ImageFragmenter {
       c: 4, // Always use 4 channels (RGBA) for generated PNG
       x: blockCountX,
       y: blockCountY,
-      name: this.config.restoreFileName
+      name: this.config.preserveName
         ? fileNameWithoutExtension(imagePath)
         : undefined,
     };

@@ -115,7 +115,7 @@ describe("ImageFragmenter", () => {
         blockSize: 8,
         prefix: "test",
         seed: "test-seed",
-        restoreFileName: true,
+        preserveName: true,
       };
       const fragmenter = new ImageFragmenter(config);
       expect(fragmenter).toBeInstanceOf(ImageFragmenter);
@@ -159,7 +159,7 @@ describe("ImageFragmenter", () => {
         blockSize: 2,
         prefix: "testprefix",
         seed: "test-seed-123",
-        restoreFileName: true,
+        preserveName: true,
       };
       const fragmenter = new ImageFragmenter(config);
 
@@ -171,7 +171,7 @@ describe("ImageFragmenter", () => {
       expect(result.manifest.config.blockSize).toBe(2);
       expect(result.manifest.config.prefix).toBe("testprefix");
       expect(result.manifest.config.seed).toBe("test-seed-123");
-      expect(result.manifest.config.restoreFileName).toBe(true);
+      expect(result.manifest.config.preserveName).toBe(true);
     });
 
     test("creates valid fragment images", async () => {
@@ -209,7 +209,7 @@ describe("ImageFragmenter", () => {
       );
     });
 
-    test("throws error on duplicate file names when restoreFileName is enabled", async () => {
+    test("throws error on duplicate file names when preserveName is enabled", async () => {
       // Create two files with the same base name in different directories
       const tmpDir2 = path.join(tmpdir(), "fragmenter_test_tmp2");
       if (!fs.existsSync(tmpDir2)) fs.mkdirSync(tmpDir2);
@@ -218,7 +218,7 @@ describe("ImageFragmenter", () => {
       await fs.promises.copyFile(testImagePath, duplicatePath);
 
       const fragmenter = new ImageFragmenter({
-        restoreFileName: true,
+        preserveName: true,
       });
 
       try {
@@ -243,8 +243,8 @@ describe("ImageFragmenter", () => {
       expect(result.manifest.config.prefix).toBe(
         DEFAULT_FRAGMENTATION_CONFIG.PREFIX,
       );
-      expect(result.manifest.config.restoreFileName).toBe(
-        DEFAULT_FRAGMENTATION_CONFIG.RESTORE_FILE_NAME,
+      expect(result.manifest.config.preserveName).toBe(
+        DEFAULT_FRAGMENTATION_CONFIG.PRESERVE_NAME,
       );
       expect(result.manifest.config.seed).toBeDefined(); // Should be auto-generated
     });
