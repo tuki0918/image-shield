@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
-import { registerDecryptCommand } from "./commands/decrypt";
-import { registerEncryptCommand } from "./commands/encrypt";
+import { registerRestoreCommand } from "./commands/restore";
+import { registerShuffleCommand } from "./commands/shuffle";
 
 const program = new Command();
 
@@ -12,8 +12,8 @@ program
   .version("0.8.1");
 
 // Register commands
-registerEncryptCommand(program);
-registerDecryptCommand(program);
+registerShuffleCommand(program);
+registerRestoreCommand(program);
 
 // Error handling
 program.on("command:*", () => {

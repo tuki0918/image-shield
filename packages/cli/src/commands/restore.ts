@@ -1,6 +1,6 @@
 import ImageShield from "@image-shield/node";
 import type { Command } from "commander";
-import type { DecryptOptions } from "../types";
+import type { RestoreOptions } from "../types";
 import {
   validateImagePaths,
   validateManifestPath,
@@ -8,27 +8,27 @@ import {
 } from "../validators";
 
 /**
- * Configures and registers the decrypt command
+ * Configures and registers the restore command
  * @param program Commander program instance
  */
-export function registerDecryptCommand(program: Command): void {
+export function registerRestoreCommand(program: Command): void {
   program
-    .command("decrypt")
+    .command("restore")
     .description("Restore fragmented images")
     .argument("<fragments...>", "Fragment file paths")
     .requiredOption("-m, --manifest <path>", "Manifest file path")
     .requiredOption("-o, --output <dir>", "Output directory")
-    .action(handleDecryptCommand);
+    .action(handleRestoreCommand);
 }
 
 /**
- * Handles the decrypt command execution
+ * Handles the restore command execution
  * @param fragments Array of fragment file paths
  * @param options Command options
  */
-async function handleDecryptCommand(
+async function handleRestoreCommand(
   fragments: string[],
-  options: DecryptOptions,
+  options: RestoreOptions,
 ): Promise<void> {
   try {
     console.log("🔀 Starting image restoration...");
@@ -37,7 +37,7 @@ async function handleDecryptCommand(
     const manifestPath = validateManifestPath(options.manifest);
     const outputDir = validateOutputDirectory(options.output);
 
-    await ImageShield.decrypt({
+    await ImageShield.restore({
       imagePaths,
       manifestPath,
       outputDir,

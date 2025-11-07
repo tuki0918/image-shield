@@ -1,4 +1,4 @@
-export interface EncryptOptions {
+export interface ShuffleOptions {
   /** Image paths (e.g., ["image1.png", "image2.png"]) */
   imagePaths: string[];
   /** Fragmentation config */
@@ -7,7 +7,7 @@ export interface EncryptOptions {
   outputDir: string;
 }
 
-export interface DecryptOptions {
+export interface RestoreOptions {
   /** Image paths (e.g., ["fragment1.png", "fragment2.png"]) */
   imagePaths: string[];
   /** Manifest path (e.g., "./output/fragments/manifest.json") */

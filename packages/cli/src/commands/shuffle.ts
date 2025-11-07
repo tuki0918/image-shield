@@ -1,16 +1,16 @@
 import type { FragmentationConfig } from "@image-shield/core";
 import ImageShield from "@image-shield/node";
 import type { Command } from "commander";
-import type { EncryptOptions } from "../types";
+import type { ShuffleOptions } from "../types";
 import { validateImagePaths, validateOutputDirectory } from "../validators";
 
 /**
- * Configures and registers the encrypt command
+ * Configures and registers the shuffle command
  * @param program Commander program instance
  */
-export function registerEncryptCommand(program: Command): void {
+export function registerShuffleCommand(program: Command): void {
   program
-    .command("encrypt")
+    .command("shuffle")
     .description("Fragment images")
     .argument("<images...>", "Input image file paths")
     .requiredOption("-o, --output <dir>", "Output directory")
@@ -30,17 +30,17 @@ export function registerEncryptCommand(program: Command): void {
       return num;
     })
     .option("--restore-filename", "Restore original file names")
-    .action(handleEncryptCommand);
+    .action(handleShuffleCommand);
 }
 
 /**
- * Handles the encrypt command execution
+ * Handles the shuffle command execution
  * @param images Array of image file paths
  * @param options Command options
  */
-async function handleEncryptCommand(
+async function handleShuffleCommand(
   images: string[],
-  options: EncryptOptions,
+  options: ShuffleOptions,
 ): Promise<void> {
   try {
     console.log("🔀 Starting image fragmentation...");
@@ -54,7 +54,7 @@ async function handleEncryptCommand(
     if (options.seed !== undefined) config.seed = options.seed;
     if (options.restoreFilename) config.restoreFileName = true;
 
-    await ImageShield.encrypt({
+    await ImageShield.shuffle({
       imagePaths,
       outputDir,
       config: Object.keys(config).length > 0 ? config : undefined,

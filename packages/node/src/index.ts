@@ -1,9 +1,9 @@
 import {
-  type DecryptOptions,
-  type EncryptOptions,
   type FragmentationConfig,
   MANIFEST_FILE_NAME,
   type ManifestData,
+  type RestoreOptions,
+  type ShuffleOptions,
   generateFragmentFileName,
   generateRestoredFileName,
   generateRestoredOriginalFileName,
@@ -20,8 +20,8 @@ export {
 };
 
 export default class ImageShield {
-  static async encrypt(options: EncryptOptions): Promise<void> {
-    const { imagePaths, config, outputDir } = validateEncryptOptions(options);
+  static async shuffle(options: ShuffleOptions): Promise<void> {
+    const { imagePaths, config, outputDir } = validateShuffleOptions(options);
 
     const fragmenter = new ImageFragmenter(config ?? {});
     const { manifest, fragmentedImages } =
@@ -42,9 +42,9 @@ export default class ImageShield {
     );
   }
 
-  static async decrypt(options: DecryptOptions): Promise<void> {
+  static async restore(options: RestoreOptions): Promise<void> {
     const { imagePaths, manifestPath, outputDir } =
-      validateDecryptOptions(options);
+      validateRestoreOptions(options);
 
     const manifest = await readJsonFile<ManifestData>(manifestPath);
 
@@ -65,7 +65,7 @@ export default class ImageShield {
   }
 }
 
-function validateCommonOptions<T extends EncryptOptions | DecryptOptions>(
+function validateCommonOptions<T extends ShuffleOptions | RestoreOptions>(
   options: T,
   context: string,
 ) {
@@ -78,13 +78,13 @@ function validateCommonOptions<T extends EncryptOptions | DecryptOptions>(
   return options;
 }
 
-function validateEncryptOptions(options: EncryptOptions) {
-  return validateCommonOptions(options, "encrypt");
+function validateShuffleOptions(options: ShuffleOptions) {
+  return validateCommonOptions(options, "shuffle");
 }
 
-function validateDecryptOptions(options: DecryptOptions) {
+function validateRestoreOptions(options: RestoreOptions) {
   const { manifestPath } = options;
   if (!manifestPath || typeof manifestPath !== "string")
-    throw new Error("[decrypt] manifestPath is required and must be a string.");
-  return validateCommonOptions(options, "decrypt");
+    throw new Error("[restore] manifestPath is required and must be a string.");
+  return validateCommonOptions(options, "restore");
 }
