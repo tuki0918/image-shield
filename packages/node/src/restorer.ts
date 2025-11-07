@@ -12,15 +12,13 @@ export class ImageRestorer {
     fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
-    const { allBlocks, fragmentBlocksCount } = await this._prepareRestoreData(
-      fragmentImages,
-      manifest,
-    );
+    const { allBlocks, fragmentBlocksCount, imageBlockCounts } =
+      await this._prepareRestoreData(fragmentImages, manifest);
 
     const restoredBlocks = manifest.config.perImageShuffle
       ? this._unshufflePerImage(
           allBlocks,
-          fragmentBlocksCount,
+          imageBlockCounts,
           manifest.config.seed,
         )
       : unshuffle(allBlocks, manifest.config.seed);
@@ -69,7 +67,11 @@ export class ImageRestorer {
   private async _prepareRestoreData(
     fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
-  ): Promise<{ allBlocks: Buffer[]; fragmentBlocksCount: number[] }> {
+  ): Promise<{
+    allBlocks: Buffer[];
+    fragmentBlocksCount: number[];
+    imageBlockCounts: number[];
+  }> {
     this._validateInputs(fragmentImages, manifest);
 
     const totalBlocks = this._calculateTotalBlocks(manifest.images);
@@ -84,7 +86,10 @@ export class ImageRestorer {
       fragmentBlocksCount,
     );
 
-    return { allBlocks, fragmentBlocksCount };
+    // Calculate actual block counts per image for per-image unshuffle
+    const imageBlockCounts = manifest.images.map((info) => info.x * info.y);
+
+    return { allBlocks, fragmentBlocksCount, imageBlockCounts };
   }
 
   private _validateInputs(

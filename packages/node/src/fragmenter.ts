@@ -37,15 +37,11 @@ export class ImageFragmenter {
   }
 
   async fragmentImages(imagePaths: string[]): Promise<FragmentationResult> {
-    const { manifest, allBlocks, fragmentBlocksCount } =
+    const { manifest, allBlocks, fragmentBlocksCount, imageBlockCounts } =
       await this._prepareFragmentData(imagePaths);
 
     const shuffledBlocks = this.config.perImageShuffle
-      ? this._shufflePerImage(
-          allBlocks,
-          fragmentBlocksCount,
-          manifest.config.seed,
-        )
+      ? this._shufflePerImage(allBlocks, imageBlockCounts, manifest.config.seed)
       : shuffle(allBlocks, manifest.config.seed);
 
     const fragmentedImages = await this._createFragmentedImages(
@@ -154,6 +150,7 @@ export class ImageFragmenter {
     manifest: ManifestData;
     allBlocks: Buffer[];
     fragmentBlocksCount: number[];
+    imageBlockCounts: number[];
   }> {
     const manifestId = generateManifestId();
 
@@ -167,7 +164,10 @@ export class ImageFragmenter {
       imagePaths.length,
     );
 
-    return { manifest, allBlocks, fragmentBlocksCount };
+    // Calculate actual block counts per image for per-image shuffle
+    const imageBlockCounts = imageInfos.map((info) => info.x * info.y);
+
+    return { manifest, allBlocks, fragmentBlocksCount, imageBlockCounts };
   }
 
   private async _processSourceImages(imagePaths: string[]): Promise<{
