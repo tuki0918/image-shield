@@ -25,7 +25,6 @@ describe("ImageShield (integration)", () => {
   const width = 2;
   const height = 2;
   const blockSize = 1;
-  const secretKey = "index-test-key";
   const prefix = "indextestimg";
   let imagePaths: string[] = [];
   let manifestPath = "";
@@ -51,7 +50,6 @@ describe("ImageShield (integration)", () => {
       imagePaths,
       config: { blockSize, prefix },
       outputDir: tmpDir,
-      secretKey,
     });
     // Find manifest and fragment files
     manifestPath = path.join(tmpDir, "manifest.json");
@@ -72,7 +70,6 @@ describe("ImageShield (integration)", () => {
       imagePaths: fragmentPaths,
       manifestPath,
       outputDir: tmpDir,
-      secretKey,
     });
     // Find restored images (use the same logic as index.ts, based on fragmentPaths)
     restoredPaths = [];
@@ -114,23 +111,11 @@ describe("ImageShield (integration)", () => {
     // Check that fragment images exist and are valid PNGs
     for (const fragmentPath of fragmentPaths) {
       expect(fs.existsSync(fragmentPath)).toBe(true);
-      if (secretKey) {
-        // If encrypted, it should still be a valid PNG but with encrypted content
-        const jimpImage = await Jimp.read(fragmentPath);
-        expect(jimpImage.mime).toBe("image/png");
-        expect(jimpImage.bitmap.width).toBeGreaterThan(0);
-        expect(jimpImage.bitmap.height).toBeGreaterThan(0);
-        // The encrypted image should have different dimensions or content from originals
-        expect(
-          jimpImage.bitmap.width * jimpImage.bitmap.height,
-        ).toBeGreaterThanOrEqual(4); // At least encrypted data size
-      } else {
-        // If not encrypted, it should be openable as PNG
-        const jimpImage = await Jimp.read(fragmentPath);
-        expect(jimpImage.mime).toBe("image/png");
-        expect(jimpImage.bitmap.width).toBeGreaterThan(0);
-        expect(jimpImage.bitmap.height).toBeGreaterThan(0);
-      }
+      // Should be openable as PNG
+      const jimpImage = await Jimp.read(fragmentPath);
+      expect(jimpImage.mime).toBe("image/png");
+      expect(jimpImage.bitmap.width).toBeGreaterThan(0);
+      expect(jimpImage.bitmap.height).toBeGreaterThan(0);
     }
 
     // Check that restored images exist before comparing content
@@ -147,7 +132,7 @@ describe("ImageShield (integration)", () => {
   });
 });
 
-describe("ImageShield (restoreFileName + encrypt integration)", () => {
+describe("ImageShield (restoreFileName integration)", () => {
   const tmpDir = path.join(tmpdir(), "index_test_tmp_restoreFileName");
   const originalImages = [
     Buffer.from([
@@ -162,7 +147,6 @@ describe("ImageShield (restoreFileName + encrypt integration)", () => {
   const width = 2;
   const height = 2;
   const blockSize = 1;
-  const secretKey = "index-test-key";
   const prefix = "indextestimgorig";
   let imagePaths: string[] = [];
   let manifestPath = "";
@@ -189,7 +173,6 @@ describe("ImageShield (restoreFileName + encrypt integration)", () => {
       imagePaths,
       config: { blockSize, prefix, restoreFileName: true },
       outputDir: tmpDir,
-      secretKey,
     });
     // Find manifest and fragment files
     manifestPath = path.join(tmpDir, "manifest.json");
@@ -210,7 +193,6 @@ describe("ImageShield (restoreFileName + encrypt integration)", () => {
       imagePaths: fragmentPaths,
       manifestPath,
       outputDir: tmpDir,
-      secretKey,
     });
     // Find restored images (should be named as original file name)
     restoredPaths = [];
@@ -232,7 +214,7 @@ describe("ImageShield (restoreFileName + encrypt integration)", () => {
     if (fs.existsSync(tmpDir)) fs.rmdirSync(tmpDir);
   });
 
-  test("manifest images[].name contains original file name when restoreFileName=true (encrypt mode)", () => {
+  test("manifest images[].name contains original file name when restoreFileName=true", () => {
     expect(manifest).toBeDefined();
     expect(manifest?.config.restoreFileName).toBe(true);
     expect(Array.isArray(manifest?.images)).toBe(true);

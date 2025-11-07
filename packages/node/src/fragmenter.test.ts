@@ -2,17 +2,12 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
-  CryptoUtils,
   DEFAULT_FRAGMENTATION_CONFIG,
   type FragmentationConfig,
   type ManifestData,
 } from "@image-shield/core";
 import { Jimp, JimpMime } from "jimp";
-import { NodeCryptoProvider } from "./crypto";
 import { ImageFragmenter } from "./fragmenter";
-
-// Initialize crypto provider
-CryptoUtils.setProvider(new NodeCryptoProvider());
 
 describe("ImageFragmenter", () => {
   const tmpDir = path.join(tmpdir(), "fragmenter_test_tmp");
@@ -125,15 +120,10 @@ describe("ImageFragmenter", () => {
       const fragmenter = new ImageFragmenter(config);
       expect(fragmenter).toBeInstanceOf(ImageFragmenter);
     });
-
-    test("initializes with secret key", () => {
-      const fragmenter = new ImageFragmenter({}, "test-secret");
-      expect(fragmenter).toBeInstanceOf(ImageFragmenter);
-    });
   });
 
   describe("fragmentImages", () => {
-    test("fragments single image without encryption", async () => {
+    test("fragments single image", async () => {
       const fragmenter = new ImageFragmenter({
         blockSize: 2,
         prefix: "test",
@@ -146,28 +136,6 @@ describe("ImageFragmenter", () => {
       expect(result.fragmentedImages).toBeDefined();
       expect(result.manifest.images).toHaveLength(1);
       expect(result.fragmentedImages).toHaveLength(1);
-      expect(result.manifest.secure).toBe(false);
-      expect(result.manifest.algorithm).toBeUndefined();
-    });
-
-    test("fragments single image with encryption", async () => {
-      const fragmenter = new ImageFragmenter(
-        {
-          blockSize: 2,
-          prefix: "test",
-          seed: "test-seed",
-        },
-        "test-secret-key",
-      );
-
-      const result = await fragmenter.fragmentImages([testImagePath]);
-
-      expect(result.manifest).toBeDefined();
-      expect(result.fragmentedImages).toBeDefined();
-      expect(result.manifest.images).toHaveLength(1);
-      expect(result.fragmentedImages).toHaveLength(1);
-      expect(result.manifest.secure).toBe(true);
-      expect(result.manifest.algorithm).toBe("aes-256-cbc");
     });
 
     test("fragments multiple images", async () => {

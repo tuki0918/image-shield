@@ -28,14 +28,14 @@ Options:
   -h, --help                        display help for command
 
 Commands:
-  encrypt [options] <images...>     Fragment and encrypt images
+  encrypt [options] <images...>     Fragment images
   decrypt [options] <fragments...>  Restore fragmented images
   help [command]                    display help for command
 ```
 
 ### Encrypt Command
 
-Fragment and optionally encrypt images into multiple pieces.
+Fragment images into multiple pieces.
 
 ```bash
 image-shield encrypt <images...> -o <output_directory> [options]
@@ -46,22 +46,16 @@ image-shield encrypt <images...> -o <output_directory> [options]
 | Option | Description | Required | Default |
 |--------|-------------|----------|---------|
 | `-o, --output <dir>` | Output directory for fragments and manifest | ✅ | - |
-| `-k, --key <key>` | Secret key for encryption | ❌ | - |
 | `-b, --block-size <size>` | Pixel block size (positive integer) | ❌ | 10 |
 | `-p, --prefix <prefix>` | Prefix for fragment files | ❌ | "fragment" |
 | `-s, --seed <seed>` | Random seed (integer) | ❌ | auto-generated |
-| `--restore-filename` | Restore original file names when decrypting | ❌ | false |
+| `--restore-filename` | Restore original file names when restoring | ❌ | false |
 
 #### Examples
 
 **Basic fragmentation:**
 ```bash
 image-shield encrypt image1.jpg image2.png -o ./fragments
-```
-
-**With encryption:**
-```bash
-image-shield encrypt image.jpg -o ./secure-fragments -k mySecretKey123
 ```
 
 **Custom configuration:**
@@ -76,7 +70,7 @@ image-shield encrypt image.png -o ./output -s 12345
 
 #### Output Structure
 
-After encryption, the output directory will contain:
+After fragmentation, the output directory will contain:
 ```
 output/
 ├── manifest.json          # Metadata for restoration
@@ -99,18 +93,12 @@ image-shield decrypt <fragments...> -m <manifest_path> -o <output_directory> [op
 |--------|-------------|----------|
 | `-m, --manifest <path>` | Path to the manifest.json file | ✅ |
 | `-o, --output <dir>` | Output directory for restored images | ✅ |
-| `-k, --key <key>` | Secret key for decryption (if encrypted) | ❌ |
 
 #### Examples
 
 **Basic restoration:**
 ```bash
 image-shield decrypt ./fragments/*.png -m ./fragments/manifest.json -o ./restored
-```
-
-**With decryption:**
-```bash
-image-shield decrypt ./secure-fragments/*.png -m ./secure-fragments/manifest.json -o ./restored -k mySecretKey123
 ```
 
 **Specific fragments:**
@@ -124,7 +112,7 @@ The CLI provides clear error messages for common issues:
 
 - **File not found**: When input images or manifest don't exist
 - **Invalid options**: When required options are missing or invalid
-- **Decryption errors**: When wrong key is provided or fragments are corrupted
+- **Restoration errors**: When fragments are corrupted or manifest doesn't match
 - **Permission errors**: When output directory cannot be created
 
 ## Examples Workflow
@@ -137,13 +125,13 @@ The CLI provides clear error messages for common issues:
    # photo1.jpg  photo2.png  document.pdf
    ```
 
-2. **Fragment and encrypt:**
+2. **Fragment images:**
    ```bash
-   image-shield encrypt images/photo1.jpg images/photo2.png -o ./backup -k "myPassword123" --restore-filename
+   image-shield encrypt images/photo1.jpg images/photo2.png -o ./backup --restore-filename
    ```
    ```
-   🔐 Starting image encryption...
-   ✅ Images encrypted successfully to: /path/to/backup
+   🔀 Starting image fragmentation...
+   ✅ Images fragmented successfully to: /path/to/backup
    ```
 
 3. **Check output:**
@@ -154,10 +142,10 @@ The CLI provides clear error messages for common issues:
 
 4. **Restore images:**
    ```bash
-   image-shield decrypt backup/*.png -m backup/manifest.json -o ./restored -k "myPassword123"
+   image-shield decrypt backup/*.png -m backup/manifest.json -o ./restored
    ```
    ```
-   🔓 Starting image decryption...
+   🔀 Starting image restoration...
    ✅ Images restored successfully to: /path/to/restored
    ```
 
@@ -169,13 +157,12 @@ The CLI provides clear error messages for common issues:
 
 ### Advanced Configuration Example
 
-For maximum security and custom fragmentation:
+For custom fragmentation:
 
 ```bash
-# Encrypt with custom settings
+# Fragment with custom settings
 image-shield encrypt sensitive/*.jpg \
   -o ./vault \
-  -k "$(openssl rand -hex 32)" \
   -b 5 \
   -p "secure_chunk" \
   -s 42 \
@@ -193,14 +180,12 @@ image-shield encrypt sensitive/*.jpg \
 
 # Backup script
 IMAGES_DIR="./photos"
-BACKUP_DIR="./encrypted_backup"
-SECRET_KEY="your-secret-key"
+BACKUP_DIR="./backup"
 
 # Create backup
-echo "Creating encrypted backup..."
+echo "Creating backup..."
 image-shield encrypt "$IMAGES_DIR"/*.{jpg,png} \
   -o "$BACKUP_DIR" \
-  -k "$SECRET_KEY" \
   --restore-filename
 
 if [ $? -eq 0 ]; then
@@ -218,16 +203,14 @@ fi
 #!/bin/bash
 
 # Recovery script
-BACKUP_DIR="./encrypted_backup"
+BACKUP_DIR="./backup"
 RESTORE_DIR="./recovered_photos"
-SECRET_KEY="your-secret-key"
 
 # Restore from backup
-echo "Restoring from encrypted backup..."
+echo "Restoring from backup..."
 image-shield decrypt "$BACKUP_DIR"/fragment_*.png \
   -m "$BACKUP_DIR/manifest.json" \
-  -o "$RESTORE_DIR" \
-  -k "$SECRET_KEY"
+  -o "$RESTORE_DIR"
 
 if [ $? -eq 0 ]; then
   echo "✅ Recovery completed successfully"

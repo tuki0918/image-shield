@@ -5,8 +5,6 @@ export interface EncryptOptions {
   config?: FragmentationConfig;
   /** Output directory (e.g., "./output/fragments") */
   outputDir: string;
-  /** Secret key (optional) */
-  secretKey?: string;
 }
 
 export interface DecryptOptions {
@@ -16,8 +14,6 @@ export interface DecryptOptions {
   manifestPath: string;
   /** Output directory (e.g., "./output/restored") */
   outputDir: string;
-  /** Secret key (optional) */
-  secretKey?: string;
 }
 
 export interface FragmentationConfig {
@@ -26,7 +22,7 @@ export interface FragmentationConfig {
   /** Prefix for fragment files (optional, default: "fragment") */
   prefix?: string;
   /** Random seed (auto-generated if not specified) */
-  seed?: number;
+  seed?: number | string;
   /** Restore original file name (optional, default: false) */
   restoreFileName?: boolean;
 }
@@ -34,32 +30,8 @@ export interface FragmentationConfig {
 /**
  * Information about the image before fragmentation.
  * This includes dimensions, channels, and block counts.
- *
- * For non-encrypted images: Contains original image information.
- * For encrypted images: Contains information after encryption processing.
- * Note: This is NOT information about the final fragmented images.
- *
- * The dimensions may differ from the original image due to encryption padding.
  */
 export interface ImageInfo {
-  /** Width */
-  width: number;
-  /** Height */
-  height: number;
-  /** Number of channels */
-  channels: number;
-  /** Number of blocks X */
-  blockCountX: number;
-  /** Number of blocks Y */
-  blockCountY: number;
-  /** Original file name (optional) */
-  name?: string;
-}
-
-/**
- * Shortened version of ImageInfo
- */
-export interface ShortImageInfo {
   /** Width */
   w: number;
   /** Height */
@@ -74,8 +46,6 @@ export interface ShortImageInfo {
   name?: string;
 }
 
-export type EncryptionAlgorithm = "aes-256-cbc";
-
 export interface ManifestData {
   /** UUID */
   id: string;
@@ -86,11 +56,7 @@ export interface ManifestData {
   /** Config */
   config: Required<FragmentationConfig>;
   /** Image information */
-  images: ShortImageInfo[];
-  /** Algorithm (only set if secure is true) */
-  algorithm?: EncryptionAlgorithm;
-  /** Secure (true if encrypted) */
-  secure: boolean;
+  images: ImageInfo[];
 }
 
 export interface FragmentationResult {

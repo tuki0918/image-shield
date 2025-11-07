@@ -138,6 +138,29 @@ describe("splitImageToBlocks & blocksToImageBuffer", () => {
   });
 });
 
+describe("calcBlocksPerFragment", () => {
+  test("evenly divisible blocks", () => {
+    // 12 blocks, 3 fragments => [4, 4, 4]
+    expect(calcBlocksPerFragment(12, 3)).toEqual([4, 4, 4]);
+  });
+  test("not evenly divisible blocks", () => {
+    // 10 blocks, 3 fragments => [4, 4, 2]
+    expect(calcBlocksPerFragment(10, 3)).toEqual([4, 4, 2]);
+  });
+  test("more fragments than blocks", () => {
+    // 3 blocks, 5 fragments => [1, 1, 1, 0, 0]
+    expect(calcBlocksPerFragment(3, 5)).toEqual([1, 1, 1, 0, 0]);
+  });
+  test("zero blocks", () => {
+    // 0 blocks, 3 fragments => [0, 0, 0]
+    expect(calcBlocksPerFragment(0, 3)).toEqual([0, 0, 0]);
+  });
+  test("one fragment", () => {
+    // 7 blocks, 1 fragment => [7]
+    expect(calcBlocksPerFragment(7, 1)).toEqual([7]);
+  });
+});
+
 describe("imageFileToBlocks & blocksToPngImage (integration)", () => {
   const tmpDir = path.join(tmpdir(), "block_test_tmp");
   const tmpPng = path.join(tmpDir, "test.png");
@@ -193,94 +216,6 @@ describe("imageFileToBlocks & blocksToPngImage (integration)", () => {
 
   test("blocksToPngImage reconstructs PNG from blocks", async () => {
     const { blocks } = await imageFileToBlocks(tmpPng, blockSize);
-    const pngBuffer = await blocksToPngImage(blocks, width, height, blockSize);
-    // Decode PNG and check raw buffer
-    const jimpImage = await Jimp.read(pngBuffer);
-    expect(jimpImage.bitmap.data).toEqual(buffer);
-  });
-});
-
-describe("calcBlocksPerFragment", () => {
-  test("evenly divisible blocks", () => {
-    // 12 blocks, 3 fragments => [4, 4, 4]
-    expect(calcBlocksPerFragment(12, 3)).toEqual([4, 4, 4]);
-  });
-  test("not evenly divisible blocks", () => {
-    // 10 blocks, 3 fragments => [4, 4, 2]
-    expect(calcBlocksPerFragment(10, 3)).toEqual([4, 4, 2]);
-  });
-  test("more fragments than blocks", () => {
-    // 3 blocks, 5 fragments => [1, 1, 1, 0, 0]
-    expect(calcBlocksPerFragment(3, 5)).toEqual([1, 1, 1, 0, 0]);
-  });
-  test("zero blocks", () => {
-    // 0 blocks, 3 fragments => [0, 0, 0]
-    expect(calcBlocksPerFragment(0, 3)).toEqual([0, 0, 0]);
-  });
-  test("one fragment", () => {
-    // 7 blocks, 1 fragment => [7]
-    expect(calcBlocksPerFragment(7, 1)).toEqual([7]);
-  });
-});
-
-describe("integration: fragmentImages and restoreImages", () => {
-  const tmpDir = path.join(tmpdir(), "block_integration_tmp");
-  const width = 4;
-  const height = 4;
-  const blockSize = 2;
-  const channels = 4;
-  // RGBA 4x4 pixels = 4*4*4 = 64 bytes
-  const buffer = Buffer.from([
-    // 1st row
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-    // 2nd row
-    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,
-    // 3rd row
-    33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48,
-    // 4th row
-    49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64,
-  ]);
-
-  beforeAll(async () => {
-    // Create tmp directory and PNG file
-    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
-    const image = new Jimp({ data: buffer, width, height });
-    await image.write(path.join(tmpDir, "test.png") as `${string}.${string}`);
-  });
-
-  afterAll(() => {
-    // Clean up tmp files
-    if (fs.existsSync(path.join(tmpDir, "test.png")))
-      fs.unlinkSync(path.join(tmpDir, "test.png"));
-    if (fs.existsSync(tmpDir)) fs.rmdirSync(tmpDir);
-  });
-
-  test("imageFileToBlocks splits PNG into correct blocks", async () => {
-    const {
-      blocks,
-      width: w,
-      height: h,
-      channels: c,
-      blockCountX: x,
-      blockCountY: y,
-    } = await imageFileToBlocks(path.join(tmpDir, "test.png"), blockSize);
-    expect(w).toBe(width);
-    expect(h).toBe(height);
-    expect(c).toBe(channels);
-    expect(x).toBe(2);
-    expect(y).toBe(2);
-    expect(blocks.length).toBe(4); // 2x2 blocks
-    // Check block contents (top-left block)
-    expect(blocks[0]).toEqual(
-      Buffer.from([1, 2, 3, 4, 5, 6, 7, 8, 17, 18, 19, 20, 21, 22, 23, 24]),
-    );
-  });
-
-  test("blocksToPngImage reconstructs PNG from blocks", async () => {
-    const { blocks } = await imageFileToBlocks(
-      path.join(tmpDir, "test.png"),
-      blockSize,
-    );
     const pngBuffer = await blocksToPngImage(blocks, width, height, blockSize);
     // Decode PNG and check raw buffer
     const jimpImage = await Jimp.read(pngBuffer);

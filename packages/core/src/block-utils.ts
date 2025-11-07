@@ -1,4 +1,32 @@
 /**
+ * Number of channels in RGBA format
+ */
+export const RGBA_CHANNELS = 4;
+
+export interface BlockCounts {
+  blockCountX: number;
+  blockCountY: number;
+}
+
+/**
+ * Calculate block counts for width and height
+ * @param width Image width
+ * @param height Image height
+ * @param blockSize Block size
+ * @returns Object with blockCountX and blockCountY
+ */
+export function calculateBlockCounts(
+  width: number,
+  height: number,
+  blockSize: number,
+): BlockCounts {
+  return {
+    blockCountX: Math.ceil(width / blockSize),
+    blockCountY: Math.ceil(height / blockSize),
+  };
+}
+
+/**
  * Calculate how many blocks each fragment should contain
  * @param totalBlocks Total number of blocks to distribute
  * @param fragmentCount Number of fragments to create

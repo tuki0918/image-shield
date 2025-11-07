@@ -1,23 +1,13 @@
 import {
+  type ImageInfo,
   type ManifestData,
-  type ShortImageInfo,
   calcBlocksPerFragment,
 } from "@image-shield/core";
 import { unshuffle } from "@tuki0918/seeded-shuffle";
-import {
-  blocksToPngImage,
-  decryptPngImageBuffer,
-  imageFileToBlocks,
-} from "./block";
+import { blocksToPngImage, imageFileToBlocks } from "./block";
 import { readFileBuffer } from "./file";
 
 export class ImageRestorer {
-  private secretKey?: string;
-
-  constructor(secretKey?: string) {
-    this.secretKey = secretKey;
-  }
-
   async restoreImages(
     fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
@@ -33,16 +23,6 @@ export class ImageRestorer {
       restoredBlocks,
       manifest,
     );
-
-    // If encryption was used, decrypt the reconstructed images
-    const secretKey = this.secretKey;
-    if (manifest.secure && secretKey) {
-      return await Promise.all(
-        reconstructedImages.map((img) =>
-          decryptPngImageBuffer(img, secretKey, manifest.id),
-        ),
-      );
-    }
 
     return reconstructedImages;
   }
@@ -68,7 +48,7 @@ export class ImageRestorer {
   }
 
   private _calculateBlockRange(
-    images: ShortImageInfo[],
+    images: ImageInfo[],
     targetIndex: number,
   ): { start: number; end: number } {
     const blockCount = images[targetIndex].x * images[targetIndex].y;
@@ -115,7 +95,7 @@ export class ImageRestorer {
     }
   }
 
-  private _calculateTotalBlocks(images: ShortImageInfo[]): number {
+  private _calculateTotalBlocks(images: ImageInfo[]): number {
     return images.reduce((total, image) => total + image.x * image.y, 0);
   }
 
@@ -125,17 +105,15 @@ export class ImageRestorer {
     manifest: ManifestData,
     expectedBlockCount: number,
   ): Promise<Buffer[]> {
-    const buf = await this._readImageBuffer(fragmentImage);
-    const { blocks } = await imageFileToBlocks(buf, manifest.config.blockSize);
-    return blocks.slice(0, expectedBlockCount);
-  }
-
-  private async _readImageBuffer(
-    fragmentImage: string | Buffer,
-  ): Promise<Buffer> {
-    return Buffer.isBuffer(fragmentImage)
+    const imageBuffer = Buffer.isBuffer(fragmentImage)
       ? fragmentImage
       : await readFileBuffer(fragmentImage);
+
+    const { blocks } = await imageFileToBlocks(
+      imageBuffer,
+      manifest.config.blockSize,
+    );
+    return blocks.slice(0, expectedBlockCount);
   }
 
   private async _extractBlocksFromFragments(
@@ -158,7 +136,7 @@ export class ImageRestorer {
   private async _reconstructImage(
     blocks: Buffer[],
     blockSize: number,
-    imageInfo: ShortImageInfo,
+    imageInfo: ImageInfo,
   ): Promise<Buffer> {
     const { w, h } = imageInfo;
     return await blocksToPngImage(blocks, w, h, blockSize);
