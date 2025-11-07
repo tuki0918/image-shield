@@ -42,7 +42,7 @@ export interface ImageInfo {
   x: number;
   /** Number of blocks Y */
   y: number;
-  /** Original file name (optional) */
+  /** Original file name in base64 encoding (optional) */
   name?: string;
 }
 

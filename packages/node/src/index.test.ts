@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { ManifestData } from "@image-shield/core";
 import {
+  decodeFileName,
   generateFragmentFileName,
   generateRestoredFileName,
 } from "@image-shield/core";
@@ -220,7 +221,13 @@ describe("ImageShield (preserveName integration)", () => {
     expect(Array.isArray(manifest?.images)).toBe(true);
     for (let i = 0; i < imagePaths.length; i++) {
       const expectedName = path.parse(imagePaths[i]).name;
-      expect(manifest?.images[i].name).toBe(expectedName);
+      const encodedName = manifest?.images[i]?.name;
+      expect(encodedName).toBeTruthy();
+      // Decode base64 encoded name
+      if (encodedName) {
+        const decodedName = decodeFileName(encodedName);
+        expect(decodedName).toBe(expectedName);
+      }
     }
   });
 

@@ -360,7 +360,7 @@ describe("ImageRestorer", () => {
       );
 
       expect(restoredImages).toHaveLength(1);
-      expect(manifest.images[0].name).toBe("test_image");
+      expect(manifest.images[0].name).toBe("dGVzdF9pbWFnZQ==");
     });
 
     test("works with custom prefix", async () => {

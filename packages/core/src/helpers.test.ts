@@ -1,4 +1,6 @@
 import {
+  decodeFileName,
+  encodeFileName,
   generateFileName,
   generateFragmentFileName,
   generateRestoredFileName,
@@ -95,9 +97,43 @@ describe("generateRestoredFileName", () => {
   });
 });
 
+describe("encodeFileName / decodeFileName", () => {
+  test("should encode and decode file names correctly", () => {
+    const originalName = "test-image.png";
+    const encoded = encodeFileName(originalName);
+    expect(encoded).toBeTruthy();
+    expect(encoded).not.toBe(originalName);
+    expect(decodeFileName(encoded)).toBe(originalName);
+  });
+
+  test("should handle special characters", () => {
+    const specialNames = [
+      "画像_テスト.png",
+      "test-image-日本語.png",
+      "file with spaces.png",
+      "file@#$%^&.png",
+    ];
+    for (const name of specialNames) {
+      const encoded = encodeFileName(name);
+      expect(decodeFileName(encoded)).toBe(name);
+    }
+  });
+});
+
 describe("generateRestoredOriginalFileName", () => {
-  test("should generate original file name when name exists", () => {
-    const imageInfo = { name: "original" } as ManifestData["images"][number];
+  test("should generate original file name when name exists (base64 encoded)", () => {
+    const originalName = "original";
+    const encodedName = encodeFileName(originalName);
+    const imageInfo = {
+      name: encodedName,
+    } as ManifestData["images"][number];
+    expect(generateRestoredOriginalFileName(imageInfo)).toBe("original.png");
+  });
+
+  test("should handle backward compatibility (non-encoded names)", () => {
+    const imageInfo = {
+      name: "b3JpZ2luYWw=",
+    } as ManifestData["images"][number];
     expect(generateRestoredOriginalFileName(imageInfo)).toBe("original.png");
   });
 

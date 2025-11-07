@@ -5,6 +5,8 @@ import {
   type ImageInfo,
   type ManifestData,
   calcBlocksPerFragment,
+  decodeFileName,
+  encodeFileName,
 } from "@image-shield/core";
 import { SeededRandom, shuffle } from "@tuki0918/seeded-shuffle";
 import { blocksToPngImage, imageFileToBlocks } from "./block";
@@ -105,10 +107,18 @@ export class ImageFragmenter {
 
     for (const info of imageInfos) {
       if (info.name !== undefined) {
-        if (nameSet.has(info.name)) {
-          throw new Error(`Duplicate file name detected: ${info.name}`);
+        // Decode base64 to get original name for comparison
+        let decodedName: string;
+        try {
+          decodedName = decodeFileName(info.name);
+        } catch {
+          // If decoding fails, treat as already decoded (backward compatibility)
+          decodedName = info.name;
         }
-        nameSet.add(info.name);
+        if (nameSet.has(decodedName)) {
+          throw new Error(`Duplicate file name detected: ${decodedName}`);
+        }
+        nameSet.add(decodedName);
       }
     }
   }
@@ -163,7 +173,7 @@ export class ImageFragmenter {
       x: blockCountX,
       y: blockCountY,
       name: this.config.preserveName
-        ? fileNameWithoutExtension(imagePath)
+        ? encodeFileName(fileNameWithoutExtension(imagePath))
         : undefined,
     };
 
