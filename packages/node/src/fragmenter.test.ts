@@ -348,5 +348,80 @@ describe("ImageFragmenter", () => {
 
       expect(result.manifest.config.perImageShuffle).toBe(false);
     });
+
+    test("handles images of different sizes with per-image shuffle", async () => {
+      // Create test images of different sizes
+      const smallImagePath = path.join(tmpDir, "small_test.png");
+      const largeImagePath = path.join(tmpDir, "large_test.png");
+
+      // Create 2x2 image
+      const smallImageData = Buffer.from([
+        255,
+        0,
+        0,
+        255, // Red
+        0,
+        255,
+        0,
+        255, // Green
+        0,
+        0,
+        255,
+        255, // Blue
+        255,
+        255,
+        0,
+        255, // Yellow
+      ]);
+      const smallImage = Jimp.fromBitmap({
+        data: smallImageData,
+        width: 2,
+        height: 2,
+      });
+      await smallImage.write(smallImagePath, JimpMime.png);
+
+      // Create 6x6 image
+      const largeImageData = Buffer.alloc(6 * 6 * 4);
+      for (let i = 0; i < 6 * 6 * 4; i += 4) {
+        largeImageData[i] = 128; // R
+        largeImageData[i + 1] = 128; // G
+        largeImageData[i + 2] = 128; // B
+        largeImageData[i + 3] = 255; // A
+      }
+      const largeImage = Jimp.fromBitmap({
+        data: largeImageData,
+        width: 6,
+        height: 6,
+      });
+      await largeImage.write(largeImagePath, JimpMime.png);
+
+      try {
+        const fragmenter = new ImageFragmenter({
+          blockSize: 2,
+          seed: "test-seed",
+          perImageShuffle: true,
+        });
+
+        const result = await fragmenter.fragmentImages([
+          smallImagePath,
+          largeImagePath,
+        ]);
+
+        // Should successfully fragment both images
+        expect(result.manifest.images).toHaveLength(2);
+        expect(result.fragmentedImages).toHaveLength(2);
+        expect(result.manifest.config.perImageShuffle).toBe(true);
+
+        // Verify different block counts
+        expect(result.manifest.images[0].x).toBe(1); // 2x2 image with blockSize 2
+        expect(result.manifest.images[0].y).toBe(1);
+        expect(result.manifest.images[1].x).toBe(3); // 6x6 image with blockSize 2
+        expect(result.manifest.images[1].y).toBe(3);
+      } finally {
+        // Clean up
+        if (fs.existsSync(smallImagePath)) fs.unlinkSync(smallImagePath);
+        if (fs.existsSync(largeImagePath)) fs.unlinkSync(largeImagePath);
+      }
+    });
   });
 });
