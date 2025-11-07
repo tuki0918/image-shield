@@ -14,9 +14,7 @@ export function encodeFileName(name: string): string {
   let binaryString = "";
   for (let i = 0; i < bytes.length; i++) {
     const byte = bytes[i];
-    if (byte !== undefined) {
-      binaryString += String.fromCharCode(byte);
-    }
+    binaryString += String.fromCharCode(byte);
   }
   return btoa(binaryString);
 }
