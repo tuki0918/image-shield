@@ -4,6 +4,7 @@ export interface ShuffleOptions {
   prefix?: string;
   seed?: number;
   preserveName?: boolean;
+  perImageShuffle?: boolean;
 }
 
 export interface RestoreOptions {

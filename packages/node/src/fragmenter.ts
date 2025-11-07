@@ -30,6 +30,9 @@ export class ImageFragmenter {
       seed: config.seed || SeededRandom.generateSeed(),
       preserveName:
         config.preserveName ?? DEFAULT_FRAGMENTATION_CONFIG.PRESERVE_NAME,
+      perImageShuffle:
+        config.perImageShuffle ??
+        DEFAULT_FRAGMENTATION_CONFIG.PER_IMAGE_SHUFFLE,
     };
   }
 
@@ -37,7 +40,13 @@ export class ImageFragmenter {
     const { manifest, allBlocks, fragmentBlocksCount } =
       await this._prepareFragmentData(imagePaths);
 
-    const shuffledBlocks = shuffle(allBlocks, manifest.config.seed);
+    const shuffledBlocks = this.config.perImageShuffle
+      ? this._shufflePerImage(
+          allBlocks,
+          fragmentBlocksCount,
+          manifest.config.seed,
+        )
+      : shuffle(allBlocks, manifest.config.seed);
 
     const fragmentedImages = await this._createFragmentedImages(
       shuffledBlocks,
@@ -69,6 +78,24 @@ export class ImageFragmenter {
         );
       }),
     );
+  }
+
+  private _shufflePerImage(
+    allBlocks: Buffer[],
+    fragmentBlocksCount: number[],
+    seed: number | string,
+  ): Buffer[] {
+    const shuffledBlocks: Buffer[] = [];
+    let offset = 0;
+
+    for (const blockCount of fragmentBlocksCount) {
+      const imageBlocks = allBlocks.slice(offset, offset + blockCount);
+      const shuffled = shuffle(imageBlocks, seed);
+      shuffledBlocks.push(...shuffled);
+      offset += blockCount;
+    }
+
+    return shuffledBlocks;
   }
 
   private _calculateBlockRange(

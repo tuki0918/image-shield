@@ -383,4 +383,115 @@ describe("ImageRestorer", () => {
       expect(manifest.config.prefix).toBe("custom-prefix");
     });
   });
+
+  describe("perImageShuffle restoration", () => {
+    test("restores single image with per-image shuffle", async () => {
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+        perImageShuffle: true,
+      });
+      const { manifest, fragmentedImages } = await fragmenter.fragmentImages([
+        testImagePath,
+      ]);
+
+      const restorer = new ImageRestorer();
+      const restoredImages = await restorer.restoreImages(
+        fragmentedImages,
+        manifest,
+      );
+
+      expect(restoredImages).toHaveLength(1);
+      expect(manifest.config.perImageShuffle).toBe(true);
+
+      const jimpImage = await Jimp.read(restoredImages[0]);
+      expect(jimpImage.bitmap.width).toBe(4);
+      expect(jimpImage.bitmap.height).toBe(4);
+    });
+
+    test("restores multiple images with per-image shuffle", async () => {
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+        perImageShuffle: true,
+      });
+      const { manifest, fragmentedImages } = await fragmenter.fragmentImages([
+        testImagePath,
+        testImagePath,
+      ]);
+
+      const restorer = new ImageRestorer();
+      const restoredImages = await restorer.restoreImages(
+        fragmentedImages,
+        manifest,
+      );
+
+      expect(restoredImages).toHaveLength(2);
+      expect(manifest.config.perImageShuffle).toBe(true);
+
+      for (const restoredImage of restoredImages) {
+        const jimpImage = await Jimp.read(restoredImage);
+        expect(jimpImage.bitmap.width).toBe(4);
+        expect(jimpImage.bitmap.height).toBe(4);
+      }
+    });
+
+    test("round-trip with per-image shuffle preserves image data", async () => {
+      const fragmenter = new ImageFragmenter({
+        blockSize: 1,
+        seed: "deterministic-seed",
+        perImageShuffle: true,
+      });
+
+      const { manifest, fragmentedImages } = await fragmenter.fragmentImages([
+        testImagePath,
+      ]);
+
+      const restorer = new ImageRestorer();
+      const restoredImages = await restorer.restoreImages(
+        fragmentedImages,
+        manifest,
+      );
+
+      const originalJimp = await Jimp.read(testImagePath);
+      const restoredJimp = await Jimp.read(restoredImages[0]);
+
+      expect(restoredJimp.bitmap.width).toBe(originalJimp.bitmap.width);
+      expect(restoredJimp.bitmap.height).toBe(originalJimp.bitmap.height);
+      expect(restoredJimp.bitmap.data.length).toBe(
+        originalJimp.bitmap.data.length,
+      );
+    });
+
+    test("round-trip with multiple images and per-image shuffle", async () => {
+      const fragmenter = new ImageFragmenter({
+        blockSize: 1,
+        seed: "deterministic-seed",
+        perImageShuffle: true,
+      });
+
+      const { manifest, fragmentedImages } = await fragmenter.fragmentImages([
+        testImagePath,
+        testImagePath,
+      ]);
+
+      const restorer = new ImageRestorer();
+      const restoredImages = await restorer.restoreImages(
+        fragmentedImages,
+        manifest,
+      );
+
+      expect(restoredImages).toHaveLength(2);
+
+      const originalJimp = await Jimp.read(testImagePath);
+      for (const restoredImage of restoredImages) {
+        const restoredJimp = await Jimp.read(restoredImage);
+        expect(restoredJimp.bitmap.width).toBe(originalJimp.bitmap.width);
+        expect(restoredJimp.bitmap.height).toBe(originalJimp.bitmap.height);
+        expect(restoredJimp.bitmap.data.length).toBe(
+          originalJimp.bitmap.data.length,
+        );
+      }
+    });
+  });
 });

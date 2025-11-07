@@ -275,4 +275,78 @@ describe("ImageFragmenter", () => {
       }
     });
   });
+
+  describe("perImageShuffle", () => {
+    test("fragments with per-image shuffle enabled", async () => {
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+        perImageShuffle: true,
+      });
+
+      const result = await fragmenter.fragmentImages([testImagePath]);
+
+      expect(result.manifest.config.perImageShuffle).toBe(true);
+      expect(result.fragmentedImages).toHaveLength(1);
+    });
+
+    test("fragments multiple images with per-image shuffle", async () => {
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+        perImageShuffle: true,
+      });
+
+      const result = await fragmenter.fragmentImages([
+        testImagePath,
+        testImagePath,
+      ]);
+
+      expect(result.manifest.config.perImageShuffle).toBe(true);
+      expect(result.manifest.images).toHaveLength(2);
+      expect(result.fragmentedImages).toHaveLength(2);
+    });
+
+    test("per-image shuffle produces different results than cross-image shuffle", async () => {
+      const seed = "test-seed-123";
+
+      const fragmenterCrossImage = new ImageFragmenter({
+        blockSize: 2,
+        seed,
+        perImageShuffle: false,
+      });
+
+      const fragmenterPerImage = new ImageFragmenter({
+        blockSize: 2,
+        seed,
+        perImageShuffle: true,
+      });
+
+      const resultCrossImage = await fragmenterCrossImage.fragmentImages([
+        testImagePath,
+        testImagePath,
+      ]);
+
+      const resultPerImage = await fragmenterPerImage.fragmentImages([
+        testImagePath,
+        testImagePath,
+      ]);
+
+      // With the same seed but different shuffle modes, results should differ
+      expect(resultCrossImage.fragmentedImages[0]).not.toEqual(
+        resultPerImage.fragmentedImages[0],
+      );
+    });
+
+    test("defaults to cross-image shuffle when perImageShuffle is not specified", async () => {
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+      });
+
+      const result = await fragmenter.fragmentImages([testImagePath]);
+
+      expect(result.manifest.config.perImageShuffle).toBe(false);
+    });
+  });
 });

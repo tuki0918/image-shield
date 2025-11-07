@@ -12,12 +12,18 @@ export class ImageRestorer {
     fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
-    const { allBlocks } = await this._prepareRestoreData(
+    const { allBlocks, fragmentBlocksCount } = await this._prepareRestoreData(
       fragmentImages,
       manifest,
     );
 
-    const restoredBlocks = unshuffle(allBlocks, manifest.config.seed);
+    const restoredBlocks = manifest.config.perImageShuffle
+      ? this._unshufflePerImage(
+          allBlocks,
+          fragmentBlocksCount,
+          manifest.config.seed,
+        )
+      : unshuffle(allBlocks, manifest.config.seed);
 
     const reconstructedImages = await this._reconstructAllImages(
       restoredBlocks,
@@ -140,5 +146,23 @@ export class ImageRestorer {
   ): Promise<Buffer> {
     const { w, h } = imageInfo;
     return await blocksToPngImage(blocks, w, h, blockSize);
+  }
+
+  private _unshufflePerImage(
+    allBlocks: Buffer[],
+    fragmentBlocksCount: number[],
+    seed: number | string,
+  ): Buffer[] {
+    const unshuffledBlocks: Buffer[] = [];
+    let offset = 0;
+
+    for (const blockCount of fragmentBlocksCount) {
+      const imageBlocks = allBlocks.slice(offset, offset + blockCount);
+      const unshuffled = unshuffle(imageBlocks, seed);
+      unshuffledBlocks.push(...unshuffled);
+      offset += blockCount;
+    }
+
+    return unshuffledBlocks;
   }
 }
