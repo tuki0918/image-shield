@@ -38,12 +38,10 @@ npm i image-shield
 import ImageShield from "image-shield";
 ```
 
-### 🔀 Shuffle Mode
-
-**Fragment**
+**Shuffle**
 
 ```ts
-await ImageShield.encrypt({
+await ImageShield.shuffle({
   // config: { /** FragmentationConfig */ },
   imagePaths: [
     "./input_1.png",
@@ -81,7 +79,7 @@ output
 **Restore**
 
 ```ts
-await ImageShield.decrypt({
+await ImageShield.restore({
   manifestPath: "./output/fragmented/manifest.json",
   imagePaths: [
     "./output/fragmented/img_1_fragmented.png",
@@ -191,5 +189,5 @@ manifest.json:
 
 ## Clients
 
-- [Raycast Extension](https://github.com/tuki0918/raycast-image-shield)
+- [Raycast Extension (legacy)](https://github.com/tuki0918/raycast-image-shield)
 

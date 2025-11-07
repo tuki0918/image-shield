@@ -10,7 +10,7 @@ npm install @image-shield/cli
 
 ## Usage
 
-The CLI provides two main commands: `encrypt` and `decrypt`.
+The CLI provides two main commands: `shuffle` and `restore`.
 
 ### Global Help
 
@@ -28,17 +28,17 @@ Options:
   -h, --help                        display help for command
 
 Commands:
-  encrypt [options] <images...>     Fragment images
-  decrypt [options] <fragments...>  Restore fragmented images
+  shuffle [options] <images...>     Fragment images
+  restore [options] <fragments...>  Restore fragmented images
   help [command]                    display help for command
 ```
 
-### Encrypt Command
+### Shuffle Command
 
 Fragment images into multiple pieces.
 
 ```bash
-image-shield encrypt <images...> -o <output_directory> [options]
+image-shield shuffle <images...> -o <output_directory> [options]
 ```
 
 #### Options
@@ -55,17 +55,17 @@ image-shield encrypt <images...> -o <output_directory> [options]
 
 **Basic fragmentation:**
 ```bash
-image-shield encrypt image1.jpg image2.png -o ./fragments
+image-shield shuffle image1.jpg image2.png -o ./fragments
 ```
 
 **Custom configuration:**
 ```bash
-image-shield encrypt *.jpg -o ./output -b 20 -p "my_fragment" --restore-filename
+image-shield shuffle *.jpg -o ./output -b 20 -p "my_fragment" --restore-filename
 ```
 
 **With seed for reproducible results:**
 ```bash
-image-shield encrypt image.png -o ./output -s 12345
+image-shield shuffle image.png -o ./output -s 12345
 ```
 
 #### Output Structure
@@ -79,12 +79,12 @@ output/
 └── ...
 ```
 
-### Decrypt Command
+### Restore Command
 
 Restore fragmented images using the manifest file.
 
 ```bash
-image-shield decrypt <fragments...> -m <manifest_path> -o <output_directory> [options]
+image-shield restore <fragments...> -m <manifest_path> -o <output_directory> [options]
 ```
 
 #### Options
@@ -98,12 +98,12 @@ image-shield decrypt <fragments...> -m <manifest_path> -o <output_directory> [op
 
 **Basic restoration:**
 ```bash
-image-shield decrypt ./fragments/*.png -m ./fragments/manifest.json -o ./restored
+image-shield restore ./fragments/*.png -m ./fragments/manifest.json -o ./restored
 ```
 
 **Specific fragments:**
 ```bash
-image-shield decrypt fragment_0000.png fragment_0001.png fragment_0002.png -m manifest.json -o ./output
+image-shield restore fragment_0000.png fragment_0001.png fragment_0002.png -m manifest.json -o ./output
 ```
 
 ## Error Handling
@@ -127,7 +127,7 @@ The CLI provides clear error messages for common issues:
 
 2. **Fragment images:**
    ```bash
-   image-shield encrypt images/photo1.jpg images/photo2.png -o ./backup --restore-filename
+   image-shield shuffle images/photo1.jpg images/photo2.png -o ./backup --restore-filename
    ```
    ```
    🔀 Starting image fragmentation...
@@ -142,7 +142,7 @@ The CLI provides clear error messages for common issues:
 
 4. **Restore images:**
    ```bash
-   image-shield decrypt backup/*.png -m backup/manifest.json -o ./restored
+   image-shield restore backup/*.png -m backup/manifest.json -o ./restored
    ```
    ```
    🔀 Starting image restoration...
@@ -161,7 +161,7 @@ For custom fragmentation:
 
 ```bash
 # Fragment with custom settings
-image-shield encrypt sensitive/*.jpg \
+image-shield shuffle sensitive/*.jpg \
   -o ./vault \
   -b 5 \
   -p "secure_chunk" \
@@ -184,7 +184,7 @@ BACKUP_DIR="./backup"
 
 # Create backup
 echo "Creating backup..."
-image-shield encrypt "$IMAGES_DIR"/*.{jpg,png} \
+image-shield shuffle "$IMAGES_DIR"/*.{jpg,png} \
   -o "$BACKUP_DIR" \
   --restore-filename
 
@@ -208,7 +208,7 @@ RESTORE_DIR="./recovered_photos"
 
 # Restore from backup
 echo "Restoring from backup..."
-image-shield decrypt "$BACKUP_DIR"/fragment_*.png \
+image-shield restore "$BACKUP_DIR"/fragment_*.png \
   -m "$BACKUP_DIR/manifest.json" \
   -o "$RESTORE_DIR"
 
@@ -244,7 +244,7 @@ npm test
 
 ```bash
 cd packages/cli
-npm run dev -- encrypt --help
+npm run dev -- shuffle --help
 ```
 
 ## Related Packages

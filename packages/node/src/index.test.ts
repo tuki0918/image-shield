@@ -45,8 +45,8 @@ describe("ImageShield (integration)", () => {
       await image.write(filePath, JimpMime.png);
       imagePaths.push(filePath);
     }
-    // Fragment images using ImageShield.encrypt
-    await ImageShield.encrypt({
+    // Fragment images using ImageShield.shuffle
+    await ImageShield.shuffle({
       imagePaths,
       config: { blockSize, prefix },
       outputDir: tmpDir,
@@ -65,8 +65,8 @@ describe("ImageShield (integration)", () => {
         path.join(tmpDir, generateFragmentFileName(manifestDataForFragment, i)),
       );
     }
-    // Restore images using ImageShield.decrypt
-    await ImageShield.decrypt({
+    // Restore images using ImageShield.restore
+    await ImageShield.restore({
       imagePaths: fragmentPaths,
       manifestPath,
       outputDir: tmpDir,
@@ -168,8 +168,8 @@ describe("ImageShield (restoreFileName integration)", () => {
       await image.write(filePath, JimpMime.png);
       imagePaths.push(filePath);
     }
-    // Fragment images using ImageShield.encrypt (with restoreFileName)
-    await ImageShield.encrypt({
+    // Fragment images using ImageShield.shuffle (with restoreFileName)
+    await ImageShield.shuffle({
       imagePaths,
       config: { blockSize, prefix, restoreFileName: true },
       outputDir: tmpDir,
@@ -188,8 +188,8 @@ describe("ImageShield (restoreFileName integration)", () => {
         path.join(tmpDir, generateFragmentFileName(manifest, i)),
       );
     }
-    // Restore images using ImageShield.decrypt
-    await ImageShield.decrypt({
+    // Restore images using ImageShield.restore
+    await ImageShield.restore({
       imagePaths: fragmentPaths,
       manifestPath,
       outputDir: tmpDir,

@@ -1,4 +1,4 @@
-export interface EncryptOptions {
+export interface ShuffleOptions {
   output: string;
   blockSize?: number;
   prefix?: string;
@@ -6,7 +6,7 @@ export interface EncryptOptions {
   restoreFilename?: boolean;
 }
 
-export interface DecryptOptions {
+export interface RestoreOptions {
   manifest: string;
   output: string;
 }
