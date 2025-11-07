@@ -3,7 +3,7 @@ export interface ShuffleOptions {
   blockSize?: number;
   prefix?: string;
   seed?: number;
-  restoreFilename?: boolean;
+  preserveName?: boolean;
 }
 
 export interface RestoreOptions {

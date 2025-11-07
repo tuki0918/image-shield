@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { ManifestData } from "@image-shield/core";
 import {
+  decodeFileName,
   generateFragmentFileName,
   generateRestoredFileName,
 } from "@image-shield/core";
@@ -132,8 +133,8 @@ describe("ImageShield (integration)", () => {
   });
 });
 
-describe("ImageShield (restoreFileName integration)", () => {
-  const tmpDir = path.join(tmpdir(), "index_test_tmp_restoreFileName");
+describe("ImageShield (preserveName integration)", () => {
+  const tmpDir = path.join(tmpdir(), "index_test_tmp_preserveName");
   const originalImages = [
     Buffer.from([
       // 2x2 RGBA image 1
@@ -168,10 +169,10 @@ describe("ImageShield (restoreFileName integration)", () => {
       await image.write(filePath, JimpMime.png);
       imagePaths.push(filePath);
     }
-    // Fragment images using ImageShield.shuffle (with restoreFileName)
+    // Fragment images using ImageShield.shuffle (with preserveName)
     await ImageShield.shuffle({
       imagePaths,
-      config: { blockSize, prefix, restoreFileName: true },
+      config: { blockSize, prefix, preserveName: true },
       outputDir: tmpDir,
     });
     // Find manifest and fragment files
@@ -214,13 +215,19 @@ describe("ImageShield (restoreFileName integration)", () => {
     if (fs.existsSync(tmpDir)) fs.rmdirSync(tmpDir);
   });
 
-  test("manifest images[].name contains original file name when restoreFileName=true", () => {
+  test("manifest images[].name contains original file name when preserveName=true", () => {
     expect(manifest).toBeDefined();
-    expect(manifest?.config.restoreFileName).toBe(true);
+    expect(manifest?.config.preserveName).toBe(true);
     expect(Array.isArray(manifest?.images)).toBe(true);
     for (let i = 0; i < imagePaths.length; i++) {
       const expectedName = path.parse(imagePaths[i]).name;
-      expect(manifest?.images[i].name).toBe(expectedName);
+      const encodedName = manifest?.images[i]?.name;
+      expect(encodedName).toBeTruthy();
+      // Decode base64 encoded name
+      if (encodedName) {
+        const decodedName = decodeFileName(encodedName);
+        expect(decodedName).toBe(expectedName);
+      }
     }
   });
 

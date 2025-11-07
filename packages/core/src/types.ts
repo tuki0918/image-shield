@@ -23,8 +23,8 @@ export interface FragmentationConfig {
   prefix?: string;
   /** Random seed (auto-generated if not specified) */
   seed?: number | string;
-  /** Restore original file name (optional, default: false) */
-  restoreFileName?: boolean;
+  /** Preserve original file name (optional, default: false) */
+  preserveName?: boolean;
 }
 
 /**
@@ -42,7 +42,7 @@ export interface ImageInfo {
   x: number;
   /** Number of blocks Y */
   y: number;
-  /** Original file name (optional) */
+  /** Original file name in base64 encoding (optional) */
   name?: string;
 }
 

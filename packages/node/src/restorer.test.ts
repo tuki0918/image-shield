@@ -343,11 +343,11 @@ describe("ImageRestorer", () => {
   });
 
   describe("integration with different configurations", () => {
-    test("works with restoreFileName enabled", async () => {
+    test("works with preserveName enabled", async () => {
       const fragmenter = new ImageFragmenter({
         blockSize: 2,
         seed: "test-seed",
-        restoreFileName: true,
+        preserveName: true,
       });
       const { manifest, fragmentedImages } = await fragmenter.fragmentImages([
         testImagePath,
@@ -360,7 +360,7 @@ describe("ImageRestorer", () => {
       );
 
       expect(restoredImages).toHaveLength(1);
-      expect(manifest.images[0].name).toBe("test_image");
+      expect(manifest.images[0].name).toBe("dGVzdF9pbWFnZQ==");
     });
 
     test("works with custom prefix", async () => {

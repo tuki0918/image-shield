@@ -29,7 +29,7 @@ export function registerShuffleCommand(program: Command): void {
       }
       return num;
     })
-    .option("--restore-filename", "Restore original file names")
+    .option("--preserve-name", "Preserve original file names")
     .action(handleShuffleCommand);
 }
 
@@ -52,7 +52,7 @@ async function handleShuffleCommand(
     if (options.blockSize !== undefined) config.blockSize = options.blockSize;
     if (options.prefix !== undefined) config.prefix = options.prefix;
     if (options.seed !== undefined) config.seed = options.seed;
-    if (options.restoreFilename) config.restoreFileName = true;
+    if (options.preserveName) config.preserveName = true;
 
     await ImageShield.shuffle({
       imagePaths,

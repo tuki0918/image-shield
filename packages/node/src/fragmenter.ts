@@ -5,6 +5,8 @@ import {
   type ImageInfo,
   type ManifestData,
   calcBlocksPerFragment,
+  decodeFileName,
+  encodeFileName,
 } from "@image-shield/core";
 import { SeededRandom, shuffle } from "@tuki0918/seeded-shuffle";
 import { blocksToPngImage, imageFileToBlocks } from "./block";
@@ -26,9 +28,8 @@ export class ImageFragmenter {
       blockSize: config.blockSize ?? DEFAULT_FRAGMENTATION_CONFIG.BLOCK_SIZE,
       prefix: config.prefix ?? DEFAULT_FRAGMENTATION_CONFIG.PREFIX,
       seed: config.seed || SeededRandom.generateSeed(),
-      restoreFileName:
-        config.restoreFileName ??
-        DEFAULT_FRAGMENTATION_CONFIG.RESTORE_FILE_NAME,
+      preserveName:
+        config.preserveName ?? DEFAULT_FRAGMENTATION_CONFIG.PRESERVE_NAME,
     };
   }
 
@@ -98,7 +99,7 @@ export class ImageFragmenter {
   }
 
   private _validateFileNames(imageInfos: ImageInfo[]): void {
-    if (!this.config.restoreFileName || imageInfos.length <= 1) {
+    if (!this.config.preserveName || imageInfos.length <= 1) {
       return;
     }
 
@@ -106,10 +107,18 @@ export class ImageFragmenter {
 
     for (const info of imageInfos) {
       if (info.name !== undefined) {
-        if (nameSet.has(info.name)) {
-          throw new Error(`Duplicate file name detected: ${info.name}`);
+        // Decode base64 to get original name for comparison
+        let decodedName: string;
+        try {
+          decodedName = decodeFileName(info.name);
+        } catch {
+          // If decoding fails, treat as already decoded (backward compatibility)
+          decodedName = info.name;
         }
-        nameSet.add(info.name);
+        if (nameSet.has(decodedName)) {
+          throw new Error(`Duplicate file name detected: ${decodedName}`);
+        }
+        nameSet.add(decodedName);
       }
     }
   }
@@ -163,8 +172,8 @@ export class ImageFragmenter {
       c: 4, // Always use 4 channels (RGBA) for generated PNG
       x: blockCountX,
       y: blockCountY,
-      name: this.config.restoreFileName
-        ? fileNameWithoutExtension(imagePath)
+      name: this.config.preserveName
+        ? encodeFileName(fileNameWithoutExtension(imagePath))
         : undefined,
     };
 
