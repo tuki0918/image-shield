@@ -4,7 +4,6 @@
     "noEmit": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "rootDir": "./src",
     "baseUrl": ".",
     "paths": {
       "@image-shield/core": ["../core/src"],
