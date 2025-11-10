@@ -15,13 +15,13 @@ export class ImageRestorer {
     const { allBlocks, fragmentBlocksCount, imageBlockCounts } =
       await this._prepareRestoreData(fragmentImages, manifest);
 
-    const restoredBlocks = manifest.config.perImageShuffle
-      ? this._unshufflePerImage(
+    const restoredBlocks = manifest.config.crossImageShuffle
+      ? unshuffle(allBlocks, manifest.config.seed)
+      : this._unshufflePerImage(
           allBlocks,
           imageBlockCounts,
           manifest.config.seed,
-        )
-      : unshuffle(allBlocks, manifest.config.seed);
+        );
 
     const reconstructedImages = await this._reconstructAllImages(
       restoredBlocks,

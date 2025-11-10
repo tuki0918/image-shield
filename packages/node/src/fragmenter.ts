@@ -30,9 +30,9 @@ export class ImageFragmenter {
       seed: config.seed || SeededRandom.generateSeed(),
       preserveName:
         config.preserveName ?? DEFAULT_FRAGMENTATION_CONFIG.PRESERVE_NAME,
-      perImageShuffle:
-        config.perImageShuffle ??
-        DEFAULT_FRAGMENTATION_CONFIG.PER_IMAGE_SHUFFLE,
+      crossImageShuffle:
+        config.crossImageShuffle ??
+        DEFAULT_FRAGMENTATION_CONFIG.CROSS_IMAGE_SHUFFLE,
     };
   }
 
@@ -40,9 +40,13 @@ export class ImageFragmenter {
     const { manifest, allBlocks, fragmentBlocksCount, imageBlockCounts } =
       await this._prepareFragmentData(imagePaths);
 
-    const shuffledBlocks = this.config.perImageShuffle
-      ? this._shufflePerImage(allBlocks, imageBlockCounts, manifest.config.seed)
-      : shuffle(allBlocks, manifest.config.seed);
+    const shuffledBlocks = this.config.crossImageShuffle
+      ? shuffle(allBlocks, manifest.config.seed)
+      : this._shufflePerImage(
+          allBlocks,
+          imageBlockCounts,
+          manifest.config.seed,
+        );
 
     const fragmentedImages = await this._createFragmentedImages(
       shuffledBlocks,
