@@ -80,14 +80,19 @@ export class ImageRestorer {
       fragmentImages.length,
     );
 
+    // Calculate actual block counts per image for per-image unshuffle
+    const imageBlockCounts = manifest.images.map((info) => info.x * info.y);
+
+    // Use imageBlockCounts when crossImageShuffle is false
+    const blocksCounts = manifest.config.crossImageShuffle
+      ? fragmentBlocksCount
+      : imageBlockCounts;
+
     const allBlocks = await this._extractBlocksFromFragments(
       fragmentImages,
       manifest,
-      fragmentBlocksCount,
+      blocksCounts,
     );
-
-    // Calculate actual block counts per image for per-image unshuffle
-    const imageBlockCounts = manifest.images.map((info) => info.x * info.y);
 
     return { allBlocks, fragmentBlocksCount, imageBlockCounts };
   }

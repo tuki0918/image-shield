@@ -50,7 +50,7 @@ export class ImageFragmenter {
 
     const fragmentedImages = await this._createFragmentedImages(
       shuffledBlocks,
-      fragmentBlocksCount,
+      this.config.crossImageShuffle ? fragmentBlocksCount : imageBlockCounts,
       manifest,
     );
 
