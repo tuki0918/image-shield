@@ -129,7 +129,9 @@ output
 
 ### Input multiple images
 
-blockSize: `50`
+blockSize: `50` (with `--cross-image-shuffle`)
+
+When processing multiple images with cross-image shuffle enabled, blocks are shuffled across all images, creating a unified fragmentation pattern.
 
 | input 1 | input 2 | input 3 |
 |:-------:|:---------------:|:---------------:|
@@ -152,7 +154,8 @@ manifest.json:
     "blockSize": 2,
     "prefix": "img",
     "seed": 72411,
-    "preserveName": false
+    "preserveName": false,
+    "crossImageShuffle": false
   },
   "images": [
     {
