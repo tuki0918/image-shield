@@ -141,6 +141,9 @@ When processing multiple images with cross-image shuffle enabled, blocks are shu
 |:-------:|:---------------:|:---------------:|
 | ![](.docs/output_m0.png) | ![](.docs/output_m1.png) | ![](.docs/output_m2.png) |
 
+> [!WARNING]
+> - May cause memory shortage depending on the number of images and block size.
+
 ## Manifest Structure
 
 manifest.json:
