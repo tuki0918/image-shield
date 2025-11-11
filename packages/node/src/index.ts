@@ -46,7 +46,8 @@ export default class ImageShield {
     const { imagePaths, manifestPath, outputDir } =
       validateRestoreOptions(options);
 
-    const manifest = await readJsonFile<ManifestData>(manifestPath);
+    const rawManifest = await readJsonFile<ManifestData>(manifestPath);
+    const manifest = normalizeManifestForBackwardCompatibility(rawManifest);
 
     const restorer = new ImageRestorer();
     const restoredImages = await restorer.restoreImages(imagePaths, manifest);
@@ -87,4 +88,20 @@ function validateRestoreOptions(options: RestoreOptions) {
   if (!manifestPath || typeof manifestPath !== "string")
     throw new Error("[restore] manifestPath is required and must be a string.");
   return validateCommonOptions(options, "restore");
+}
+
+function normalizeManifestForBackwardCompatibility(
+  rawManifest: ManifestData,
+): ManifestData {
+  // For backward compatibility: if crossImageShuffle is undefined (Raycast or v0.8.1 and below), default to true
+  if (rawManifest.config.crossImageShuffle === undefined) {
+    return {
+      ...rawManifest,
+      config: {
+        ...rawManifest.config,
+        crossImageShuffle: true,
+      },
+    };
+  }
+  return rawManifest;
 }
