@@ -131,7 +131,7 @@ output
 
 blockSize: `50` (with `--cross-image-shuffle`)
 
-When processing multiple images with cross-image shuffle enabled, blocks are shuffled across all images, creating a unified fragmentation pattern.
+When processing multiple images with cross-image shuffle enabled, blocks are shuffled across all images.
 
 | input 1 | input 2 | input 3 |
 |:-------:|:---------------:|:---------------:|
