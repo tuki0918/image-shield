@@ -46,8 +46,8 @@ export default class ImageShield {
     const { imagePaths, manifestPath, outputDir } =
       validateRestoreOptions(options);
 
-    const rawManifest = await readJsonFile<ManifestData>(manifestPath);
-    const manifest = normalizeManifestForBackwardCompatibility(rawManifest);
+    const manifest = await readJsonFile<ManifestData>(manifestPath);
+    validateManifestVersion(manifest);
 
     const restorer = new ImageRestorer();
     const restoredImages = await restorer.restoreImages(imagePaths, manifest);
@@ -90,18 +90,35 @@ function validateRestoreOptions(options: RestoreOptions) {
   return validateCommonOptions(options, "restore");
 }
 
-function normalizeManifestForBackwardCompatibility(
-  rawManifest: ManifestData,
-): ManifestData {
-  // For backward compatibility: if crossImageShuffle is undefined (Raycast or v0.8.1 and below), default to true
-  if (rawManifest.config.crossImageShuffle === undefined) {
-    return {
-      ...rawManifest,
-      config: {
-        ...rawManifest.config,
-        crossImageShuffle: true,
-      },
-    };
+/**
+ * Validates manifest version and throws an error if it's v0.8.1 or below.
+ * This is a breaking change: encryption feature removal, per-image shuffle addition, and shuffle algorithm changes.
+ */
+function validateManifestVersion(manifest: ManifestData): void {
+  const version = manifest.version;
+
+  // Remove 'v' prefix if present
+  const versionStr = version.startsWith("v") ? version.slice(1) : version;
+
+  // Parse version (e.g., "0.8.1" -> [0, 8, 1])
+  const parts = versionStr.split(".").map(Number);
+
+  if (parts.length < 2 || parts.some(isNaN)) {
+    throw new Error(
+      `[restore] Invalid manifest version format: ${version}. ` +
+        `Please use image-shield v0.8.1 or earlier to restore this manifest.`,
+    );
   }
-  return rawManifest;
+
+  const [major, minor, patch = 0] = parts;
+
+  // Check if version is v0.8.1 or below
+  if (major === 0 && (minor < 8 || (minor === 8 && patch <= 1))) {
+    throw new Error(
+      `[restore] Manifest version ${version} is not supported. ` +
+        `This manifest was created with image-shield v0.8.1 or earlier. ` +
+        `Please use image-shield v0.8.1 to restore this manifest. ` +
+        `Breaking changes: encryption feature removal, cross-image shuffle addition, and shuffle algorithm changes.`,
+    );
+  }
 }
