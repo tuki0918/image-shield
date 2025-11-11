@@ -4,4 +4,5 @@ export const DEFAULT_FRAGMENTATION_CONFIG = {
   BLOCK_SIZE: 2,
   PREFIX: "img",
   PRESERVE_NAME: false,
+  CROSS_IMAGE_SHUFFLE: false,
 };

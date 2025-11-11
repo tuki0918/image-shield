@@ -30,18 +30,27 @@ export class ImageFragmenter {
       seed: config.seed || SeededRandom.generateSeed(),
       preserveName:
         config.preserveName ?? DEFAULT_FRAGMENTATION_CONFIG.PRESERVE_NAME,
+      crossImageShuffle:
+        config.crossImageShuffle ??
+        DEFAULT_FRAGMENTATION_CONFIG.CROSS_IMAGE_SHUFFLE,
     };
   }
 
   async fragmentImages(imagePaths: string[]): Promise<FragmentationResult> {
-    const { manifest, allBlocks, fragmentBlocksCount } =
+    const { manifest, allBlocks, fragmentBlocksCount, imageBlockCounts } =
       await this._prepareFragmentData(imagePaths);
 
-    const shuffledBlocks = shuffle(allBlocks, manifest.config.seed);
+    const shuffledBlocks = this.config.crossImageShuffle
+      ? shuffle(allBlocks, manifest.config.seed)
+      : this._shufflePerImage(
+          allBlocks,
+          imageBlockCounts,
+          manifest.config.seed,
+        );
 
     const fragmentedImages = await this._createFragmentedImages(
       shuffledBlocks,
-      fragmentBlocksCount,
+      this.config.crossImageShuffle ? fragmentBlocksCount : imageBlockCounts,
       manifest,
     );
 
@@ -69,6 +78,24 @@ export class ImageFragmenter {
         );
       }),
     );
+  }
+
+  private _shufflePerImage(
+    allBlocks: Buffer[],
+    fragmentBlocksCount: number[],
+    seed: number | string,
+  ): Buffer[] {
+    const shuffledBlocks: Buffer[] = [];
+    let offset = 0;
+
+    for (const blockCount of fragmentBlocksCount) {
+      const imageBlocks = allBlocks.slice(offset, offset + blockCount);
+      const shuffled = shuffle(imageBlocks, seed);
+      shuffledBlocks.push(...shuffled);
+      offset += blockCount;
+    }
+
+    return shuffledBlocks;
   }
 
   private _calculateBlockRange(
@@ -127,6 +154,7 @@ export class ImageFragmenter {
     manifest: ManifestData;
     allBlocks: Buffer[];
     fragmentBlocksCount: number[];
+    imageBlockCounts: number[];
   }> {
     const manifestId = generateManifestId();
 
@@ -140,7 +168,10 @@ export class ImageFragmenter {
       imagePaths.length,
     );
 
-    return { manifest, allBlocks, fragmentBlocksCount };
+    // Calculate actual block counts per image for per-image shuffle
+    const imageBlockCounts = imageInfos.map((info) => info.x * info.y);
+
+    return { manifest, allBlocks, fragmentBlocksCount, imageBlockCounts };
   }
 
   private async _processSourceImages(imagePaths: string[]): Promise<{

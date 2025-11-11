@@ -30,6 +30,10 @@ export function registerShuffleCommand(program: Command): void {
       return num;
     })
     .option("--preserve-name", "Preserve original file names")
+    .option(
+      "--cross-image-shuffle",
+      "Shuffle blocks across all images instead of within each image independently",
+    )
     .action(handleShuffleCommand);
 }
 
@@ -53,6 +57,7 @@ async function handleShuffleCommand(
     if (options.prefix !== undefined) config.prefix = options.prefix;
     if (options.seed !== undefined) config.seed = options.seed;
     if (options.preserveName) config.preserveName = true;
+    if (options.crossImageShuffle) config.crossImageShuffle = true;
 
     await ImageShield.shuffle({
       imagePaths,

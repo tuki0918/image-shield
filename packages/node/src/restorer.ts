@@ -12,12 +12,18 @@ export class ImageRestorer {
     fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
-    const { allBlocks } = await this._prepareRestoreData(
+    const { allBlocks, imageBlockCounts } = await this._prepareRestoreData(
       fragmentImages,
       manifest,
     );
 
-    const restoredBlocks = unshuffle(allBlocks, manifest.config.seed);
+    const restoredBlocks = manifest.config.crossImageShuffle
+      ? unshuffle(allBlocks, manifest.config.seed)
+      : this._unshufflePerImage(
+          allBlocks,
+          imageBlockCounts,
+          manifest.config.seed,
+        );
 
     const reconstructedImages = await this._reconstructAllImages(
       restoredBlocks,
@@ -63,7 +69,10 @@ export class ImageRestorer {
   private async _prepareRestoreData(
     fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
-  ): Promise<{ allBlocks: Buffer[]; fragmentBlocksCount: number[] }> {
+  ): Promise<{
+    allBlocks: Buffer[];
+    imageBlockCounts: number[];
+  }> {
     this._validateInputs(fragmentImages, manifest);
 
     const totalBlocks = this._calculateTotalBlocks(manifest.images);
@@ -72,13 +81,21 @@ export class ImageRestorer {
       fragmentImages.length,
     );
 
+    // Calculate actual block counts per image for per-image unshuffle
+    const imageBlockCounts = manifest.images.map((info) => info.x * info.y);
+
+    // Use imageBlockCounts when crossImageShuffle is false
+    const blocksCounts = manifest.config.crossImageShuffle
+      ? fragmentBlocksCount
+      : imageBlockCounts;
+
     const allBlocks = await this._extractBlocksFromFragments(
       fragmentImages,
       manifest,
-      fragmentBlocksCount,
+      blocksCounts,
     );
 
-    return { allBlocks, fragmentBlocksCount };
+    return { allBlocks, imageBlockCounts };
   }
 
   private _validateInputs(
@@ -140,5 +157,23 @@ export class ImageRestorer {
   ): Promise<Buffer> {
     const { w, h } = imageInfo;
     return await blocksToPngImage(blocks, w, h, blockSize);
+  }
+
+  private _unshufflePerImage(
+    allBlocks: Buffer[],
+    fragmentBlocksCount: number[],
+    seed: number | string,
+  ): Buffer[] {
+    const unshuffledBlocks: Buffer[] = [];
+    let offset = 0;
+
+    for (const blockCount of fragmentBlocksCount) {
+      const imageBlocks = allBlocks.slice(offset, offset + blockCount);
+      const unshuffled = unshuffle(imageBlocks, seed);
+      unshuffledBlocks.push(...unshuffled);
+      offset += blockCount;
+    }
+
+    return unshuffledBlocks;
   }
 }

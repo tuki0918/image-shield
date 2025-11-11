@@ -25,6 +25,8 @@ export interface FragmentationConfig {
   seed?: number | string;
   /** Preserve original file name (optional, default: false) */
   preserveName?: boolean;
+  /** Shuffle blocks across all images instead of within each image independently (optional, default: false) */
+  crossImageShuffle?: boolean;
 }
 
 /**

@@ -275,4 +275,256 @@ describe("ImageFragmenter", () => {
       }
     });
   });
+
+  describe("crossImageShuffle", () => {
+    test("fragments with per-image shuffle (default)", async () => {
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+      });
+
+      const result = await fragmenter.fragmentImages([testImagePath]);
+
+      expect(result.manifest.config.crossImageShuffle).toBe(false);
+      expect(result.fragmentedImages).toHaveLength(1);
+    });
+
+    test("fragments multiple images with per-image shuffle (default)", async () => {
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+      });
+
+      const result = await fragmenter.fragmentImages([
+        testImagePath,
+        testImagePath,
+      ]);
+
+      expect(result.manifest.config.crossImageShuffle).toBe(false);
+      expect(result.manifest.images).toHaveLength(2);
+      expect(result.fragmentedImages).toHaveLength(2);
+    });
+
+    test("per-image shuffle produces different results than cross-image shuffle", async () => {
+      const seed = "test-seed-123";
+
+      const fragmenterCrossImage = new ImageFragmenter({
+        blockSize: 2,
+        seed,
+        crossImageShuffle: true,
+      });
+
+      const fragmenterPerImage = new ImageFragmenter({
+        blockSize: 2,
+        seed,
+        crossImageShuffle: false,
+      });
+
+      const resultCrossImage = await fragmenterCrossImage.fragmentImages([
+        testImagePath,
+        testImagePath,
+      ]);
+
+      const resultPerImage = await fragmenterPerImage.fragmentImages([
+        testImagePath,
+        testImagePath,
+      ]);
+
+      // With the same seed but different shuffle modes, results should differ
+      expect(resultCrossImage.fragmentedImages[0]).not.toEqual(
+        resultPerImage.fragmentedImages[0],
+      );
+    });
+
+    test("defaults to per-image shuffle when crossImageShuffle is not specified", async () => {
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+      });
+
+      const result = await fragmenter.fragmentImages([testImagePath]);
+
+      expect(result.manifest.config.crossImageShuffle).toBe(false);
+    });
+
+    test("handles images of different sizes with per-image shuffle", async () => {
+      // Create test images of different sizes
+      const smallImagePath = path.join(tmpDir, "small_test.png");
+      const largeImagePath = path.join(tmpDir, "large_test.png");
+
+      // Create 2x2 image
+      const smallImageData = Buffer.from([
+        255,
+        0,
+        0,
+        255, // Red
+        0,
+        255,
+        0,
+        255, // Green
+        0,
+        0,
+        255,
+        255, // Blue
+        255,
+        255,
+        0,
+        255, // Yellow
+      ]);
+      const smallImage = Jimp.fromBitmap({
+        data: smallImageData,
+        width: 2,
+        height: 2,
+      });
+      await smallImage.write(smallImagePath, JimpMime.png);
+
+      // Create 6x6 image
+      const largeImageData = Buffer.alloc(6 * 6 * 4);
+      for (let i = 0; i < 6 * 6 * 4; i += 4) {
+        largeImageData[i] = 128; // R
+        largeImageData[i + 1] = 128; // G
+        largeImageData[i + 2] = 128; // B
+        largeImageData[i + 3] = 255; // A
+      }
+      const largeImage = Jimp.fromBitmap({
+        data: largeImageData,
+        width: 6,
+        height: 6,
+      });
+      await largeImage.write(largeImagePath, JimpMime.png);
+
+      try {
+        const fragmenter = new ImageFragmenter({
+          blockSize: 2,
+          seed: "test-seed",
+          crossImageShuffle: false,
+        });
+
+        const result = await fragmenter.fragmentImages([
+          smallImagePath,
+          largeImagePath,
+        ]);
+
+        // Should successfully fragment both images
+        expect(result.manifest.images).toHaveLength(2);
+        expect(result.fragmentedImages).toHaveLength(2);
+        expect(result.manifest.config.crossImageShuffle).toBe(false);
+
+        // Verify different block counts
+        expect(result.manifest.images[0].x).toBe(1); // 2x2 image with blockSize 2
+        expect(result.manifest.images[0].y).toBe(1);
+        expect(result.manifest.images[1].x).toBe(3); // 6x6 image with blockSize 2
+        expect(result.manifest.images[1].y).toBe(3);
+      } finally {
+        // Clean up
+        if (fs.existsSync(smallImagePath)) fs.unlinkSync(smallImagePath);
+        if (fs.existsSync(largeImagePath)) fs.unlinkSync(largeImagePath);
+      }
+    });
+
+    test("fragments with cross-image shuffle enabled", async () => {
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+        crossImageShuffle: true,
+      });
+
+      const result = await fragmenter.fragmentImages([testImagePath]);
+
+      expect(result.manifest.config.crossImageShuffle).toBe(true);
+      expect(result.fragmentedImages).toHaveLength(1);
+    });
+
+    test("fragments multiple images with cross-image shuffle", async () => {
+      const fragmenter = new ImageFragmenter({
+        blockSize: 2,
+        seed: "test-seed",
+        crossImageShuffle: true,
+      });
+
+      const result = await fragmenter.fragmentImages([
+        testImagePath,
+        testImagePath,
+      ]);
+
+      expect(result.manifest.config.crossImageShuffle).toBe(true);
+      expect(result.manifest.images).toHaveLength(2);
+      expect(result.fragmentedImages).toHaveLength(2);
+    });
+
+    test("handles images of different sizes with cross-image shuffle", async () => {
+      // Create test images of different sizes
+      const smallImagePath = path.join(tmpDir, "small_cross_test.png");
+      const largeImagePath = path.join(tmpDir, "large_cross_test.png");
+
+      // Create 2x2 image
+      const smallImageData = Buffer.from([
+        255,
+        0,
+        0,
+        255, // Red
+        0,
+        255,
+        0,
+        255, // Green
+        0,
+        0,
+        255,
+        255, // Blue
+        255,
+        255,
+        0,
+        255, // Yellow
+      ]);
+      const smallImage = Jimp.fromBitmap({
+        data: smallImageData,
+        width: 2,
+        height: 2,
+      });
+      await smallImage.write(smallImagePath, JimpMime.png);
+
+      // Create 6x6 image
+      const largeImageData = Buffer.alloc(6 * 6 * 4);
+      for (let i = 0; i < 6 * 6 * 4; i += 4) {
+        largeImageData[i] = 128; // R
+        largeImageData[i + 1] = 128; // G
+        largeImageData[i + 2] = 128; // B
+        largeImageData[i + 3] = 255; // A
+      }
+      const largeImage = Jimp.fromBitmap({
+        data: largeImageData,
+        width: 6,
+        height: 6,
+      });
+      await largeImage.write(largeImagePath, JimpMime.png);
+
+      try {
+        const fragmenter = new ImageFragmenter({
+          blockSize: 2,
+          seed: "test-seed",
+          crossImageShuffle: true,
+        });
+
+        const result = await fragmenter.fragmentImages([
+          smallImagePath,
+          largeImagePath,
+        ]);
+
+        // Should successfully fragment both images
+        expect(result.manifest.images).toHaveLength(2);
+        expect(result.fragmentedImages).toHaveLength(2);
+        expect(result.manifest.config.crossImageShuffle).toBe(true);
+
+        // Verify different block counts
+        expect(result.manifest.images[0].x).toBe(1); // 2x2 image with blockSize 2
+        expect(result.manifest.images[0].y).toBe(1);
+        expect(result.manifest.images[1].x).toBe(3); // 6x6 image with blockSize 2
+        expect(result.manifest.images[1].y).toBe(3);
+      } finally {
+        // Clean up
+        if (fs.existsSync(smallImagePath)) fs.unlinkSync(smallImagePath);
+        if (fs.existsSync(largeImagePath)) fs.unlinkSync(largeImagePath);
+      }
+    });
+  });
 });

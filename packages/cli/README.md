@@ -50,6 +50,7 @@ image-shield shuffle <images...> -o <output_directory> [options]
 | `-p, --prefix <prefix>` | Prefix for fragment files | ❌ | "fragment" |
 | `-s, --seed <seed>` | Random seed (integer) | ❌ | auto-generated |
 | `--preserve-name` | Preserve original file names | ❌ | false |
+| `--cross-image-shuffle` | Shuffle blocks across all images instead of within each image independently | ❌ | false (per-image shuffle by default) |
 
 #### Examples
 
@@ -66,6 +67,11 @@ image-shield shuffle *.jpg -o ./output -b 20 -p "my_fragment" --preserve-name
 **With seed for reproducible results:**
 ```bash
 image-shield shuffle image.png -o ./output -s 12345
+```
+
+**Cross-image shuffle (shuffle blocks across all images):**
+```bash
+image-shield shuffle image1.png image2.png image3.png -o ./output --cross-image-shuffle
 ```
 
 #### Output Structure
