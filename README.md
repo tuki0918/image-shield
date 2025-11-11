@@ -146,7 +146,8 @@ When processing multiple images with cross-image shuffle enabled, blocks are shu
 
 ## Manifest Structure
 
-manifest.json:
+<details>
+<summary>manifest.json:</summary>
 
 ```json
 {
