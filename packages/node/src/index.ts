@@ -8,6 +8,7 @@ import {
   generateRestoredFileName,
   generateRestoredOriginalFileName,
 } from "@image-shield/core";
+import { lt } from "semver";
 import { createDir, readJsonFile, writeFile } from "./file";
 import { ImageFragmenter } from "./fragmenter";
 import { ImageRestorer } from "./restorer";
@@ -97,28 +98,10 @@ function validateRestoreOptions(options: RestoreOptions) {
 function validateManifestVersion(manifest: ManifestData): void {
   const version = manifest.version;
 
-  // Remove 'v' prefix if present
-  const versionStr = version.startsWith("v") ? version.slice(1) : version;
-
-  // Parse version (e.g., "0.8.1" -> [0, 8, 1])
-  const parts = versionStr.split(".").map(Number);
-
-  if (parts.length < 2 || parts.some(isNaN)) {
+  // Check if version is v0.8.1 (raycast) or below
+  if (lt(version, "0.9.0")) {
     throw new Error(
-      `[restore] Invalid manifest version format: ${version}. ` +
-        `Please use image-shield v0.8.1 or earlier to restore this manifest.`,
-    );
-  }
-
-  const [major, minor, patch = 0] = parts;
-
-  // Check if version is v0.8.1 or below
-  if (major === 0 && (minor < 8 || (minor === 8 && patch <= 1))) {
-    throw new Error(
-      `[restore] Manifest version ${version} is not supported. ` +
-        `This manifest was created with image-shield v0.8.1 or earlier. ` +
-        `Please use image-shield v0.8.1 to restore this manifest. ` +
-        `Breaking changes: encryption feature removal, cross-image shuffle addition, and shuffle algorithm changes.`,
+      `[restore] Manifest version ${version} is not supported due to breaking changes.\nTo restore images, please use image-shield v0.8.1.`,
     );
   }
 }

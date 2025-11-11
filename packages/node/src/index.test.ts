@@ -8,6 +8,7 @@ import {
   generateRestoredFileName,
 } from "@image-shield/core";
 import { Jimp, JimpMime } from "jimp";
+import { VERSION } from "./constants";
 import ImageShield from "./index";
 
 describe("ImageShield (integration)", () => {
@@ -57,6 +58,7 @@ describe("ImageShield (integration)", () => {
     fragmentPaths = [];
     for (let i = 0; i < originalImages.length; i++) {
       const manifestDataForFragment = {
+        version: VERSION,
         config: { prefix },
         images: new Array(originalImages.length).fill({
           name: `original_${i}.png`,
