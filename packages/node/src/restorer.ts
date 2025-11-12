@@ -12,40 +12,35 @@ import { readFileBuffer } from "./file";
 
 export class ImageRestorer {
   async restoreImages(
-    fragmentImages: (string | Buffer)[],
+    fragments: (string | Buffer)[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
-    const { allBlocks, imageBlockCounts } = await this._prepareData(
-      fragmentImages,
+    const { blocks, imageBlockCounts } = await this._prepareData(
+      fragments,
       manifest,
     );
 
-    const restoredBlocks = manifest.config.crossImageShuffle
-      ? unshuffle(allBlocks, manifest.config.seed)
+    const restored = manifest.config.crossImageShuffle
+      ? unshuffle(blocks, manifest.config.seed)
       : blocksPerImage(
-          allBlocks,
+          blocks,
           imageBlockCounts,
           manifest.config.seed,
           unshuffle,
         );
 
-    const reconstructedImages = await this._reconstructImages(
-      restoredBlocks,
-      manifest,
-    );
-
-    return reconstructedImages;
+    return await this._reconstructImages(restored, manifest);
   }
 
   private async _reconstructImages(
-    restoredBlocks: Buffer[],
+    blocks: Buffer[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
     const imageBlockCounts = calculateImageBlockCounts(manifest.images);
     return await Promise.all(
       manifest.images.map(async (imageInfo, index) => {
         const { start, end } = calculateBlockRange(imageBlockCounts, index);
-        const imageBlocks = restoredBlocks.slice(start, end);
+        const imageBlocks = blocks.slice(start, end);
         return await this._createImage(
           imageBlocks,
           manifest.config.blockSize,
@@ -56,67 +51,59 @@ export class ImageRestorer {
   }
 
   private async _prepareData(
-    fragmentImages: (string | Buffer)[],
+    fragments: (string | Buffer)[],
     manifest: ManifestData,
   ): Promise<{
-    allBlocks: Buffer[];
+    blocks: Buffer[];
     imageBlockCounts: number[];
   }> {
     const totalBlocks = calculateTotalBlocks(manifest.images);
-    const fragmentBlocksCount = calculateBlocksPerFragment(
+    const blocksPerFragment = calculateBlocksPerFragment(
       totalBlocks,
-      fragmentImages.length,
+      fragments.length,
     );
 
     // Calculate actual block counts per image for per-image unshuffle
     const imageBlockCounts = calculateImageBlockCounts(manifest.images);
 
     // Use imageBlockCounts when crossImageShuffle is false
-    const blocksCounts = manifest.config.crossImageShuffle
-      ? fragmentBlocksCount
+    const blockCounts = manifest.config.crossImageShuffle
+      ? blocksPerFragment
       : imageBlockCounts;
 
-    const allBlocks = await this._readBlocks(
-      fragmentImages,
-      manifest,
-      blocksCounts,
-    );
+    const blocks = await this._readBlocks(fragments, manifest, blockCounts);
 
-    return { allBlocks, imageBlockCounts };
+    return { blocks, imageBlockCounts };
   }
 
   // Extract an array of blocks (Buffer) from a fragment image
   private async _readBlocksFromFragment(
-    fragmentImage: string | Buffer,
+    fragment: string | Buffer,
     manifest: ManifestData,
-    expectedBlockCount: number,
+    expectedCount: number,
   ): Promise<Buffer[]> {
-    const imageBuffer = Buffer.isBuffer(fragmentImage)
-      ? fragmentImage
-      : await readFileBuffer(fragmentImage);
+    const buffer = Buffer.isBuffer(fragment)
+      ? fragment
+      : await readFileBuffer(fragment);
 
     const { blocks } = await imageFileToBlocks(
-      imageBuffer,
+      buffer,
       manifest.config.blockSize,
     );
-    return blocks.slice(0, expectedBlockCount);
+    return blocks.slice(0, expectedCount);
   }
 
   private async _readBlocks(
-    fragmentImages: (string | Buffer)[],
+    fragments: (string | Buffer)[],
     manifest: ManifestData,
-    fragmentBlocksCount: number[],
+    blockCounts: number[],
   ): Promise<Buffer[]> {
-    const blocksArrays = await Promise.all(
-      fragmentImages.map((fragmentImage, i) =>
-        this._readBlocksFromFragment(
-          fragmentImage,
-          manifest,
-          fragmentBlocksCount[i],
-        ),
+    const blockGroups = await Promise.all(
+      fragments.map((fragment, i) =>
+        this._readBlocksFromFragment(fragment, manifest, blockCounts[i]),
       ),
     );
-    return blocksArrays.flat();
+    return blockGroups.flat();
   }
 
   private async _createImage(

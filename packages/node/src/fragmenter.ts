@@ -38,22 +38,17 @@ export class ImageFragmenter {
     };
   }
 
-  async fragmentImages(imagePaths: string[]): Promise<FragmentationResult> {
-    const { manifest, allBlocks, fragmentBlocksCount, imageBlockCounts } =
-      await this._prepareData(imagePaths);
+  async fragmentImages(paths: string[]): Promise<FragmentationResult> {
+    const { manifest, blocks, blocksPerFragment, imageBlockCounts } =
+      await this._prepareData(paths);
 
-    const shuffledBlocks = this.config.crossImageShuffle
-      ? shuffle(allBlocks, manifest.config.seed)
-      : blocksPerImage(
-          allBlocks,
-          imageBlockCounts,
-          manifest.config.seed,
-          shuffle,
-        );
+    const shuffled = this.config.crossImageShuffle
+      ? shuffle(blocks, manifest.config.seed)
+      : blocksPerImage(blocks, imageBlockCounts, manifest.config.seed, shuffle);
 
     const fragmentedImages = await this._createImages(
-      shuffledBlocks,
-      this.config.crossImageShuffle ? fragmentBlocksCount : imageBlockCounts,
+      shuffled,
+      this.config.crossImageShuffle ? blocksPerFragment : imageBlockCounts,
       manifest,
     );
 
@@ -64,14 +59,14 @@ export class ImageFragmenter {
   }
 
   private async _createImages(
-    shuffledBlocks: Buffer[],
-    fragmentBlocksCount: number[],
+    blocks: Buffer[],
+    blockCounts: number[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
     return await Promise.all(
       manifest.images.map(async (_, index) => {
-        const { start, end } = calculateBlockRange(fragmentBlocksCount, index);
-        const imageBlocks = shuffledBlocks.slice(start, end);
+        const { start, end } = calculateBlockRange(blockCounts, index);
+        const imageBlocks = blocks.slice(start, end);
         return await this._createImage(imageBlocks, manifest.config.blockSize);
       }),
     );
@@ -90,53 +85,53 @@ export class ImageFragmenter {
     };
   }
 
-  private async _prepareData(imagePaths: string[]): Promise<{
+  private async _prepareData(paths: string[]): Promise<{
     manifest: ManifestData;
-    allBlocks: Buffer[];
-    fragmentBlocksCount: number[];
+    blocks: Buffer[];
+    blocksPerFragment: number[];
     imageBlockCounts: number[];
   }> {
     const manifestId = generateManifestId();
 
-    const { imageInfos, allBlocks } = await this._processImages(imagePaths);
+    const { imageInfos, blocks } = await this._processImages(paths);
 
     validateFileNames(imageInfos, this.config.preserveName);
 
     const manifest = this._createManifest(manifestId, imageInfos);
 
-    const fragmentBlocksCount = calculateBlocksPerFragment(
-      allBlocks.length,
-      imagePaths.length,
+    const blocksPerFragment = calculateBlocksPerFragment(
+      blocks.length,
+      paths.length,
     );
 
     // Calculate actual block counts per image for per-image shuffle
     const imageBlockCounts = calculateImageBlockCounts(imageInfos);
 
-    return { manifest, allBlocks, fragmentBlocksCount, imageBlockCounts };
+    return { manifest, blocks, blocksPerFragment, imageBlockCounts };
   }
 
-  private async _processImages(imagePaths: string[]): Promise<{
+  private async _processImages(paths: string[]): Promise<{
     imageInfos: ImageInfo[];
-    allBlocks: Buffer[];
+    blocks: Buffer[];
   }> {
-    const processedImages = await Promise.all(
-      imagePaths.map((imagePath) => this._processImage(imagePath)),
+    const results = await Promise.all(
+      paths.map((path) => this._processImage(path)),
     );
 
-    const imageInfos = processedImages.map((p) => p.imageInfo);
-    const allBlocks = processedImages.flatMap((p) => p.blocks);
+    const imageInfos = results.map((r) => r.imageInfo);
+    const blocks = results.flatMap((r) => r.blocks);
 
-    return { imageInfos, allBlocks };
+    return { imageInfos, blocks };
   }
 
-  private async _processImage(imagePath: string): Promise<{
+  private async _processImage(path: string): Promise<{
     imageInfo: ImageInfo;
     blocks: Buffer[];
   }> {
-    const imageBuffer = await readFileBuffer(imagePath);
+    const buffer = await readFileBuffer(path);
 
-    const { blocks, width, height, channels, blockCountX, blockCountY } =
-      await imageFileToBlocks(imageBuffer, this.config.blockSize);
+    const { blocks, width, height, blockCountX, blockCountY } =
+      await imageFileToBlocks(buffer, this.config.blockSize);
 
     const imageInfo: ImageInfo = {
       w: width,
@@ -145,7 +140,7 @@ export class ImageFragmenter {
       x: blockCountX,
       y: blockCountY,
       name: this.config.preserveName
-        ? encodeFileName(fileNameWithoutExtension(imagePath))
+        ? encodeFileName(fileNameWithoutExtension(path))
         : undefined,
     };
 
