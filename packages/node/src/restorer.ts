@@ -5,7 +5,7 @@ import {
   calculateBlockRange,
 } from "@image-shield/core";
 import { unshuffle } from "@tuki0918/seeded-shuffle";
-import { blocksToPngImage, imageFileToBlocks } from "./block";
+import { blocksPerImage, blocksToPngImage, imageFileToBlocks } from "./block";
 import { readFileBuffer } from "./file";
 
 export class ImageRestorer {
@@ -150,16 +150,6 @@ export class ImageRestorer {
     fragmentBlocksCount: number[],
     seed: number | string,
   ): Buffer[] {
-    const unshuffledBlocks: Buffer[] = [];
-    let offset = 0;
-
-    for (const blockCount of fragmentBlocksCount) {
-      const imageBlocks = allBlocks.slice(offset, offset + blockCount);
-      const unshuffled = unshuffle(imageBlocks, seed);
-      unshuffledBlocks.push(...unshuffled);
-      offset += blockCount;
-    }
-
-    return unshuffledBlocks;
+    return blocksPerImage(allBlocks, fragmentBlocksCount, seed, unshuffle);
   }
 }

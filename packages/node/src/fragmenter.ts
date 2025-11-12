@@ -10,7 +10,7 @@ import {
   encodeFileName,
 } from "@image-shield/core";
 import { SeededRandom, shuffle } from "@tuki0918/seeded-shuffle";
-import { blocksToPngImage, imageFileToBlocks } from "./block";
+import { blocksPerImage, blocksToPngImage, imageFileToBlocks } from "./block";
 import { VERSION } from "./constants";
 import { fileNameWithoutExtension, readFileBuffer } from "./file";
 import { generateManifestId } from "./utils";
@@ -83,17 +83,7 @@ export class ImageFragmenter {
     fragmentBlocksCount: number[],
     seed: number | string,
   ): Buffer[] {
-    const shuffledBlocks: Buffer[] = [];
-    let offset = 0;
-
-    for (const blockCount of fragmentBlocksCount) {
-      const imageBlocks = allBlocks.slice(offset, offset + blockCount);
-      const shuffled = shuffle(imageBlocks, seed);
-      shuffledBlocks.push(...shuffled);
-      offset += blockCount;
-    }
-
-    return shuffledBlocks;
+    return blocksPerImage(allBlocks, fragmentBlocksCount, seed, shuffle);
   }
 
   private _createManifest(
