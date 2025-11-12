@@ -9,6 +9,7 @@ import {
   calculateImageBlockCounts,
   decodeFileName,
   encodeFileName,
+  validateFileNames,
 } from "@image-shield/core";
 import { SeededRandom, shuffle } from "@tuki0918/seeded-shuffle";
 import { blocksPerImage, blocksToPngImage, imageFileToBlocks } from "./block";
@@ -84,7 +85,7 @@ export class ImageFragmenter {
     manifestId: string,
     imageInfos: ImageInfo[],
   ): ManifestData {
-    this._validateFileNames(imageInfos);
+    validateFileNames(imageInfos, this.config.preserveName);
 
     return {
       id: manifestId,
@@ -93,31 +94,6 @@ export class ImageFragmenter {
       config: this.config,
       images: imageInfos,
     };
-  }
-
-  private _validateFileNames(imageInfos: ImageInfo[]): void {
-    if (!this.config.preserveName || imageInfos.length <= 1) {
-      return;
-    }
-
-    const nameSet = new Set<string>();
-
-    for (const info of imageInfos) {
-      if (info.name !== undefined) {
-        // Decode base64 to get original name for comparison
-        let decodedName: string;
-        try {
-          decodedName = decodeFileName(info.name);
-        } catch {
-          // If decoding fails, treat as already decoded (backward compatibility)
-          decodedName = info.name;
-        }
-        if (nameSet.has(decodedName)) {
-          throw new Error(`Duplicate file name detected: ${decodedName}`);
-        }
-        nameSet.add(decodedName);
-      }
-    }
   }
 
   private async _prepareFragmentData(imagePaths: string[]): Promise<{

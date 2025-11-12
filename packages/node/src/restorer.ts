@@ -5,6 +5,7 @@ import {
   calculateBlocksPerFragment,
   calculateImageBlockCounts,
   calculateTotalBlocks,
+  validateFragmentImageCount,
 } from "@image-shield/core";
 import { unshuffle } from "@tuki0918/seeded-shuffle";
 import { blocksPerImage, blocksToPngImage, imageFileToBlocks } from "./block";
@@ -62,7 +63,7 @@ export class ImageRestorer {
     allBlocks: Buffer[];
     imageBlockCounts: number[];
   }> {
-    this._validateInputs(fragmentImages, manifest);
+    validateFragmentImageCount(fragmentImages, manifest);
 
     const totalBlocks = calculateTotalBlocks(manifest.images);
     const fragmentBlocksCount = calculateBlocksPerFragment(
@@ -85,20 +86,6 @@ export class ImageRestorer {
     );
 
     return { allBlocks, imageBlockCounts };
-  }
-
-  private _validateInputs(
-    fragmentImages: (string | Buffer)[],
-    manifest: ManifestData,
-  ): void {
-    const manifestImageCount = manifest.images.length;
-    const fragmentImageCount = fragmentImages.length;
-
-    if (manifestImageCount !== fragmentImageCount) {
-      throw new Error(
-        `Fragment image count mismatch: expected ${manifestImageCount} but got ${fragmentImageCount}`,
-      );
-    }
   }
 
   // Extract an array of blocks (Buffer) from a fragment image
