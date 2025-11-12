@@ -15,7 +15,7 @@ export class ImageRestorer {
     fragments: (string | Buffer)[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
-    const { blocks, imageBlockCounts } = await this._prepareData(
+    const { blocks, blockCountsPerImage } = await this._prepareData(
       fragments,
       manifest,
     );
@@ -24,7 +24,7 @@ export class ImageRestorer {
       ? unshuffle(blocks, manifest.config.seed)
       : blocksPerImage(
           blocks,
-          imageBlockCounts,
+          blockCountsPerImage,
           manifest.config.seed,
           unshuffle,
         );
@@ -36,10 +36,10 @@ export class ImageRestorer {
     blocks: Buffer[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
-    const imageBlockCounts = calculateImageBlockCounts(manifest.images);
+    const blockCountsPerImage = calculateImageBlockCounts(manifest.images);
     return await Promise.all(
       manifest.images.map(async (imageInfo, index) => {
-        const { start, end } = calculateBlockRange(imageBlockCounts, index);
+        const { start, end } = calculateBlockRange(blockCountsPerImage, index);
         const imageBlocks = blocks.slice(start, end);
         return await this._createImage(
           imageBlocks,
@@ -55,25 +55,25 @@ export class ImageRestorer {
     manifest: ManifestData,
   ): Promise<{
     blocks: Buffer[];
-    imageBlockCounts: number[];
+    blockCountsPerImage: number[];
   }> {
     const totalBlocks = calculateTotalBlocks(manifest.images);
-    const blocksPerFragment = calculateBlocksPerFragment(
+    const blockCountsForCrossImages = calculateBlocksPerFragment(
       totalBlocks,
       fragments.length,
     );
 
     // Calculate actual block counts per image for per-image unshuffle
-    const imageBlockCounts = calculateImageBlockCounts(manifest.images);
+    const blockCountsPerImage = calculateImageBlockCounts(manifest.images);
 
-    // Use imageBlockCounts when crossImageShuffle is false
+    // Use blockCountsPerImage when crossImageShuffle is false
     const blockCounts = manifest.config.crossImageShuffle
-      ? blocksPerFragment
-      : imageBlockCounts;
+      ? blockCountsForCrossImages
+      : blockCountsPerImage;
 
     const blocks = await this._readBlocks(fragments, manifest, blockCounts);
 
-    return { blocks, imageBlockCounts };
+    return { blocks, blockCountsPerImage };
   }
 
   // Extract an array of blocks (Buffer) from a fragment image

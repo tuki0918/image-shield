@@ -39,16 +39,25 @@ export class ImageFragmenter {
   }
 
   async fragmentImages(paths: string[]): Promise<FragmentationResult> {
-    const { manifest, blocks, blocksPerFragment, imageBlockCounts } =
+    const { manifest, blocks, blockCountsForCrossImages, blockCountsPerImage } =
       await this._prepareData(paths);
 
     const shuffled = this.config.crossImageShuffle
       ? shuffle(blocks, manifest.config.seed)
-      : blocksPerImage(blocks, imageBlockCounts, manifest.config.seed, shuffle);
+      : blocksPerImage(
+          blocks,
+          blockCountsPerImage,
+          manifest.config.seed,
+          shuffle,
+        );
+
+    const blockCounts = this.config.crossImageShuffle
+      ? blockCountsForCrossImages
+      : blockCountsPerImage;
 
     const fragmentedImages = await this._createImages(
       shuffled,
-      this.config.crossImageShuffle ? blocksPerFragment : imageBlockCounts,
+      blockCounts,
       manifest,
     );
 
@@ -88,8 +97,8 @@ export class ImageFragmenter {
   private async _prepareData(paths: string[]): Promise<{
     manifest: ManifestData;
     blocks: Buffer[];
-    blocksPerFragment: number[];
-    imageBlockCounts: number[];
+    blockCountsForCrossImages: number[];
+    blockCountsPerImage: number[];
   }> {
     const manifestId = generateManifestId();
 
@@ -99,15 +108,15 @@ export class ImageFragmenter {
 
     const manifest = this._createManifest(manifestId, imageInfos);
 
-    const blocksPerFragment = calculateBlocksPerFragment(
+    const blockCountsForCrossImages = calculateBlocksPerFragment(
       blocks.length,
       paths.length,
     );
 
     // Calculate actual block counts per image for per-image shuffle
-    const imageBlockCounts = calculateImageBlockCounts(imageInfos);
+    const blockCountsPerImage = calculateImageBlockCounts(imageInfos);
 
-    return { manifest, blocks, blocksPerFragment, imageBlockCounts };
+    return { manifest, blocks, blockCountsForCrossImages, blockCountsPerImage };
   }
 
   private async _processImages(paths: string[]): Promise<{
