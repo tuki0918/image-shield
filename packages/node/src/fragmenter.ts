@@ -85,8 +85,6 @@ export class ImageFragmenter {
     manifestId: string,
     imageInfos: ImageInfo[],
   ): ManifestData {
-    validateFileNames(imageInfos, this.config.preserveName);
-
     return {
       id: manifestId,
       version: VERSION,
@@ -106,6 +104,8 @@ export class ImageFragmenter {
 
     const { imageInfos, allBlocks } =
       await this._processSourceImages(imagePaths);
+
+    validateFileNames(imageInfos, this.config.preserveName);
 
     const manifest = this._createManifest(manifestId, imageInfos);
 
