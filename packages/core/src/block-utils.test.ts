@@ -1,8 +1,8 @@
 import {
   RGBA_CHANNELS,
-  calcBlocksPerFragment,
   calculateBlockCounts,
   calculateBlockRange,
+  calculateBlocksPerFragment,
 } from "./block-utils";
 
 describe("RGBA_CHANNELS", () => {
@@ -107,52 +107,52 @@ describe("calculateBlockRange", () => {
   });
 });
 
-describe("calcBlocksPerFragment", () => {
+describe("calculateBlocksPerFragment", () => {
   test("evenly divisible blocks", () => {
     // 12 blocks, 3 fragments => [4, 4, 4]
-    expect(calcBlocksPerFragment(12, 3)).toEqual([4, 4, 4]);
+    expect(calculateBlocksPerFragment(12, 3)).toEqual([4, 4, 4]);
   });
 
   test("not evenly divisible blocks", () => {
     // 10 blocks, 3 fragments => [4, 4, 2]
-    expect(calcBlocksPerFragment(10, 3)).toEqual([4, 4, 2]);
+    expect(calculateBlocksPerFragment(10, 3)).toEqual([4, 4, 2]);
   });
 
   test("more fragments than blocks", () => {
     // 3 blocks, 5 fragments => [1, 1, 1, 0, 0]
-    expect(calcBlocksPerFragment(3, 5)).toEqual([1, 1, 1, 0, 0]);
+    expect(calculateBlocksPerFragment(3, 5)).toEqual([1, 1, 1, 0, 0]);
   });
 
   test("zero blocks", () => {
     // 0 blocks, 3 fragments => [0, 0, 0]
-    expect(calcBlocksPerFragment(0, 3)).toEqual([0, 0, 0]);
+    expect(calculateBlocksPerFragment(0, 3)).toEqual([0, 0, 0]);
   });
 
   test("one fragment", () => {
     // 7 blocks, 1 fragment => [7]
-    expect(calcBlocksPerFragment(7, 1)).toEqual([7]);
+    expect(calculateBlocksPerFragment(7, 1)).toEqual([7]);
   });
 
   test("should throw error for zero fragments", () => {
-    expect(() => calcBlocksPerFragment(10, 0)).toThrow(
+    expect(() => calculateBlocksPerFragment(10, 0)).toThrow(
       "Fragment count must be greater than 0",
     );
   });
 
   test("should throw error for negative fragments", () => {
-    expect(() => calcBlocksPerFragment(10, -1)).toThrow(
+    expect(() => calculateBlocksPerFragment(10, -1)).toThrow(
       "Fragment count must be greater than 0",
     );
   });
 
   test("should handle large numbers", () => {
-    const result = calcBlocksPerFragment(1000, 3);
+    const result = calculateBlocksPerFragment(1000, 3);
     expect(result.length).toBe(3);
     expect(result.reduce((sum, count) => sum + count, 0)).toBe(1000);
   });
 
   test("should distribute blocks evenly when possible", () => {
-    const result = calcBlocksPerFragment(100, 4);
+    const result = calculateBlocksPerFragment(100, 4);
     expect(result).toEqual([25, 25, 25, 25]);
     expect(result.reduce((sum, count) => sum + count, 0)).toBe(100);
   });

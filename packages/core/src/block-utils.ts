@@ -1,3 +1,5 @@
+import type { ImageInfo } from "./types";
+
 /**
  * Number of channels in RGBA format
  */
@@ -50,7 +52,7 @@ export function calculateBlockRange(
  * @param fragmentCount Number of fragments to create
  * @returns Array of block counts for each fragment
  */
-export function calcBlocksPerFragment(
+export function calculateBlocksPerFragment(
   totalBlocks: number,
   fragmentCount: number,
 ): number[] {
@@ -85,4 +87,22 @@ export function calcBlocksPerFragment(
   }
 
   return fragmentBlockCounts;
+}
+
+/**
+ * Calculate block counts for each image
+ * @param images Array of ImageInfo objects
+ * @returns Array of block counts per image (x * y)
+ */
+export function calculateImageBlockCounts(images: ImageInfo[]): number[] {
+  return images.map((info) => info.x * info.y);
+}
+
+/**
+ * Calculate total number of blocks from images
+ * @param images Array of ImageInfo objects
+ * @returns Total block count
+ */
+export function calculateTotalBlocks(images: ImageInfo[]): number {
+  return images.reduce((total, image) => total + image.x * image.y, 0);
 }

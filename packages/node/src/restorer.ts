@@ -1,8 +1,10 @@
 import {
   type ImageInfo,
   type ManifestData,
-  calcBlocksPerFragment,
   calculateBlockRange,
+  calculateBlocksPerFragment,
+  calculateImageBlockCounts,
+  calculateTotalBlocks,
 } from "@image-shield/core";
 import { unshuffle } from "@tuki0918/seeded-shuffle";
 import { blocksPerImage, blocksToPngImage, imageFileToBlocks } from "./block";
@@ -39,7 +41,7 @@ export class ImageRestorer {
     restoredBlocks: Buffer[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
-    const imageBlockCounts = manifest.images.map((info) => info.x * info.y);
+    const imageBlockCounts = calculateImageBlockCounts(manifest.images);
     return await Promise.all(
       manifest.images.map(async (imageInfo, index) => {
         const { start, end } = calculateBlockRange(imageBlockCounts, index);
@@ -62,14 +64,14 @@ export class ImageRestorer {
   }> {
     this._validateInputs(fragmentImages, manifest);
 
-    const totalBlocks = this._calculateTotalBlocks(manifest.images);
-    const fragmentBlocksCount = calcBlocksPerFragment(
+    const totalBlocks = calculateTotalBlocks(manifest.images);
+    const fragmentBlocksCount = calculateBlocksPerFragment(
       totalBlocks,
       fragmentImages.length,
     );
 
     // Calculate actual block counts per image for per-image unshuffle
-    const imageBlockCounts = manifest.images.map((info) => info.x * info.y);
+    const imageBlockCounts = calculateImageBlockCounts(manifest.images);
 
     // Use imageBlockCounts when crossImageShuffle is false
     const blocksCounts = manifest.config.crossImageShuffle
@@ -97,10 +99,6 @@ export class ImageRestorer {
         `Fragment image count mismatch: expected ${manifestImageCount} but got ${fragmentImageCount}`,
       );
     }
-  }
-
-  private _calculateTotalBlocks(images: ImageInfo[]): number {
-    return images.reduce((total, image) => total + image.x * image.y, 0);
   }
 
   // Extract an array of blocks (Buffer) from a fragment image
