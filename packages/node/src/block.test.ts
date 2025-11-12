@@ -1,14 +1,16 @@
 import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { calcBlocksPerFragment } from "@image-shield/core";
+import {
+  calcBlocksPerFragment,
+  extractBlock,
+  placeBlock,
+} from "@image-shield/core";
 import { Jimp, JimpMime } from "jimp";
 import {
   blocksToImageBuffer,
   blocksToPngImage,
-  extractBlock,
   imageFileToBlocks,
-  placeBlock,
   splitImageToBlocks,
 } from "./block";
 
@@ -30,7 +32,7 @@ describe("extractBlock", () => {
   test("extract center 2x2 block", () => {
     const block = extractBlock(buffer, imageWidth, imageHeight, 1, 1, 2);
     // 2x2 pixels = 2*2*4 = 16 bytes
-    expect(block).toEqual(
+    expect(Buffer.from(block)).toEqual(
       Buffer.from([
         21, 22, 23, 24, 25, 26, 27, 28, 37, 38, 39, 40, 41, 42, 43, 44,
       ]),
@@ -39,7 +41,7 @@ describe("extractBlock", () => {
 
   test("extract edge block (bottom right 2x2)", () => {
     const block = extractBlock(buffer, imageWidth, imageHeight, 2, 2, 2);
-    expect(block).toEqual(
+    expect(Buffer.from(block)).toEqual(
       Buffer.from([
         41, 42, 43, 44, 45, 46, 47, 48, 57, 58, 59, 60, 61, 62, 63, 64,
       ]),
@@ -49,7 +51,7 @@ describe("extractBlock", () => {
   test("blockSize exceeds image size at edge", () => {
     const block = extractBlock(buffer, imageWidth, imageHeight, 3, 3, 4);
     // Only 1x1 pixel
-    expect(block).toEqual(Buffer.from([61, 62, 63, 64]));
+    expect(Buffer.from(block)).toEqual(Buffer.from([61, 62, 63, 64]));
   });
 });
 
@@ -64,6 +66,7 @@ describe("placeBlock", () => {
 
   test("place 2x2 block at (1,1)", () => {
     const buf = Buffer.from(blank);
+    // Buffer is a subclass of Uint8Array, so we can pass it directly
     placeBlock(buf, block, targetWidth, 1, 1, 2);
     // The area from (1,1) with size 2x2 is filled with block
     const expected = Buffer.from(blank);
@@ -76,6 +79,7 @@ describe("placeBlock", () => {
   test("place 1x1 block at the edge", () => {
     const buf = Buffer.from(blank);
     const oneBlock = Buffer.from([201, 202, 203, 204]);
+    // Buffer is a subclass of Uint8Array, so we can pass it directly
     placeBlock(buf, oneBlock, targetWidth, 3, 3, 1);
     const expected = Buffer.from(blank);
     expected.set(oneBlock, (3 * targetWidth + 3) * 4);

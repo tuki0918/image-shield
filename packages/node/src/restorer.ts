@@ -2,6 +2,7 @@ import {
   type ImageInfo,
   type ManifestData,
   calcBlocksPerFragment,
+  calculateBlockRange,
 } from "@image-shield/core";
 import { unshuffle } from "@tuki0918/seeded-shuffle";
 import { blocksToPngImage, imageFileToBlocks } from "./block";
@@ -37,12 +38,10 @@ export class ImageRestorer {
     restoredBlocks: Buffer[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
+    const imageBlockCounts = manifest.images.map((info) => info.x * info.y);
     return await Promise.all(
       manifest.images.map(async (imageInfo, index) => {
-        const { start, end } = this._calculateBlockRange(
-          manifest.images,
-          index,
-        );
+        const { start, end } = calculateBlockRange(imageBlockCounts, index);
         const imageBlocks = restoredBlocks.slice(start, end);
         return await this._reconstructImage(
           imageBlocks,
@@ -51,19 +50,6 @@ export class ImageRestorer {
         );
       }),
     );
-  }
-
-  private _calculateBlockRange(
-    images: ImageInfo[],
-    targetIndex: number,
-  ): { start: number; end: number } {
-    const blockCount = images[targetIndex].x * images[targetIndex].y;
-    const start = images
-      .slice(0, targetIndex)
-      .reduce((sum, img) => sum + img.x * img.y, 0);
-    const end = start + blockCount;
-
-    return { start, end };
   }
 
   private async _prepareRestoreData(

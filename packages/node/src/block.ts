@@ -1,7 +1,8 @@
 import {
-  type BlockCounts,
   RGBA_CHANNELS,
   calculateBlockCounts,
+  blocksToImageBuffer as coreBlocksToImageBuffer,
+  splitImageToBlocks as coreSplitImageToBlocks,
 } from "@image-shield/core";
 import { Jimp, JimpMime } from "jimp";
 
@@ -14,14 +15,15 @@ interface ImageFileToBlocksResult {
   blockCountY: number;
 }
 
-interface BlockPosition {
-  x: number;
-  y: number;
-}
-
-interface BlockDimensions {
-  width: number;
-  height: number;
+/**
+ * Format error message consistently
+ * @param operation Description of the operation that failed
+ * @param error The error that occurred
+ * @returns Formatted error message
+ */
+function formatErrorMessage(operation: string, error: unknown): string {
+  const errorMessage = error instanceof Error ? error.message : "Unknown error";
+  return `${operation}: ${errorMessage}`;
 }
 
 /**
@@ -44,154 +46,7 @@ function createJimpFromImageBuffer(
 }
 
 /**
- * Format error message consistently
- * @param operation Description of the operation that failed
- * @param error The error that occurred
- * @returns Formatted error message
- */
-function formatErrorMessage(operation: string, error: unknown): string {
-  const errorMessage = error instanceof Error ? error.message : "Unknown error";
-  return `${operation}: ${errorMessage}`;
-}
-
-/**
- * Calculate actual block dimensions at edge positions
- * @param position Block position (x or y)
- * @param blockSize Standard block size
- * @param imageSize Image dimension (width or height)
- * @param blockCount Total block count in that dimension
- * @returns Actual block dimension
- */
-function calculateActualBlockSize(
-  position: number,
-  blockSize: number,
-  imageSize: number,
-  blockCount: number,
-): number {
-  const isEdgeBlock = position === blockCount - 1;
-  return isEdgeBlock ? imageSize - position * blockSize : blockSize;
-}
-
-/**
- * Calculate block dimensions considering edge cases
- * @param position Block position
- * @param blockSize Standard block size
- * @param imageWidth Image width
- * @param imageHeight Image height
- * @param blockCounts Block counts
- * @returns Block dimensions
- */
-function calculateBlockDimensions(
-  position: BlockPosition,
-  blockSize: number,
-  imageWidth: number,
-  imageHeight: number,
-  blockCounts: BlockCounts,
-): BlockDimensions {
-  return {
-    width: calculateActualBlockSize(
-      position.x,
-      blockSize,
-      imageWidth,
-      blockCounts.blockCountX,
-    ),
-    height: calculateActualBlockSize(
-      position.y,
-      blockSize,
-      imageHeight,
-      blockCounts.blockCountY,
-    ),
-  };
-}
-
-/**
- * Extract a block from an image buffer
- * @param buffer Source image buffer (RGBA format)
- * @param imageWidth Image width in pixels
- * @param imageHeight Image height in pixels
- * @param startX Block top-left X coordinate
- * @param startY Block top-left Y coordinate
- * @param blockSize Maximum block size
- * @returns Block buffer containing pixel data
- */
-export function extractBlock(
-  buffer: Buffer,
-  imageWidth: number,
-  imageHeight: number | undefined,
-  startX: number,
-  startY: number,
-  blockSize: number,
-): Buffer {
-  // Calculate actual block dimensions considering image boundaries
-  const blockWidth = Math.min(blockSize, imageWidth - startX);
-  const blockHeight =
-    imageHeight !== undefined
-      ? Math.min(blockSize, imageHeight - startY)
-      : blockSize;
-
-  const blockData: number[] = [];
-
-  // Extract pixel data row by row
-  for (let y = 0; y < blockHeight; y++) {
-    for (let x = 0; x < blockWidth; x++) {
-      const pixelX = startX + x;
-      const pixelY = startY + y;
-      const pixelIndex = (pixelY * imageWidth + pixelX) * RGBA_CHANNELS;
-
-      // Copy RGBA channels
-      for (let channel = 0; channel < RGBA_CHANNELS; channel++) {
-        blockData.push(buffer[pixelIndex + channel] || 0);
-      }
-    }
-  }
-
-  return Buffer.from(blockData);
-}
-
-/**
- * Place block data at the specified position in the target image buffer
- * @param targetBuffer Target image buffer to place the block into
- * @param blockData Block data to place
- * @param targetWidth Target image width in pixels
- * @param destX Destination X coordinate
- * @param destY Destination Y coordinate
- * @param blockSize Standard block size
- * @param blockWidth Actual block width (optional, defaults to blockSize)
- * @param blockHeight Actual block height (optional, defaults to blockSize)
- */
-export function placeBlock(
-  targetBuffer: Buffer,
-  blockData: Buffer,
-  targetWidth: number,
-  destX: number,
-  destY: number,
-  blockSize: number,
-  blockWidth?: number,
-  blockHeight?: number,
-): void {
-  const actualWidth = blockWidth ?? blockSize;
-  const actualHeight = blockHeight ?? blockSize;
-
-  // Place pixels row by row
-  for (let y = 0; y < actualHeight; y++) {
-    for (let x = 0; x < actualWidth; x++) {
-      const sourceIndex = (y * actualWidth + x) * RGBA_CHANNELS;
-      const targetIndex =
-        ((destY + y) * targetWidth + (destX + x)) * RGBA_CHANNELS;
-
-      // Ensure we don't write beyond buffer bounds
-      if (targetIndex + RGBA_CHANNELS <= targetBuffer.length) {
-        // Copy RGBA channels
-        for (let channel = 0; channel < RGBA_CHANNELS; channel++) {
-          targetBuffer[targetIndex + channel] =
-            blockData[sourceIndex + channel];
-        }
-      }
-    }
-  }
-}
-/**
- * Split an RGBA image buffer into an array of blocks
+ * Split an RGBA image buffer into an array of blocks (Node.js Buffer wrapper)
  * @param buffer Source image buffer (RGBA format)
  * @param width Image width in pixels
  * @param height Image height in pixels
@@ -204,33 +59,12 @@ export function splitImageToBlocks(
   height: number,
   blockSize: number,
 ): Buffer[] {
-  const blocks: Buffer[] = [];
-  const blockCounts = calculateBlockCounts(width, height, blockSize);
-
-  // Process blocks row by row, left to right
-  for (let blockY = 0; blockY < blockCounts.blockCountY; blockY++) {
-    for (let blockX = 0; blockX < blockCounts.blockCountX; blockX++) {
-      const startX = blockX * blockSize;
-      const startY = blockY * blockSize;
-
-      const block = extractBlock(
-        buffer,
-        width,
-        height,
-        startX,
-        startY,
-        blockSize,
-      );
-
-      blocks.push(block);
-    }
-  }
-
-  return blocks;
+  const blocks = coreSplitImageToBlocks(buffer, width, height, blockSize);
+  return blocks.map((block) => Buffer.from(block));
 }
 
 /**
- * Reconstruct an RGBA image buffer from an array of blocks
+ * Reconstruct an RGBA image buffer from an array of blocks (Node.js Buffer wrapper)
  * @param blocks Array of block buffers
  * @param width Target image width in pixels
  * @param height Target image height in pixels
@@ -243,46 +77,14 @@ export function blocksToImageBuffer(
   height: number,
   blockSize: number,
 ): Buffer {
-  const imageBuffer = Buffer.alloc(width * height * RGBA_CHANNELS);
-  const blockCounts = calculateBlockCounts(width, height, blockSize);
-
-  let blockIndex = 0;
-
-  // Place blocks row by row, left to right
-  for (let blockY = 0; blockY < blockCounts.blockCountY; blockY++) {
-    for (let blockX = 0; blockX < blockCounts.blockCountX; blockX++) {
-      if (blockIndex >= blocks.length) {
-        break;
-      }
-
-      const position: BlockPosition = { x: blockX, y: blockY };
-      const dimensions = calculateBlockDimensions(
-        position,
-        blockSize,
-        width,
-        height,
-        blockCounts,
-      );
-
-      const destX = blockX * blockSize;
-      const destY = blockY * blockSize;
-
-      placeBlock(
-        imageBuffer,
-        blocks[blockIndex],
-        width,
-        destX,
-        destY,
-        blockSize,
-        dimensions.width,
-        dimensions.height,
-      );
-
-      blockIndex++;
-    }
-  }
-
-  return imageBuffer;
+  const uint8Blocks = blocks.map((block) => new Uint8Array(block));
+  const imageBuffer = coreBlocksToImageBuffer(
+    uint8Blocks,
+    width,
+    height,
+    blockSize,
+  );
+  return Buffer.from(imageBuffer);
 }
 
 /**

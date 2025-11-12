@@ -5,6 +5,7 @@ import {
   type ImageInfo,
   type ManifestData,
   calcBlocksPerFragment,
+  calculateBlockRange,
   decodeFileName,
   encodeFileName,
 } from "@image-shield/core";
@@ -67,10 +68,7 @@ export class ImageFragmenter {
   ): Promise<Buffer[]> {
     return await Promise.all(
       manifest.images.map(async (_, index) => {
-        const { start, end } = this._calculateBlockRange(
-          fragmentBlocksCount,
-          index,
-        );
+        const { start, end } = calculateBlockRange(fragmentBlocksCount, index);
         const imageBlocks = shuffledBlocks.slice(start, end);
         return await this._createFragmentImage(
           imageBlocks,
@@ -96,18 +94,6 @@ export class ImageFragmenter {
     }
 
     return shuffledBlocks;
-  }
-
-  private _calculateBlockRange(
-    fragmentBlocksCount: number[],
-    targetIndex: number,
-  ): { start: number; end: number } {
-    const start = fragmentBlocksCount
-      .slice(0, targetIndex)
-      .reduce((sum, count) => sum + count, 0);
-    const end = start + fragmentBlocksCount[targetIndex];
-
-    return { start, end };
   }
 
   private _createManifest(

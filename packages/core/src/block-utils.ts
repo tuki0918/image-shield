@@ -27,6 +27,24 @@ export function calculateBlockCounts(
 }
 
 /**
+ * Calculate the range of blocks for a specific image index
+ * @param blockCounts Array of block counts per image
+ * @param targetIndex Target image index
+ * @returns Object with start and end indices
+ */
+export function calculateBlockRange(
+  blockCounts: number[],
+  targetIndex: number,
+): { start: number; end: number } {
+  const start = blockCounts
+    .slice(0, targetIndex)
+    .reduce((sum, count) => sum + count, 0);
+  const end = start + blockCounts[targetIndex];
+
+  return { start, end };
+}
+
+/**
  * Calculate how many blocks each fragment should contain
  * @param totalBlocks Total number of blocks to distribute
  * @param fragmentCount Number of fragments to create
