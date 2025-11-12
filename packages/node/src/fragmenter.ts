@@ -4,9 +4,9 @@ import {
   type FragmentationResult,
   type ImageInfo,
   type ManifestData,
+  calculateBlockCountsForCrossImages,
+  calculateBlockCountsPerImage,
   calculateBlockRange,
-  calculateBlocksPerFragment,
-  calculateImageBlockCounts,
   encodeFileName,
   validateFileNames,
 } from "@image-shield/core";
@@ -108,13 +108,13 @@ export class ImageFragmenter {
 
     const manifest = this._createManifest(manifestId, imageInfos);
 
-    const blockCountsForCrossImages = calculateBlocksPerFragment(
+    const blockCountsForCrossImages = calculateBlockCountsForCrossImages(
       blocks.length,
       paths.length,
     );
 
     // Calculate actual block counts per image for per-image shuffle
-    const blockCountsPerImage = calculateImageBlockCounts(imageInfos);
+    const blockCountsPerImage = calculateBlockCountsPerImage(imageInfos);
 
     return { manifest, blocks, blockCountsForCrossImages, blockCountsPerImage };
   }

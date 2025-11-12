@@ -2,7 +2,7 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
-  calculateBlocksPerFragment,
+  calculateBlockCountsForCrossImages,
   extractBlock,
   placeBlock,
 } from "@image-shield/core";
@@ -142,26 +142,26 @@ describe("splitImageToBlocks & blocksToImageBuffer", () => {
   });
 });
 
-describe("calculateBlocksPerFragment", () => {
+describe("calculateBlockCountsForCrossImages", () => {
   test("evenly divisible blocks", () => {
     // 12 blocks, 3 fragments => [4, 4, 4]
-    expect(calculateBlocksPerFragment(12, 3)).toEqual([4, 4, 4]);
+    expect(calculateBlockCountsForCrossImages(12, 3)).toEqual([4, 4, 4]);
   });
   test("not evenly divisible blocks", () => {
     // 10 blocks, 3 fragments => [4, 4, 2]
-    expect(calculateBlocksPerFragment(10, 3)).toEqual([4, 4, 2]);
+    expect(calculateBlockCountsForCrossImages(10, 3)).toEqual([4, 4, 2]);
   });
   test("more fragments than blocks", () => {
     // 3 blocks, 5 fragments => [1, 1, 1, 0, 0]
-    expect(calculateBlocksPerFragment(3, 5)).toEqual([1, 1, 1, 0, 0]);
+    expect(calculateBlockCountsForCrossImages(3, 5)).toEqual([1, 1, 1, 0, 0]);
   });
   test("zero blocks", () => {
     // 0 blocks, 3 fragments => [0, 0, 0]
-    expect(calculateBlocksPerFragment(0, 3)).toEqual([0, 0, 0]);
+    expect(calculateBlockCountsForCrossImages(0, 3)).toEqual([0, 0, 0]);
   });
   test("one fragment", () => {
     // 7 blocks, 1 fragment => [7]
-    expect(calculateBlocksPerFragment(7, 1)).toEqual([7]);
+    expect(calculateBlockCountsForCrossImages(7, 1)).toEqual([7]);
   });
 });
 

@@ -47,12 +47,12 @@ export function calculateBlockRange(
 }
 
 /**
- * Calculate how many blocks each fragment should contain
+ * Calculate how many blocks each fragment should contain for cross-image shuffling
  * @param totalBlocks Total number of blocks to distribute
  * @param fragmentCount Number of fragments to create
  * @returns Array of block counts for each fragment
  */
-export function calculateBlocksPerFragment(
+export function calculateBlockCountsForCrossImages(
   totalBlocks: number,
   fragmentCount: number,
 ): number[] {
@@ -94,7 +94,7 @@ export function calculateBlocksPerFragment(
  * @param images Array of ImageInfo objects
  * @returns Array of block counts per image (x * y)
  */
-export function calculateImageBlockCounts(images: ImageInfo[]): number[] {
+export function calculateBlockCountsPerImage(images: ImageInfo[]): number[] {
   return images.map((info) => info.x * info.y);
 }
 
