@@ -1,3 +1,4 @@
+import { lt } from "semver";
 import { decodeFileName } from "./helpers";
 import type { ImageInfo, ManifestData } from "./types";
 
@@ -52,5 +53,20 @@ export function validateFileNames(
       }
       nameSet.add(decodedName);
     }
+  }
+}
+
+/**
+ * Validates manifest version and throws an error if it's v0.8.1 or below.
+ * This is a breaking change: encryption feature removal, per-image shuffle addition, and shuffle algorithm changes.
+ */
+export function validateManifestVersion(manifest: ManifestData): void {
+  const version = manifest.version;
+
+  // Check if version is v0.8.1 (raycast) or below
+  if (lt(version, "0.9.0")) {
+    throw new Error(
+      `[restore] Manifest version ${version} is not supported due to breaking changes.\nTo restore images, please use image-shield v0.8.1.`,
+    );
   }
 }
