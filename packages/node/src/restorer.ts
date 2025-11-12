@@ -15,7 +15,7 @@ export class ImageRestorer {
     fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
-    const { allBlocks, imageBlockCounts } = await this._prepareRestoreData(
+    const { allBlocks, imageBlockCounts } = await this._prepareData(
       fragmentImages,
       manifest,
     );
@@ -29,7 +29,7 @@ export class ImageRestorer {
           unshuffle,
         );
 
-    const reconstructedImages = await this._reconstructAllImages(
+    const reconstructedImages = await this._reconstructImages(
       restoredBlocks,
       manifest,
     );
@@ -37,7 +37,7 @@ export class ImageRestorer {
     return reconstructedImages;
   }
 
-  private async _reconstructAllImages(
+  private async _reconstructImages(
     restoredBlocks: Buffer[],
     manifest: ManifestData,
   ): Promise<Buffer[]> {
@@ -46,7 +46,7 @@ export class ImageRestorer {
       manifest.images.map(async (imageInfo, index) => {
         const { start, end } = calculateBlockRange(imageBlockCounts, index);
         const imageBlocks = restoredBlocks.slice(start, end);
-        return await this._reconstructImage(
+        return await this._createImage(
           imageBlocks,
           manifest.config.blockSize,
           imageInfo,
@@ -55,7 +55,7 @@ export class ImageRestorer {
     );
   }
 
-  private async _prepareRestoreData(
+  private async _prepareData(
     fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
   ): Promise<{
@@ -76,7 +76,7 @@ export class ImageRestorer {
       ? fragmentBlocksCount
       : imageBlockCounts;
 
-    const allBlocks = await this._extractBlocksFromFragments(
+    const allBlocks = await this._readBlocks(
       fragmentImages,
       manifest,
       blocksCounts,
@@ -86,7 +86,7 @@ export class ImageRestorer {
   }
 
   // Extract an array of blocks (Buffer) from a fragment image
-  private async _extractBlocksFromFragment(
+  private async _readBlocksFromFragment(
     fragmentImage: string | Buffer,
     manifest: ManifestData,
     expectedBlockCount: number,
@@ -102,14 +102,14 @@ export class ImageRestorer {
     return blocks.slice(0, expectedBlockCount);
   }
 
-  private async _extractBlocksFromFragments(
+  private async _readBlocks(
     fragmentImages: (string | Buffer)[],
     manifest: ManifestData,
     fragmentBlocksCount: number[],
   ): Promise<Buffer[]> {
     const blocksArrays = await Promise.all(
       fragmentImages.map((fragmentImage, i) =>
-        this._extractBlocksFromFragment(
+        this._readBlocksFromFragment(
           fragmentImage,
           manifest,
           fragmentBlocksCount[i],
@@ -119,7 +119,7 @@ export class ImageRestorer {
     return blocksArrays.flat();
   }
 
-  private async _reconstructImage(
+  private async _createImage(
     blocks: Buffer[],
     blockSize: number,
     imageInfo: ImageInfo,

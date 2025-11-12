@@ -7,7 +7,6 @@ import {
   calculateBlockRange,
   calculateBlocksPerFragment,
   calculateImageBlockCounts,
-  decodeFileName,
   encodeFileName,
   validateFileNames,
 } from "@image-shield/core";
@@ -41,7 +40,7 @@ export class ImageFragmenter {
 
   async fragmentImages(imagePaths: string[]): Promise<FragmentationResult> {
     const { manifest, allBlocks, fragmentBlocksCount, imageBlockCounts } =
-      await this._prepareFragmentData(imagePaths);
+      await this._prepareData(imagePaths);
 
     const shuffledBlocks = this.config.crossImageShuffle
       ? shuffle(allBlocks, manifest.config.seed)
@@ -52,7 +51,7 @@ export class ImageFragmenter {
           shuffle,
         );
 
-    const fragmentedImages = await this._createFragmentedImages(
+    const fragmentedImages = await this._createImages(
       shuffledBlocks,
       this.config.crossImageShuffle ? fragmentBlocksCount : imageBlockCounts,
       manifest,
@@ -64,7 +63,7 @@ export class ImageFragmenter {
     };
   }
 
-  private async _createFragmentedImages(
+  private async _createImages(
     shuffledBlocks: Buffer[],
     fragmentBlocksCount: number[],
     manifest: ManifestData,
@@ -73,10 +72,7 @@ export class ImageFragmenter {
       manifest.images.map(async (_, index) => {
         const { start, end } = calculateBlockRange(fragmentBlocksCount, index);
         const imageBlocks = shuffledBlocks.slice(start, end);
-        return await this._createFragmentImage(
-          imageBlocks,
-          manifest.config.blockSize,
-        );
+        return await this._createImage(imageBlocks, manifest.config.blockSize);
       }),
     );
   }
@@ -94,7 +90,7 @@ export class ImageFragmenter {
     };
   }
 
-  private async _prepareFragmentData(imagePaths: string[]): Promise<{
+  private async _prepareData(imagePaths: string[]): Promise<{
     manifest: ManifestData;
     allBlocks: Buffer[];
     fragmentBlocksCount: number[];
@@ -102,8 +98,7 @@ export class ImageFragmenter {
   }> {
     const manifestId = generateManifestId();
 
-    const { imageInfos, allBlocks } =
-      await this._processSourceImages(imagePaths);
+    const { imageInfos, allBlocks } = await this._processImages(imagePaths);
 
     validateFileNames(imageInfos, this.config.preserveName);
 
@@ -120,12 +115,12 @@ export class ImageFragmenter {
     return { manifest, allBlocks, fragmentBlocksCount, imageBlockCounts };
   }
 
-  private async _processSourceImages(imagePaths: string[]): Promise<{
+  private async _processImages(imagePaths: string[]): Promise<{
     imageInfos: ImageInfo[];
     allBlocks: Buffer[];
   }> {
     const processedImages = await Promise.all(
-      imagePaths.map((imagePath) => this._processSourceImage(imagePath)),
+      imagePaths.map((imagePath) => this._processImage(imagePath)),
     );
 
     const imageInfos = processedImages.map((p) => p.imageInfo);
@@ -134,7 +129,7 @@ export class ImageFragmenter {
     return { imageInfos, allBlocks };
   }
 
-  private async _processSourceImage(imagePath: string): Promise<{
+  private async _processImage(imagePath: string): Promise<{
     imageInfo: ImageInfo;
     blocks: Buffer[];
   }> {
@@ -157,7 +152,7 @@ export class ImageFragmenter {
     return { imageInfo, blocks };
   }
 
-  private async _createFragmentImage(
+  private async _createImage(
     blocks: Buffer[],
     blockSize: number,
   ): Promise<Buffer> {
