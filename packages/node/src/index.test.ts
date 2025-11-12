@@ -9,6 +9,7 @@ import {
 } from "@image-shield/core";
 import { Jimp, JimpMime } from "jimp";
 import { VERSION } from "./constants";
+import { ImageFragmenter } from "./fragmenter";
 import ImageShield from "./index";
 
 describe("ImageShield (integration)", () => {
@@ -238,6 +239,85 @@ describe("ImageShield (preserveName integration)", () => {
       const origName = path.parse(imagePaths[i]).name;
       const restoredPath = path.join(tmpDir, `${origName}.png`);
       expect(fs.existsSync(restoredPath)).toBe(true);
+    }
+  });
+});
+
+describe("ImageShield (error handling)", () => {
+  const tmpDir = path.join(tmpdir(), "index_test_tmp_error_handling");
+  let testImagePath: string;
+
+  beforeAll(async () => {
+    // Create tmp directory and test image
+    if (!fs.existsSync(tmpDir)) fs.mkdirSync(tmpDir);
+
+    // Create a simple 2x2 RGBA test image
+    const imageData = Buffer.from([
+      255,
+      0,
+      0,
+      255, // Red
+      0,
+      255,
+      0,
+      255, // Green
+      0,
+      0,
+      255,
+      255, // Blue
+      255,
+      255,
+      0,
+      255, // Yellow
+    ]);
+
+    testImagePath = path.join(tmpDir, "test_image.png");
+    const image = Jimp.fromBitmap({
+      data: imageData,
+      width: 2,
+      height: 2,
+    });
+    await image.write(testImagePath, JimpMime.png);
+  });
+
+  afterAll(() => {
+    // Clean up tmp files
+    if (fs.existsSync(testImagePath)) fs.unlinkSync(testImagePath);
+    if (fs.existsSync(tmpDir)) fs.rmdirSync(tmpDir);
+  });
+
+  test("throws error when fragment count doesn't match manifest", async () => {
+    // First fragment multiple images
+    const fragmenter = new ImageFragmenter({
+      blockSize: 1,
+      seed: "test-seed",
+    });
+    const { manifest, fragmentedImages } = await fragmenter.fragmentImages([
+      testImagePath,
+      testImagePath,
+    ]);
+
+    // Save manifest to file
+    const manifestPath = path.join(tmpDir, "manifest.json");
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+
+    // Save only one fragment (should have 2)
+    const fragmentPath = path.join(tmpDir, "fragment_0.png");
+    fs.writeFileSync(fragmentPath, fragmentedImages[0]);
+
+    try {
+      // Try to restore with wrong number of fragments
+      await expect(
+        ImageShield.restore({
+          imagePaths: [fragmentPath],
+          manifestPath,
+          outputDir: tmpDir,
+        }),
+      ).rejects.toThrow("Fragment image count mismatch");
+    } finally {
+      // Clean up
+      if (fs.existsSync(manifestPath)) fs.unlinkSync(manifestPath);
+      if (fs.existsSync(fragmentPath)) fs.unlinkSync(fragmentPath);
     }
   });
 });

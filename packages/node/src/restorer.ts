@@ -5,7 +5,6 @@ import {
   calculateBlocksPerFragment,
   calculateImageBlockCounts,
   calculateTotalBlocks,
-  validateFragmentImageCount,
 } from "@image-shield/core";
 import { unshuffle } from "@tuki0918/seeded-shuffle";
 import { blocksPerImage, blocksToPngImage, imageFileToBlocks } from "./block";
@@ -63,8 +62,6 @@ export class ImageRestorer {
     allBlocks: Buffer[];
     imageBlockCounts: number[];
   }> {
-    validateFragmentImageCount(fragmentImages, manifest);
-
     const totalBlocks = calculateTotalBlocks(manifest.images);
     const fragmentBlocksCount = calculateBlocksPerFragment(
       totalBlocks,

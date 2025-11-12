@@ -307,24 +307,6 @@ describe("ImageRestorer", () => {
   });
 
   describe("error handling", () => {
-    test("throws error when fragment count doesn't match manifest", async () => {
-      const fragmenter = new ImageFragmenter({
-        blockSize: 2,
-        seed: "test-seed",
-      });
-      const { manifest, fragmentedImages } = await fragmenter.fragmentImages([
-        testImagePath,
-        testImagePath,
-      ]);
-
-      const restorer = new ImageRestorer();
-
-      // Try to restore with wrong number of fragments
-      await expect(
-        restorer.restoreImages([fragmentedImages[0]], manifest),
-      ).rejects.toThrow("Fragment image count mismatch");
-    });
-
     test("handles non-existent fragment file", async () => {
       const fragmenter = new ImageFragmenter({
         blockSize: 2,

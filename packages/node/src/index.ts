@@ -7,6 +7,7 @@ import {
   generateFragmentFileName,
   generateRestoredFileName,
   generateRestoredOriginalFileName,
+  validateFragmentImageCount,
 } from "@image-shield/core";
 import { lt } from "semver";
 import { createDir, readJsonFile, writeFile } from "./file";
@@ -48,7 +49,9 @@ export default class ImageShield {
       validateRestoreOptions(options);
 
     const manifest = await readJsonFile<ManifestData>(manifestPath);
+
     validateManifestVersion(manifest);
+    validateFragmentImageCount(imagePaths, manifest);
 
     const restorer = new ImageRestorer();
     const restoredImages = await restorer.restoreImages(imagePaths, manifest);
