@@ -43,10 +43,11 @@ export class ImageFragmenter {
 
     const shuffledBlocks = this.config.crossImageShuffle
       ? shuffle(allBlocks, manifest.config.seed)
-      : this._shufflePerImage(
+      : blocksPerImage(
           allBlocks,
           imageBlockCounts,
           manifest.config.seed,
+          shuffle,
         );
 
     const fragmentedImages = await this._createFragmentedImages(
@@ -76,14 +77,6 @@ export class ImageFragmenter {
         );
       }),
     );
-  }
-
-  private _shufflePerImage(
-    allBlocks: Buffer[],
-    fragmentBlocksCount: number[],
-    seed: number | string,
-  ): Buffer[] {
-    return blocksPerImage(allBlocks, fragmentBlocksCount, seed, shuffle);
   }
 
   private _createManifest(

@@ -20,10 +20,11 @@ export class ImageRestorer {
 
     const restoredBlocks = manifest.config.crossImageShuffle
       ? unshuffle(allBlocks, manifest.config.seed)
-      : this._unshufflePerImage(
+      : blocksPerImage(
           allBlocks,
           imageBlockCounts,
           manifest.config.seed,
+          unshuffle,
         );
 
     const reconstructedImages = await this._reconstructAllImages(
@@ -143,13 +144,5 @@ export class ImageRestorer {
   ): Promise<Buffer> {
     const { w, h } = imageInfo;
     return await blocksToPngImage(blocks, w, h, blockSize);
-  }
-
-  private _unshufflePerImage(
-    allBlocks: Buffer[],
-    fragmentBlocksCount: number[],
-    seed: number | string,
-  ): Buffer[] {
-    return blocksPerImage(allBlocks, fragmentBlocksCount, seed, unshuffle);
   }
 }
