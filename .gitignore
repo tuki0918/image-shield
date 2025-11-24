@@ -48,6 +48,13 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 
+# TypeScript build artifacts in packages
+packages/*/src/*.d.ts
+packages/*/src/*.d.ts.map
+packages/*/src/*.js
+packages/*/src/*.js.map
+packages/*/dist/
+
 # Optional npm cache directory
 .npm
 

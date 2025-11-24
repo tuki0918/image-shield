@@ -4,6 +4,15 @@
 
 This npm package provides functionality for image fragmentation and restoration.
 
+## Architecture
+
+This project is organized as a monorepo with the following packages:
+
+- **@image-shield/core**: Environment-independent core functionality (types, algorithms, crypto interfaces)
+- **@image-shield/node**: Node.js implementation with file system operations and Jimp integration
+- **@image-shield/browser**: Browser implementation (reserved for future development)
+- **@image-shield/cli**: CLI implementation (reserved for future development)
+
 ## Features
 
 This package provides two main modes for image fragmentation:

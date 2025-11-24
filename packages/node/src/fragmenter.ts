@@ -1,19 +1,20 @@
+import {
+  CryptoUtils,
+  DEFAULT_FRAGMENTATION_CONFIG,
+  type FragmentationConfig,
+  type FragmentationResult,
+  type ImageInfo,
+  type ManifestData,
+  calcBlocksPerFragment,
+} from "@image-shield/core";
 import { SeededRandom, shuffle } from "@tuki0918/seeded-shuffle";
-import { DEFAULT_FRAGMENTATION_CONFIG, VERSION } from "./constraints";
-import type {
-  FragmentationConfig,
-  FragmentationResult,
-  ImageInfo,
-  ManifestData,
-} from "./types";
 import {
   blocksToPngImage,
-  calcBlocksPerFragment,
   encryptPngImageBuffer,
   imageFileToBlocks,
-} from "./utils/block";
-import { CryptoUtils } from "./utils/crypto";
-import { fileNameWithoutExtension, readFileBuffer } from "./utils/file";
+} from "./block";
+import { VERSION } from "./constants";
+import { fileNameWithoutExtension, readFileBuffer } from "./file";
 
 export class ImageFragmenter {
   private config: Required<FragmentationConfig>;

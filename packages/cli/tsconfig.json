@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@image-shield/core": ["../core/src"],
+      "@image-shield/node": ["../node/src"]
+    },
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src/**/*.ts"]
+}

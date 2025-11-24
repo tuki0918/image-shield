@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "isolatedModules": true
+  }
+}
